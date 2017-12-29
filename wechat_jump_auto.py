@@ -34,7 +34,6 @@ def find_piece_and_board(im):
     board_y = 0
 
     for i in range(h):
-        last_pixel = im.getpixel((0, i))
         for j in range(w):
             pixel = im.getpixel((j, i))
             if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
@@ -42,16 +41,30 @@ def find_piece_and_board(im):
                 piece_x_c += 1
                 piece_y_max = max(i, piece_y_max)
 
-            if i < 300 or board_x or board_y:
-                continue
-            if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
-                board_x, board_y = j, i + 20
-
-    if not all((piece_x_sum, piece_x_c, board_x, board_y)):
+    if not all((piece_x_sum, piece_x_c)):
         return 0, 0, 0, 0
-
     piece_x = piece_x_sum / piece_x_c
     piece_y = piece_y_max
+
+    for i in range(h):
+        if i < 300:
+            continue
+        last_pixel = im.getpixel((0, i))
+        if board_x or board_y:
+            break
+        for j in range(w):
+            pixel = im.getpixel((j, i))
+            # 修掉脑袋比下一个小格子还高的情况的 bug in 1514552420.png
+            if abs(j - piece_x) < 70:
+                continue
+
+            if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
+                board_x, board_y = j, i + 20
+                break
+
+    if not all((board_x, board_y)):
+        return 0, 0, 0, 0
+
     return piece_x, piece_y - 20, board_x, board_y
 
 
