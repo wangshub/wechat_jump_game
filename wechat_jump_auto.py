@@ -52,15 +52,21 @@ def find_piece_and_board(im):
         last_pixel = im.getpixel((0, i))
         if board_x or board_y:
             break
+        board_x_sum = 0
+        board_x_c = 0
+
         for j in range(w):
             pixel = im.getpixel((j, i))
             # 修掉脑袋比下一个小格子还高的情况的 bug in 1514552420.png
             if abs(j - piece_x) < 70:
                 continue
 
+            # 修掉圆顶的时候一条线导致的小 bug
             if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
-                board_x = j
-                break
+                board_x_sum += j
+                board_x_c += 1
+        if board_x_sum:
+            board_x = board_x_sum / board_x_c
 
     board_y = piece_y + abs(board_x - piece_x) * abs(1122 - 831) / abs(813 - 310)
 
