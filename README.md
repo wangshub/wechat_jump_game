@@ -24,6 +24,12 @@
 - Adb 驱动
 - Python Matplot绘图
 
+## 依赖安装
+
+``` bash
+pip install -r requirements.txt
+```
+
 ## 原理说明
 
 1. 将手机点击到《跳一跳》小程序界面；
