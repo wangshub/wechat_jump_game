@@ -15,7 +15,7 @@ def backup_screenshot(ts):
 
 
 def jump(distance):
-    press_time = distance * 1.31
+    press_time = distance * 1.39
     press_time = max(press_time, 200)
     press_time = int(press_time)
     # 500 1600
@@ -44,7 +44,7 @@ def find_piece_and_board(im):
     if not all((piece_x_sum, piece_x_c)):
         return 0, 0, 0, 0
     piece_x = piece_x_sum / piece_x_c
-    piece_y = piece_y_max
+    piece_y = piece_y_max - 20
 
     for i in range(h):
         if i < 300:
@@ -59,13 +59,15 @@ def find_piece_and_board(im):
                 continue
 
             if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
-                board_x, board_y = j, i + 20
+                board_x = j
                 break
+
+    board_y = piece_y + abs(board_x - piece_x) * abs(1122 - 831) / abs(813 - 310)
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
 
-    return piece_x, piece_y - 20, board_x, board_y
+    return piece_x, piece_y, board_x, board_y
 
 
 def main():
