@@ -29,6 +29,8 @@
 - Adb 驱动
 - Python Matplot绘图
 
+如果你是`ios`，请参考下面的配置：在真机调试wda，参考iOS 真机如何安装 [WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)，用这个python的客户端[openatx/facebook-wda](https://github.com/openatx/facebook-wda)，把adb的调用替换成wda的api就好了
+
 ## 依赖安装
 
 ``` bash
