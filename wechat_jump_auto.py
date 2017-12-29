@@ -15,7 +15,7 @@ def backup_screenshot(ts):
 
 
 def jump(distance):
-    press_time = distance * 1.395
+    press_time = distance * 1.393
     press_time = max(press_time, 200)
     press_time = int(press_time)
     # 500 1600
