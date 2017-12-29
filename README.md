@@ -2,9 +2,9 @@
 
 > 2017年12月28日下午，微信发布了 6.6.1 版本，加入了「小游戏」功能，并提供了官方 demo「跳一跳」。
 
-[blog 地址](https://wangshub.github.io)
+[https://wangshub.github.io](https://wangshub.github.io)
 
-[github 地址](https://github.com/wangshub/wechat_jump_game)
+[项目地址](https://github.com/wangshub/wechat_jump_game)
 
 ## 游戏模式
 
@@ -15,6 +15,7 @@
 
 **如果能精确测量出起始和目标点之间测距离，就可以估计按压的时间来精确跳跃？所以花2个小时写了一个python脚本进行验证**
 
+希望不要把分数刷太高，容易没朋友的。。。
 
 ## 工具介绍
 
