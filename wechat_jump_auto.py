@@ -6,8 +6,8 @@ from PIL import Image
 
 
 def pull_screenshot():
-    os.system('~/platform-tools/adb shell screencap -p /sdcard/1.png')
-    os.system('~/platform-tools/adb pull /sdcard/1.png .')
+    os.system('adb shell screencap -p /sdcard/1.png')
+    os.system('adb pull /sdcard/1.png .')
 
 
 def backup_screenshot(ts):
@@ -19,7 +19,7 @@ def jump(distance):
     press_time = max(press_time, 200)
     press_time = int(press_time)
     # 500 1600
-    cmd = '~/platform-tools/adb shell input swipe 500 1600 500 1601 ' + str(press_time)
+    cmd = 'adb shell input swipe 500 1600 500 1601 ' + str(press_time)
     print cmd
     os.system(cmd)
 
