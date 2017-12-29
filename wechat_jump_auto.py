@@ -8,7 +8,10 @@ from PIL import Image
 def pull_screenshot():
     os.system('~/platform-tools/adb shell screencap -p /sdcard/1.png')
     os.system('~/platform-tools/adb pull /sdcard/1.png .')
-    os.system('cp 1.png 2.png')
+
+
+def backup_screenshot(ts):
+    os.system('cp 1.png screenshot_backups/{}.png'.format(ts))
 
 
 def jump(distance):
@@ -58,9 +61,11 @@ def main():
         im = Image.open("./1.png")
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
-        print(piece_x, piece_y, board_x, board_y)
+        ts = int(time.time())
+        print(ts, piece_x, piece_y, board_x, board_y)
         jump(math.sqrt(abs(board_x - piece_x) ** 2 + abs(board_y - piece_y) ** 2))
-        time.sleep(2)
+        backup_screenshot(ts)
+        time.sleep(3)
 
 
 if __name__ == '__main__':
