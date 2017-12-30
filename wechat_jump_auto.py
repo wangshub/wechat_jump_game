@@ -37,6 +37,9 @@ piece_body_width = config['piece_body_width']             # 棋子的宽度，�
 
 swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
 
+piece_base_height_1_2 = 25   # 二分之一的棋子底座高度，可能要调节
+piece_body_width = 80       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
+
 # 下面的 (353, 859) 和 (772, 1100) 是游戏截图里的两个台子的中点坐标，主要用来算角度，可能要调节
 sample_board_x1, sample_board_y1, sample_board_x2, sample_board_y2 = 353, 859, 772, 1100
 
@@ -63,6 +66,13 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     del draw
     im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
 
+def set_button_position(im):
+    # 将swipe设置为 `再来一局` 按钮的位置
+    global swipe_x1, swipe_y1, swipe_x2, swipe_y2
+    w, h = im.size
+    left = w / 2
+    top = 1003 * (h / 1280.0) + 10
+    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 def jump(distance):
     press_time = distance * press_coefficient
@@ -81,10 +91,26 @@ def find_piece_and_board(im):
     piece_y_max = 0
     board_x = 0
     board_y = 0
+    scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
+    scan_start_y = 0  # 扫描的起始y坐标
+    im_pixel=im.load()
+    # 以50px步长，尝试探测scan_start_y
+    for i in range(under_game_score_y, h, 50):
+        last_pixel = im_pixel[0,i]
+        for j in range(1, w):
+            pixel=im_pixel[j,i]
+            # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
+            if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
+                scan_start_y = i - 50
+                break
+        if scan_start_y:
+            break
+    print("scan_start_y: ", scan_start_y)
 
-    for i in range(h):
-        for j in range(w):
-            pixel = im.getpixel((j, i))
+    # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
+    for i in range(scan_start_y, int(h * 2 / 3)):
+        for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
+            pixel = im_pixel[j,i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
             if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
                 piece_x_sum += j
@@ -96,17 +122,15 @@ def find_piece_and_board(im):
     piece_x = piece_x_sum / piece_x_c
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
-    for i in range(h):
-        if i < under_game_score_y:
-            continue
-        last_pixel = im.getpixel((0, i))
+    for i in range(scan_start_y, h):
+        last_pixel = im_pixel[0, i]
         if board_x or board_y:
             break
         board_x_sum = 0
         board_x_c = 0
 
         for j in range(w):
-            pixel = im.getpixel((j, i))
+            pixel = im_pixel[j,i]
             # 修掉脑袋比下一个小格子还高的情况的 bug
             if abs(j - piece_x) < piece_body_width:
                 continue
@@ -134,7 +158,8 @@ def main():
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
-        jump(math.sqrt(abs(board_x - piece_x) ** 2 + abs(board_y - piece_y) ** 2))
+        set_button_position(im)
+        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
