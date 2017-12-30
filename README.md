@@ -75,7 +75,7 @@ pip install -r requirements.txt
 - 安卓手机打开USB调试，设置》开发者选项》USB调试
 - 电脑与手机USB线连接，确保执行`adb devices`可以找到设备id
 - 界面转至微信跳一跳游戏，点击开始游戏
-- 运行`python wechat_junp_auto.py`，如果手机界面显示USB授权，请点击确认
+- 运行`python wechat_jump_auto.py`，如果手机界面显示USB授权，请点击确认
 
 
 ## 实验结果
