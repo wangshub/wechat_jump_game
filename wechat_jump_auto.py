@@ -58,6 +58,13 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     del draw
     im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
 
+def set_button_position(im):
+    # 将swipe设置为 `再来一局` 按钮的位置
+    global swipe_x1, swipe_y1, swipe_x2, swipe_y2
+    w, h = im.size
+    left = w / 2
+    top = 1003 * (h / 1280.0) + 10
+    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 def jump(distance):
     press_time = distance * press_coefficient
@@ -143,6 +150,7 @@ def main():
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
+        set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
