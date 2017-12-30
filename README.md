@@ -65,8 +65,8 @@
 2. 用Adb 工具获取当前手机截图，并用adb将截图pull上来
 
 ```shell
-    adb shell screencap -p /sdcard/1.png
-    adb pull /sdcard/1.png .
+    adb shell screencap -p /sdcard/autojump.png
+    adb pull /sdcard/autojump.png .
 ```
 
 3. 用matplotlib显示截图；
