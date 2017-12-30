@@ -75,7 +75,7 @@
 6. 用Adb工具点击屏幕蓄力一跳；
 
 ```shell
-    adb shell input swipe x y x y time
+    adb shell input swipe x y x y time(ms)
 ```
 
 如果你是 `iOS`：
