@@ -27,12 +27,12 @@ import random
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 under_game_score_y = 300     # 截图中刚好低于分数显示区域的 Y 坐标，300 是 1920x1080 的值，2K 屏、全面屏请根据实际情况修改
-press_coefficient = 1.393    # 长按的时间系数，请自己根据实际情况调节
+press_coefficient = 1.392    # 长按的时间系数，请自己根据实际情况调节
 swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
 piece_base_height_1_2 = 20   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = 70       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
-# 下面的 (813, 1122) 和 (310, 813) 是游戏截图里的两个台子的中点坐标，主要用来算角度，可能要调节
-sample_board_x1, sample_board_y1, sample_board_x2, sample_board_y2 = 813, 1122, 310, 813
+# 下面的 (353, 859) 和 (772, 1100) 是游戏截图里的两个台子的中点坐标，主要用来算角度，可能要调节
+sample_board_x1, sample_board_y1, sample_board_x2, sample_board_y2 = 353, 859, 772, 1100
 
 
 screenshot_backup_dir = 'screenshot_backups/'
@@ -54,7 +54,7 @@ def backup_screenshot(ts):
 
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
-    draw.line((piece_x, piece_y) + (board_x, board_y), fill=128)
+    draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
     del draw
     im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
 
@@ -132,7 +132,7 @@ def main():
         jump(math.sqrt(abs(board_x - piece_x) ** 2 + abs(board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
-        time.sleep(random.uniform(2, 3))   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
 if __name__ == '__main__':
