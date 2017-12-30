@@ -25,6 +25,7 @@
 - 如果你想自动运行：请运行`wechat_jump_auto.py`，记得修改`config.json`参数
 - 如果你是1280x720屏幕分辨率：请运行`wechat_jump_auto_1280_720.py`
 - 如果你是ios，请运行：`wechat_jump_iOS_py3.py`
+- 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到*.py同级目录;
 
 ## 游戏模式
 
