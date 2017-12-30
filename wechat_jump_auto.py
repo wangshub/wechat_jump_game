@@ -129,7 +129,7 @@ def main():
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
-        jump(math.sqrt(abs(board_x - piece_x) ** 2 + abs(board_y - piece_y) ** 2))
+        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
