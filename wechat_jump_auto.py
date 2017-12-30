@@ -26,16 +26,20 @@ import json
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
-with open('config.json','r') as f:
+with open('config.json', 'r') as f:
     config = json.load(f)
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
-under_game_score_y = config['under_game_score_y']     # 截图中刚好低于分数显示区域的 Y 坐标，300 是 1920x1080 的值，2K 屏、全面屏请根据实际情况修改
-press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
-piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
-piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
-
-swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
+# 截图中刚好低于分数显示区域的 Y 坐标，300 是 1920x1080 的值，2K 屏、全面屏请根据实际情况修改
+under_game_score_y = config['under_game_score_y']
+# 长按的时间系数，请自己根据实际情况调节
+press_coefficient = config['press_coefficient']
+# 二分之一的棋子底座高度，可能要调节
+piece_base_height_1_2 = config['piece_base_height_1_2']
+# 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
+piece_body_width = config['piece_body_width']
+# 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
+swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410
 
 piece_base_height_1_2 = 25   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = 80       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
@@ -43,7 +47,7 @@ piece_body_width = 80       # 棋子的宽度，比截图中量到的稍微大�
 
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
-        os.mkdir(screenshot_backup_dir)
+    os.mkdir(screenshot_backup_dir)
 
 
 def pull_screenshot():
@@ -66,8 +70,14 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw.line((0, piece_y, im.size[0], piece_y), fill=(255, 0, 0))
     draw.line((board_x, 0, board_x, im.size[1]), fill=(0, 0, 255))
     draw.line((0, board_y, im.size[0], board_y), fill=(0, 0, 255))
-    draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
-    draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
+    draw.ellipse(
+        (piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10),
+        fill=(255, 0, 0)
+    )
+    draw.ellipse(
+        (board_x - 10, board_y - 10, board_x + 10, board_y + 10),
+        fill=(0, 0, 255)
+    )
     del draw
     im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
 
@@ -85,7 +95,13 @@ def jump(distance):
     press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {} {} {} {} {}'.format(swipe_x1, swipe_y1, swipe_x2, swipe_y2, press_time)
+    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+        x1=swipe_x1,
+        y1=swipe_y1,
+        x2=swipe_x2,
+        y2=swipe_y2,
+        duration=press_time
+    )
     print(cmd)
     os.system(cmd)
 
@@ -100,14 +116,16 @@ def find_piece_and_board(im):
     board_y = 0
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
-    im_pixel=im.load()
+    im_pixel = im.load()
     # 以50px步长，尝试探测scan_start_y
-    for i in range(int(h / 3), int( h*2 /3 ), 50):
-        last_pixel = im_pixel[0,i]
+    for i in range(int(h / 3), int(h * 2 / 3), 50):
+        last_pixel = im_pixel[0, i]
         for j in range(1, w):
-            pixel=im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
-            if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
+            if pixel[0] != last_pixel[0] or \
+               pixel[1] != last_pixel[1] or \
+               pixel[2] != last_pixel[2]:
                 scan_start_y = i - 50
                 break
         if scan_start_y:
@@ -117,9 +135,11 @@ def find_piece_and_board(im):
     # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
     for i in range(int(h / 3), int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
-            pixel = im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
-            if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
+            if (50 < pixel[0] < 60) and \
+               (53 < pixel[1] < 63) and \
+               (95 < pixel[2] < 110):
                 piece_x_sum += j
                 piece_x_c += 1
                 piece_y_max = max(i, piece_y_max)
@@ -137,13 +157,15 @@ def find_piece_and_board(im):
         board_x_c = 0
 
         for j in range(w):
-            pixel = im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 修掉脑袋比下一个小格子还高的情况的 bug
             if abs(j - piece_x) < piece_body_width:
                 continue
 
             # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
-            if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
+            if abs(pixel[0] - last_pixel[0]) + \
+               abs(pixel[1] - last_pixel[1]) + \
+               abs(pixel[2] - last_pixel[2]) > 10:
                 board_x_sum += j
                 board_x_c += 1
         if board_x_sum:
