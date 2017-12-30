@@ -3,7 +3,7 @@ import os
 import time
 import math
 from PIL import Image
-
+import random
 
 def pull_screenshot():
     os.system('adb shell screencap -p /sdcard/1.png')
@@ -89,7 +89,7 @@ def main():
         print(ts, piece_x, piece_y, board_x, board_y)
         jump(math.sqrt(abs(board_x - piece_x) ** 2 + abs(board_y - piece_y) ** 2))
         backup_screenshot(ts)
-        time.sleep(3)   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(random.uniform(2,3))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
 if __name__ == '__main__':
