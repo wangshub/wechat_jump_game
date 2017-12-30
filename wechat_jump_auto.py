@@ -20,7 +20,7 @@ def jump(distance):
     press_time = max(press_time, 200)
     press_time = int(press_time)
     # TODO: 坐标根据截图的 size 来计算
-    cmd = 'adb shell input swipe 500 1600 500 1601 ' + str(press_time)
+    cmd = 'adb shell input swipe 320 410 320 410 ' + str(press_time)
     print(cmd)
     os.system(cmd)
 
