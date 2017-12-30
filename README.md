@@ -26,6 +26,7 @@
 - 如果你是1280x720屏幕分辨率：请运行`wechat_jump_auto_1280_720.py`
 - 如果你是ios，请运行：`wechat_jump_iOS_py3.py`
 - 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到*.py同级目录;
+- 注意：别刷太高，已经有同学遇到分数清零的情况了[164](https://github.com/wangshub/wechat_jump_game/issues/164)
 
 ## 游戏模式
 
