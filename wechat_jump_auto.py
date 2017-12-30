@@ -5,6 +5,7 @@ import math
 from PIL import Image
 import random
 
+
 def pull_screenshot():
     os.system('adb shell screencap -p /sdcard/1.png')
     os.system('adb pull /sdcard/1.png .')
@@ -12,6 +13,9 @@ def pull_screenshot():
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
+    dir_path = 'screenshot_backups/'
+    if not os.path.isdir(dir_path):
+        os.mkdir(dir_path)
     os.system('cp 1.png screenshot_backups/{}.png'.format(ts))
 
 
@@ -77,6 +81,7 @@ def find_piece_and_board(im):
         return 0, 0, 0, 0
 
     return piece_x, piece_y, board_x, board_y
+
 
 
 def main():
