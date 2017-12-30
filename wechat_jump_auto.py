@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import shutil
 import time
 import math
 from PIL import Image, ImageDraw
@@ -49,8 +50,7 @@ def backup_screenshot(ts):
     # 为了方便失败的时候 debug
     if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
-    os.system('cp 1.png {}{}.png'.format(screenshot_backup_dir, ts))
-
+    shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
