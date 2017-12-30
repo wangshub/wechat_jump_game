@@ -1,10 +1,9 @@
 # 教你用Python来玩微信跳一跳
 
-> 2017年12月28日下午，微信发布了 6.6.1 版本，加入了「小游戏」功能，并提供了官方 demo「跳一跳」。
 
 [https://wangshub.github.io](https://wangshub.github.io)
 
-[项目地址](https://github.com/wangshub/wechat_jump_game)
+[github项目地址](https://github.com/wangshub/wechat_jump_game)
 
 ### **更新日志：**
 
@@ -14,6 +13,15 @@
 
 > 2017-12-30 ： 根据大家反馈：1080屏幕距离系数**1.393**,2k屏幕为**1**
 
+> 2017年12月28日下午，微信发布了 6.6.1 版本，加入了「小游戏」功能，并提供了官方 demo「跳一跳」。
+
+### 相关问题
+
+请先查阅一下issue区
+
+- 参数出错请在这里提交：[issues/62](https://github.com/wangshub/wechat_jump_game/issues/62)
+- 如果你是ios参考一下： [issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和
+[/issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
 
 ## 游戏模式
 
