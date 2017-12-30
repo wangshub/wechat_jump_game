@@ -41,7 +41,7 @@
 ## 依赖安装
 
 ``` bash
-pip install -r requirements.txt
+    pip install -r requirements.txt
 ```
 
 ## 原理说明
