@@ -46,7 +46,7 @@
 - Python 2.7
 - Android 手机
 - Adb 驱动
-- Python Matplot绘图
+- Python Matplotlib绘图
 
 如果你是`iOS`，请参考下面的配置：
 - 使用真机调试wda，参考iOS 真机如何安装 [WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)
@@ -69,7 +69,7 @@
     adb pull /sdcard/1.png .
 ```
 
-3. 用matplot显示截图；
+3. 用matplotlib显示截图；
 4. 用鼠标点击起始点和目标位置，计算像素距离；
 5. 根据像素距离，计算按压时间；
 6. 用Adb工具点击屏幕蓄力一跳；
