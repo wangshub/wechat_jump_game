@@ -29,7 +29,10 @@
 - Adb 驱动
 - Python Matplot绘图
 
-如果你是`ios`，请参考下面的配置：在真机调试wda，参考iOS 真机如何安装 [WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)，用这个python的客户端[openatx/facebook-wda](https://github.com/openatx/facebook-wda)，把adb的调用替换成wda的api就好了
+如果你是`iOS`，请参考下面的配置：
+- 使用真机调试wda，参考iOS 真机如何安装 [WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)
+- 安装[openatx/facebook-wda](https://github.com/openatx/facebook-wda)
+- Python 3
 
 ## 依赖安装
 
@@ -56,6 +59,13 @@ pip install -r requirements.txt
     adb shell input swipe x y x y time
 ```
 
+如果你是 `iOS`：
+1. 运行安装好的 `WebDriverAgentRunner`
+2. 将手机点击到《跳一跳》小程序界面
+3. `python3 wechat_jump_iOS_py3.py`
+4. 依次点击起始位置和目标位置，实现蓄力一跳
+5. 打开 `python3 wechat_jump_iOS_py3.py`，根据蓄力一跳的精准情况更改其中的 `time_coefficient`，直到获得最佳取值
+
 ## 实验结果
 
 ![](https://ws1.sinaimg.cn/large/c3a916a7gy1fmxel5dkxvj20u01hcmzx.jpg)
@@ -64,3 +74,4 @@ pip install -r requirements.txt
 
 可以对拉上来的图片进行颜色分割，识别小人和目标中心店，这样就不需要手动点击自动弹跳。
 事实证明，机器人比人更会玩儿游戏。
+
