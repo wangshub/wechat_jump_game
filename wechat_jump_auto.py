@@ -2,7 +2,7 @@
 import os
 import time
 import math
-from PIL import Image
+from PIL import Image, ImageDraw
 import random
 
 
@@ -19,9 +19,10 @@ import random
 # 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 
 
+# TODO: 解决定位偏移的问题
+# TODO: 看看两个块中心到中轴距离是否相同，如果是的话靠这个来判断一下当前超前还是落后，便于矫正
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
-# TODO: 看看两个块中心到中轴距离是否相同，如果是的话靠这个来判断一下当前超前还是落后，便于矫正
 
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
@@ -34,6 +35,11 @@ piece_body_width = 70       # 棋子的宽度，比截图中量到的稍微大�
 sample_board_x1, sample_board_y1, sample_board_x2, sample_board_y2 = 813, 1122, 310, 813
 
 
+screenshot_backup_dir = 'screenshot_backups/'
+if not os.path.isdir(screenshot_backup_dir):
+        os.mkdir(screenshot_backup_dir)
+
+
 def pull_screenshot():
     os.system('adb shell screencap -p /sdcard/1.png')
     os.system('adb pull /sdcard/1.png .')
@@ -41,10 +47,16 @@ def pull_screenshot():
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
-    dir_path = 'screenshot_backups/'
-    if not os.path.isdir(dir_path):
-        os.mkdir(dir_path)
-    os.system('cp 1.png {}{}.png'.format(dir_path, ts))
+    if not os.path.isdir(screenshot_backup_dir):
+        os.mkdir(screenshot_backup_dir)
+    os.system('cp 1.png {}{}.png'.format(screenshot_backup_dir, ts))
+
+
+def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
+    draw = ImageDraw.Draw(im)
+    draw.line((piece_x, piece_y) + (board_x, board_y), fill=128)
+    del draw
+    im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
 
 
 def jump(distance):
@@ -101,7 +113,7 @@ def find_piece_and_board(im):
         if board_x_sum:
             board_x = board_x_sum / board_x_c
     # 按实际的角度来算，找到接近下一个 board 中心的坐标
-    board_y = piece_y + abs(board_x - piece_x) * abs(sample_board_y1 - sample_board_y2) / abs(sample_board_x1 - sample_board_x2)
+    board_y = piece_y - abs(board_x - piece_x) * abs(sample_board_y1 - sample_board_y2) / abs(sample_board_x1 - sample_board_x2)
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
@@ -118,6 +130,7 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         jump(math.sqrt(abs(board_x - piece_x) ** 2 + abs(board_y - piece_y) ** 2))
+        save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(random.uniform(2, 3))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
