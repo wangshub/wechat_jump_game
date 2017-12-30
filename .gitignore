@@ -1,4 +1,5 @@
 test/
 pic/
 screenshot_backups/
-1.png
+autojump.png
+.DS_Store
