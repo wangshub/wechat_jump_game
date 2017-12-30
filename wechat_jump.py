@@ -1,12 +1,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from PIL import Image
 import math
 import time
 import os
+import cv2
+import datetime
+
+scale = 0.25
+
+template = cv2.imread('character.png')
+template = cv2.resize(template, (0, 0), fx=scale, fy=scale)
+template_size = template.shape[:2]
+
+
+def search(img):
+    result = cv2.matchTemplate(img, template, cv2.TM_SQDIFF)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+
+    cv2.rectangle(img, (min_loc[0], min_loc[1]), (min_loc[0] + template_size[1], min_loc[1] + template_size[0]), (255, 0, 0), 4)
+
+    return img, min_loc[0] + template_size[1] / 2, min_loc[1] +  template_size[0]
 
 def pull_screenshot():
+    filename = datetime.datetime.now().strftime("%H%M%S") + '.png'
+    os.system('mv 1.png {}'.format(filename))
     os.system('adb shell screencap -p /sdcard/1.png')
     os.system('adb pull /sdcard/1.png .')
 
@@ -17,27 +35,31 @@ def jump(distance):
     print cmd
     os.system(cmd)
 
+def update_data():
+    global src_x, src_y
+
+    img = cv2.imread('1.png')
+    img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
+
+    img, src_x, src_y = search(img)
+    return img
+
+
 fig = plt.figure()
 index = 0
-cor = [0, 0]
 
-pull_screenshot()
-img = np.array(Image.open('1.png'))
+# pull_screenshot()
+img = update_data()
 
 update = True 
-click_count = 0
-cor = []
-
-def update_data():
-    return np.array(Image.open('1.png'))
-
 im = plt.imshow(img, animated=True)
 
 
 def updatefig(*args):
     global update
+
     if update:
-        time.sleep(1.5)
+        time.sleep(1)
         pull_screenshot()
         im.set_array(update_data())
         update = False
@@ -45,34 +67,17 @@ def updatefig(*args):
 
 def onClick(event):      
     global update    
-    global ix, iy
-    global click_count
-    global cor
-
-    # next screenshot
+    global src_x, src_y
     
-    ix, iy = event.xdata, event.ydata
-    coords = []
-    coords.append((ix, iy))
-    print 'now = ', coords
-    cor.append(coords)
-    
+    dst_x, dst_y = event.xdata, event.ydata
 
-    click_count += 1
-    if click_count > 1:
-        click_count = 0
-        
-        cor1 = cor.pop()
-        cor2 = cor.pop()
-
-        distance = (cor1[0][0] - cor2[0][0])**2 + (cor1[0][1] - cor2[0][1])**2 
-        distance = distance ** 0.5
-        print 'distance = ', distance
-        jump(distance)
-        update = True
-        
+    distance = (dst_x - src_x)**2 + (dst_y - src_y)**2 
+    distance = (distance ** 0.5) / scale
+    print 'distance = ', distance
+    jump(distance)
+    update = True
 
 
 fig.canvas.mpl_connect('button_press_event', onClick)
-ani = animation.FuncAnimation(fig, updatefig, interval=50, blit=True)
+ani = animation.FuncAnimation(fig, updatefig, interval=5, blit=True)
 plt.show()
