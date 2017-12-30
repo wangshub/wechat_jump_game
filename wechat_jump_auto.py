@@ -40,9 +40,6 @@ swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压�
 piece_base_height_1_2 = 25   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = 80       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
-# 下面的 (353, 859) 和 (772, 1100) 是游戏截图里的两个台子的中点坐标，主要用来算角度，可能要调节
-sample_board_x1, sample_board_y1, sample_board_x2, sample_board_y2 = 353, 859, 772, 1100
-
 
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
@@ -60,11 +57,20 @@ def backup_screenshot(ts):
         os.mkdir(screenshot_backup_dir)
     shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
+
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
+    # 对debug图片加上详细的注释
     draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
+    draw.line((piece_x, 0, piece_x, im.size[1]), fill=(255, 0, 0))
+    draw.line((0, piece_y, im.size[0], piece_y), fill=(255, 0, 0))
+    draw.line((board_x, 0, board_x, im.size[1]), fill=(0, 0, 255))
+    draw.line((0, board_y, im.size[0], board_y), fill=(0, 0, 255))
+    draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
+    draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
     im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
+
 
 def set_button_position(im):
     # 将swipe设置为 `再来一局` 按钮的位置
@@ -73,6 +79,7 @@ def set_button_position(im):
     left = w / 2
     top = 1003 * (h / 1280.0) + 10
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
+
 
 def jump(distance):
     press_time = distance * press_coefficient
@@ -141,8 +148,8 @@ def find_piece_and_board(im):
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
-    # 按实际的角度来算，找到接近下一个 board 中心的坐标
-    board_y = piece_y - abs(board_x - piece_x) * abs(sample_board_y1 - sample_board_y2) / abs(sample_board_x1 - sample_board_x2)
+    # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该是30°,值应该是tan 30°, math.sqrt(3) / 3
+    board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
