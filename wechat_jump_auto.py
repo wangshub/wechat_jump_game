@@ -60,7 +60,7 @@ def backup_screenshot(ts):
         os.mkdir(screenshot_backup_dir)
     shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
-def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
+def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
     draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
     del draw
@@ -160,7 +160,7 @@ def main():
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
-        save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
+        save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
