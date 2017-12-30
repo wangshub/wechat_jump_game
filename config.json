@@ -2,5 +2,8 @@
     "under_game_score_y": 300, 
     "press_coefficient": 1.392, 
     "piece_base_height_1_2": 20, 
-    "piece_body_width": 70
+    "piece_body_width": 70,
+    "540*960":{
+        "press_coefficient":"2.732"
+    }
 }
