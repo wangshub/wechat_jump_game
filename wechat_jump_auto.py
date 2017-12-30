@@ -30,8 +30,8 @@ import random
 under_game_score_y = 300     # 截图中刚好低于分数显示区域的 Y 坐标，300 是 1920x1080 的值，2K 屏、全面屏请根据实际情况修改
 press_coefficient = 1.392    # 长按的时间系数，请自己根据实际情况调节
 swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
-piece_base_height_1_2 = 20   # 二分之一的棋子底座高度，可能要调节
-piece_body_width = 70       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
+piece_base_height_1_2 = 25   # 二分之一的棋子底座高度，可能要调节
+piece_body_width = 80       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 # 下面的 (353, 859) 和 (772, 1100) 是游戏截图里的两个台子的中点坐标，主要用来算角度，可能要调节
 sample_board_x1, sample_board_y1, sample_board_x2, sample_board_y2 = 353, 859, 772, 1100
 
