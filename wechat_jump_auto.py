@@ -28,7 +28,6 @@ def jump(distance):
     print(cmd)
     os.system(cmd)
 
-
 def find_piece_and_board(im):
     w, h = im.size
 
