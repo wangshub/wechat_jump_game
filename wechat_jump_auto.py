@@ -9,6 +9,9 @@ from PIL import Image, ImageDraw
 import random
 import json
 import re
+import cv2
+import numpy as np
+import datetime
 
 
 # === 思路 ===
@@ -55,6 +58,8 @@ def _get_screen_size():
 
 
 config = open_accordant_config()
+# 获取得分需要的信息
+number_list = [(cv2.imread("./train_data/number/%d.png" % i, 0)) for i in range(0, 10)]
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 under_game_score_y = config['under_game_score_y']
@@ -74,15 +79,24 @@ screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
 
+def del_screenshot(ts):
+    if os.path.isfile('{}{}_d.png'.format(screenshot_backup_dir, ts)):
+        os.remove('{}{}_d.png'.format(screenshot_backup_dir, ts))
+        os.remove('{}{}_d1.png'.format(screenshot_backup_dir, ts))
+        os.remove('{}{}.png'.format(screenshot_backup_dir, ts))
+
 
 def pull_screenshot():
-    process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-    screenshot = process.stdout.read()
-    if sys.platform == 'win32':
-        screenshot = screenshot.replace(b'\r\n', b'\n')
-    f = open('autojump.png', 'wb')
-    f.write(screenshot)
-    f.close()
+    # 使用线上的代码获取截图会出错
+    # process = subprocess.Popen('adb shell screencap', shell=True, stdout=subprocess.PIPE)
+    # screenshot = process.stdout.read()
+    # if sys.platform == 'win32':
+    #     screenshot = screenshot.replace(b'\r\n', b'\n')
+    # f = open('autojump.png', 'wb')
+    # f.write(screenshot)
+    # f.close()
+    os.system("adb shell screencap -p /sdcard/autojump.png")
+    os.system("adb pull /sdcard/autojump.png .")
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
@@ -128,8 +142,81 @@ def jump(distance):
     print(cmd)
     os.system(cmd)
 
+def get_number(image):
+    # 获取每一位的数字
+    global number_list
+    for item in range(0, 10):
+        res = cv2.matchTemplate(image, number_list[item], cv2.TM_CCOEFF_NORMED)
+        loc = np.where(res >= 0.9)
+        if len(loc[0]) > 0:
+            return item
+    return 0
 
-def find_piece_and_board(im):
+def get_score(image):
+    # 获取当前得分
+    img = cv2.imread(image)
+    number0 = get_number(cv2.cvtColor(img[205:288,444:511], cv2.COLOR_RGB2GRAY))
+    number1 = get_number(cv2.cvtColor(img[205:288,364:431], cv2.COLOR_RGB2GRAY))
+    number2 = get_number(cv2.cvtColor(img[205:288,284:351], cv2.COLOR_RGB2GRAY))
+    number3 = get_number(cv2.cvtColor(img[205:288,204:271], cv2.COLOR_RGB2GRAY))
+    number4 = get_number(cv2.cvtColor(img[205:288,124:191], cv2.COLOR_RGB2GRAY))
+    number_real = [number0, number1, number2, number3, number4]
+    last = 0
+    for i in range(0, 5):
+        if number_real[i] != 0:
+            last = i
+            break
+    number = 0
+    for i in range(4, last - 1, -1):
+        number = number * 10 + number_real[i]
+    return number
+
+def find_piece(image, target, ts):
+    # 获取特殊的位置，即小人的位置和可能的目标点的位置
+    img_rgb = cv2.imread(image)
+    hight = img_rgb.shape[0]
+    min_hight = int(hight/3)
+    img_rgb2 = img_rgb[min_hight:hight-1]
+    img_gray = cv2.cvtColor(img_rgb2, cv2.COLOR_BGR2GRAY)
+    template = cv2.imread(target, 0)
+    w, h = template.shape[::-1]
+    res = cv2.matchTemplate(img_gray, template, cv2.TM_CCOEFF_NORMED)
+    threshold = 1.0
+    threshold_step = 0.1
+    ite_time = 0
+    flag = False
+    last_flag = False
+    while True:
+        loc = np.where(res >= threshold)
+        ite_time += 1
+        if len(loc[0]) == 0:
+            last_flag = False
+            if flag != last_flag:
+                threshold_step *= 0.5
+                flag = last_flag
+            threshold -= threshold_step
+        elif len(loc[0]) > 1:
+            last_flag = True
+            if flag != last_flag:
+                threshold_step *= 0.5
+                flag = last_flag
+            threshold += threshold_step
+        else:
+            break
+        if threshold < 0.7 or ite_time > 3000 or threshold_step < 0.0000000001:
+            return 0, 0
+    # 画出debug信息的图片
+    for pt in zip(*loc[::-1]):
+        cv2.rectangle(img_rgb, (pt[0], pt[1] + min_hight), (pt[0] + w, pt[1] + h + min_hight), (7,249,151), 1)   
+        cv2.circle(img_rgb, (int(pt[0] + w/2), int(pt[1] + h - 25 + min_hight)), 2, (7,249,151), 1)
+    if ts != 0:
+        cv2.imwrite('{}{}_d1.png'.format(screenshot_backup_dir, ts), img_rgb)
+    cv2.destroyAllWindows()
+
+    return loc[1][0]+w/2 + 0.8, (loc[0][0] + h - 25 + min_hight)
+
+
+def find_piece_and_board(im, image2, ts):
     w, h = im.size
 
     piece_x_sum = 0
@@ -140,33 +227,15 @@ def find_piece_and_board(im):
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
     im_pixel=im.load()
-    # 以50px步长，尝试探测scan_start_y
-    for i in range(int(h / 3), int( h*2 /3 ), 50):
-        last_pixel = im_pixel[0,i]
-        for j in range(1, w):
-            pixel=im_pixel[j,i]
-            # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
-            if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
-                scan_start_y = i - 50
-                break
-        if scan_start_y:
-            break
-    print('scan_start_y: ', scan_start_y)
 
-    # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
-    for i in range(scan_start_y, int(h * 2 / 3)):
-        for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
-            pixel = im_pixel[j,i]
-            # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
-            if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
-                piece_x_sum += j
-                piece_x_c += 1
-                piece_y_max = max(i, piece_y_max)
+    piece_x, piece_y = find_piece(image2, "train_data/character3.png", ts)
+    board_x, board_y = find_piece('{}{}_d1.png'.format(screenshot_backup_dir, ts), "train_data/character4.png", ts)
+    if board_x != 0 and board_y < piece_y:
+        print("\033[91m" + "method2" + "\033[0m")
+        return piece_x, piece_y, board_x, board_y
 
-    if not all((piece_x_sum, piece_x_c)):
-        return 0, 0, 0, 0
-    piece_x = piece_x_sum / piece_x_c
-    piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
+    print("\033[93m" + "method1" + "\033[0m")
+    # 如果没有找到小圆点或者找到的小圆点位置明显有问题，就使用原来的方式
 
     for i in range(int(h / 3), int(h * 2 / 3)):
         last_pixel = im_pixel[0, i]
@@ -218,18 +287,26 @@ def check_adb():
 def main():
     dump_device_info()
     check_adb()
+    last_score = 0
+    last_ts = 0
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
+        current_score = get_score("./autojump.png")
+        # 只保留特定分数间隔的debug文件，防止文件过多
+        if (current_score - last_score) not in [1, 2, 3, 6, 11, 17, 31]:
+            del_screenshot(last_ts)
         # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
-        print(ts, piece_x, piece_y, board_x, board_y)
+        # 获取棋子和 board 的位置
+        piece_x, piece_y, board_x, board_y = find_piece_and_board(im, "./autojump.png", ts)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
+        last_score = current_score
+        last_ts = ts
 
 
 if __name__ == '__main__':
