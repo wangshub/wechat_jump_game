@@ -55,12 +55,17 @@ def _get_screen_size():
 config = open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
-under_game_score_y = config['under_game_score_y']     # 截图中刚好低于分数显示区域的 Y 坐标，300 是 1920x1080 的值，2K 屏、全面屏请根据实际情况修改
+under_game_score_y = config['under_game_score_y']
 press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
-swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
+# 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
+if config.get('swipe'):
+    swipe = config['swipe']
+else:
+    swipe = {}
+    swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
 screenshot_backup_dir = 'screenshot_backups/'
@@ -110,7 +115,13 @@ def jump(distance):
     press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {} {} {} {} {}'.format(swipe_x1, swipe_y1, swipe_x2, swipe_y2, press_time)
+    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+        x1=swipe['x1'],
+        y1=swipe['y1'],
+        x2=swipe['x2'],
+        y2=swipe['y2'],
+        duration=press_time
+    )
     print(cmd)
     os.system(cmd)
 
