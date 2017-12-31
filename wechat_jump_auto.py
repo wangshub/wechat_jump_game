@@ -67,7 +67,7 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
+    im.save('{}{}_d.png'.format(screenshot_backup_dir, ts))
 
 
 def set_button_position(im):
@@ -110,7 +110,7 @@ def find_piece_and_board(im):
                 break
         if scan_start_y:
             break
-    print("scan_start_y: ", scan_start_y)
+    print('scan_start_y: ', scan_start_y)
 
     # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
     for i in range(int(h / 3), int(h * 2 / 3)):
@@ -158,7 +158,7 @@ def find_piece_and_board(im):
 def main():
     while True:
         pull_screenshot()
-        im = Image.open("./1.png")
+        im = Image.open('./1.png')
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
