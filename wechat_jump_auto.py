@@ -40,11 +40,7 @@ def open_accordant_config():
             print("Load config file from {}".format(config_file))
             return json.load(f)
     else:
-<<<<<<< HEAD
-        with open('./config/default_config.json', 'r') as f:
-=======
-        with open('{}/config.json'.format(sys.path[0]), 'r') as f:
->>>>>>> b1c0afce55f69e086d29df61428faf88a0c319f0
+        with open('{}/config/default.json'.format(sys.path[0]), 'r') as f:
             print("Load default config")
             return json.load(f)
 
