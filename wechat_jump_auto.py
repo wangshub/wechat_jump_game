@@ -48,8 +48,6 @@ def pull_screenshot():
     f = open('autojump.png', 'wb')
     f.write(screenshot)
     f.close()
-    #os.system('adb shell screencap -p /sdcard/autojump.png')
-    #os.system('adb pull /sdcard/autojump.png .')
 
 
 def set_button_position(im):
