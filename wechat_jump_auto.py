@@ -76,12 +76,8 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-    screenshot = process.stdout.read().replace(b'\r\n', b'\n')
-    f = open('autojump.png', 'wb')
-    f.write(screenshot)
-    f.close()
-
+    os.system('adb shell /system/bin/screencap -p /sdcard/wechat_jump_game.png')
+    os.system('adb pull /sdcard/wechat_jump_game.png ./autojump.png')
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
     if not os.path.isdir(screenshot_backup_dir):
