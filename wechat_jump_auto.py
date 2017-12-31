@@ -31,7 +31,8 @@ import re
 
 def open_accordant_config():
     screen_size = _get_screen_size()
-    config_file = "./config/{screen_size}/config.json".format(
+    config_file = "{path}/config/{screen_size}/config.json".format(
+        path=sys.path[0],
         screen_size=screen_size
     )
     if os.path.exists(config_file):
@@ -39,7 +40,7 @@ def open_accordant_config():
             print("Load config file from {}".format(config_file))
             return json.load(f)
     else:
-        with open('config.json', 'r') as f:
+        with open('{}/config.json'.format(sys.path[0]), 'r') as f:
             print("Load default config")
             return json.load(f)
 
