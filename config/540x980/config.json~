@@ -1,0 +1,42 @@
+{
+    "under_game_score_y": 300, 
+    "press_coefficient": 1.392, 
+    "piece_base_height_1_2": 20, 
+    "piece_body_width": 70,
+    "default":{
+        "under_game_score_y": 300, 
+        "press_coefficient": 1.392, 
+        "piece_base_height_1_2": 20, 
+        "piece_body_width": 70
+    },
+    "540*960":{
+        "under_game_score_y": 300, 
+       "press_coefficient": 2.732, 
+       "piece_base_height_1_2": 20, 
+       "piece_body_width": 70,
+    },
+    "1280*720":{
+        "under_game_score_y": 200, 
+        "press_coefficient": 2.099, 
+        "piece_base_height_1_2": 13, 
+        "piece_body_width": 47
+    },
+    "1920*1080":{
+        "under_game_score_y": 300, 
+        "press_coefficient": 1.392, 
+        "piece_base_height_1_2": 20, 
+        "piece_body_width": 70
+    },
+    "2560*1440":{
+        "under_game_score_y": 300, 
+        "press_coefficient": 1.035, 
+        "piece_base_height_1_2": 28, 
+        "piece_body_width": 110
+    },
+    "S7Edge_config":{
+        "under_game_score_y": 384,
+        "press_coefficient": 1,
+        "piece_base_height_1_2": 95,
+        "piece_body_width": 102
+    },
+}
