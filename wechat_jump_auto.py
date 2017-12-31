@@ -6,6 +6,7 @@ import math
 from PIL import Image, ImageDraw
 import random
 import json
+import re
 
 
 # === 思路 ===
@@ -26,8 +27,32 @@ import json
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
-with open('config.json','r') as f:
-    config = json.load(f)
+
+def open_accordant_config():
+    screen_size = _get_screen_size()
+    config_file = "./config/{screen_size}/config.json".format(
+        screen_size=screen_size
+    )
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            print("Load config file from {}".format(config_file))
+            return json.load(f)
+    else:
+        with open('config.json', 'r') as f:
+            print("Load default config")
+            return json.load(f)
+
+
+def _get_screen_size():
+    size_str = os.popen('adb shell wm size').read()
+    m = re.search('(\d+)x(\d+)', size_str)
+    if m:
+        width = m.group(1)
+        height = m.group(2)
+        return "{height}x{width}".format(height=height, width=width)
+
+
+config = open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 under_game_score_y = config['under_game_score_y']     # 截图中刚好低于分数显示区域的 Y 坐标，300 是 1920x1080 的值，2K 屏、全面屏请根据实际情况修改
