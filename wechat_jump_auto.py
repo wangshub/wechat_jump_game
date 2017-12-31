@@ -195,6 +195,22 @@ def find_piece_and_board(im):
 
     return piece_x, piece_y, board_x, board_y
 
+def distance(board_x, piece_x, board_y, piece_y):
+    distance = math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)
+    tmp = 0
+    if distance < 220:
+        tmp = 38
+    elif distance < 380:
+        tmp = 30
+    elif distance < 480 :
+        tmp = 25
+    elif distance < 515 :
+        tmp = 14
+    elif distance < 580 :
+        tmp = 12
+    elif distance < 635 :
+        tmp = 5
+    return distance + tmp
 
 def dump_device_info():
     size_str = os.popen('adb shell wm size').read()
@@ -224,7 +240,7 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        jump(distance(board_x, piece_x, board_y, piece_y))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
