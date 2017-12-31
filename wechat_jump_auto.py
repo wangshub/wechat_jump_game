@@ -34,6 +34,7 @@ under_game_score_y = config['under_game_score_y']     # 截图中刚好低于分
 press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
+is_debug = config['debug']
 
 swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
 
@@ -47,15 +48,15 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    os.system('adb shell screencap -p /sdcard/1.png')
-    os.system('adb pull /sdcard/1.png .')
+    os.system('adb shell screencap -p /sdcard/autojump.png')
+    os.system('adb pull /sdcard/autojump.png .')
 
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
     if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
-    shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
+    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
@@ -160,15 +161,16 @@ def find_piece_and_board(im):
 def main():
     while True:
         pull_screenshot()
-        im = Image.open("./1.png")
+        im = Image.open("./autojump.png")
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
-        save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
-        backup_screenshot(ts)
+        if is_debug:
+            save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
+            backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 

@@ -1,4 +1,5 @@
 {
+    "debug": true, 
     "under_game_score_y": 300, 
     "press_coefficient": 3.705, 
     "piece_base_height_1_2": 20, 
