@@ -29,6 +29,85 @@ import re
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
+def get_score(im):
+
+    matrix_n = [[[0 for i in range(4)] for i in range(5)]for i in range(4)]
+    
+    im_pixel=im.load()
+
+    #如下三行为荣耀9适配起始位置，1920*1080，offset为取样位置间隔
+    #将数字字符的像素点拆分成5*4的区域，取每个区域中心位置判断是否为某个数字
+
+    num_s_x=132
+    num_s_y=213
+    offset=16
+
+
+    #k定义第k位数字，暂设定为4位数字，如有超过1w分情况可继续添加
+    for k in range(4):
+        for j in range(5):
+            num_y=num_s_y+offset*j
+            S_Pixel=im_pixel[0,num_y]
+
+            for i in range(4):
+                num_x=num_s_x+offset*i+k*offset*5
+                P_Pixel=im_pixel[num_x,num_y]
+                if P_Pixel[0]!=S_Pixel[0] :
+                    matrix_n[k][j][i]=1
+                    #print("X: ",num_x,"Y: ",num_y)
+                    #print("X: ",i,"Y: ",j)
+                        
+    #print("result:",matrix_n)
+                    
+    #如下开始为数字识别算法，比较简单粗暴，耗时比较长，需进一步精简
+                    
+    result_f=0
+    for k in range(4):
+        if matrix_n[k][0][0]==0:
+            break
+        
+        if matrix_n[k][1][1]==1:
+            #print("1")
+            result_f=1+result_f*10
+        else:
+            if matrix_n[k][3][2]==1:
+                #print("4")
+                result_f=4+result_f*10
+            else:
+                if matrix_n[k][3][1]==1:
+                    #print("7")
+                    result_f=7+result_f*10
+                else:     
+                    if matrix_n[k][4][0]==0:
+                        #print("9")
+                        result_f=9+result_f*10
+                    else:
+                        if matrix_n[k][0][3]==0:
+                            #print("6")
+                            result_f=6+result_f*10
+                        else:
+                            if matrix_n[k][2][1]==0:
+                                #print("0")
+                                result_f=0+result_f*10
+                            else:
+                                if matrix_n[k][1][3]==0:
+                                    #print("5")
+                                    result_f=5+result_f*10
+                                else:
+                                    if matrix_n[k][1][0]==0 and matrix_n[k][3][0]==0:
+                                        #print("3")
+                                        result_f=3+result_f*10
+                                    else:
+                                        if matrix_n[k][1][0]==0 and matrix_n[k][3][0]==1:
+                                            #print("2")
+                                            result_f=2+result_f*10
+                                        else:
+                                            #print("8")
+                                            result_f=8+result_f*10
+
+    #print(result_f)
+    return result_f  
+
 def open_accordant_config():
     screen_size = _get_screen_size()
     config_file = "{path}/config/{screen_size}/config.json".format(
@@ -216,11 +295,23 @@ def check_adb():
         sys.exit()
 
 def main():
+    #第一个参数记录为目标积分
+    target_n=sys.argv[1]
+    print("Target: ",target_n)
+    
     dump_device_info()
     check_adb()
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
+
+        #如下代码判断是否已经超分，是则结束程序
+        score_now=get_score(im)
+        print("Scorce:" ,score_now)
+        if score_now>=int(target_n):
+                print("Target Complete! Score now is" ,score_now)
+                break        
+        
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
