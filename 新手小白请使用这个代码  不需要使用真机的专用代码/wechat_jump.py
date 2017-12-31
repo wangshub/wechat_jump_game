@@ -7,8 +7,8 @@ import time
 import os
 
 def pull_screenshot():
-    os.system('adb shell screencap -p /sdcard/1.png')
-    os.system('adb pull /sdcard/1.png .')
+    os.system('adb shell screencap -p /sdcard/autojump.png')
+    os.system('adb pull /sdcard/autojump.png .')
 
 def jump(distance):
     press_time = distance * 2.0
@@ -22,14 +22,14 @@ index = 0
 cor = [0, 0]
 
 pull_screenshot()
-img = np.array(Image.open('1.png'))
+img = np.array(Image.open('autojump.png'))
 
 update = True 
 click_count = 0
 cor = []
 
 def update_data():
-    return np.array(Image.open('1.png'))
+    return np.array(Image.open('autojump.png'))
 
 im = plt.imshow(img, animated=True)
 
