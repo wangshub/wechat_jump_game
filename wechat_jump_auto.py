@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import sys
+import subprocess
 import shutil
 import time
 import math
@@ -74,12 +75,11 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    flag = os.system('adb shell screencap -p /sdcard/autojump.png')
-    if flag == 1:
-        print('请安装ADB并配置环境变量')
-        sys.exit()
-    os.system('adb pull /sdcard/autojump.png .')
-
+    process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
+    screenshot = process.stdout.read().replace(b'\r\n', b'\n')
+    f = open('autojump.png', 'wb')
+    f.write(screenshot)
+    f.close()
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
@@ -204,9 +204,15 @@ def dump_device_info():
             dpi=density_str.strip()
     ))
 
+def check_adb():
+    flag = os.system('adb devices')
+    if flag == 1:
+        print('请安装ADB并配置环境变量')
+        sys.exit()
 
 def main():
     dump_device_info()
+    check_adb()
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
