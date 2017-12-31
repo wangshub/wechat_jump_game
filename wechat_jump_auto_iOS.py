@@ -38,7 +38,16 @@ piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋�
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 time_coefficient = config['press_coefficient']
 
-swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 375, 1055, 375, 1055     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
+# 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
+if config.get('swipe'):
+    swipe = config['swipe']
+else:
+    swipe = {
+        "x1": 320,
+        "y1": 410,
+        "x2": 320,
+        "y2": 410
+    }
 
 c = wda.Client()
 s = c.session()
