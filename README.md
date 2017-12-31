@@ -5,6 +5,8 @@
 
 [github项目地址](https://github.com/wangshub/wechat_jump_game)
 
+QQ群：github微信跳一跳 **314659953**
+
 ### **更新日志：**
 
 > 2017-12-29 ： 增加更新自动化运行脚本，感谢github上的binderclip
