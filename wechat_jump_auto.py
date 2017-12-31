@@ -116,7 +116,7 @@ def find_piece_and_board(im):
     print('scan_start_y: ', scan_start_y)
 
     # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
-    for i in range(int(h / 3), int(h * 2 / 3)):
+    for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
             pixel = im_pixel[j,i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
