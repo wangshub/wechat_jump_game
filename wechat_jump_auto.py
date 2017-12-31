@@ -45,7 +45,7 @@ def open_accordant_config():
 
 def _get_screen_size():
     size_str = os.popen('adb shell wm size').read()
-    m = re.search('(\d+)x(\d+)', size_str)
+    m = re.search(r'(\d+)x(\d+)', size_str)
     if m:
         width = m.group(1)
         height = m.group(2)
@@ -70,7 +70,7 @@ else:
 
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
-        os.mkdir(screenshot_backup_dir)
+    os.mkdir(screenshot_backup_dir)
 
 
 def pull_screenshot():
@@ -136,12 +136,12 @@ def find_piece_and_board(im):
     board_y = 0
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
-    im_pixel=im.load()
+    im_pixel = im.load()
     # 以50px步长，尝试探测scan_start_y
-    for i in range(int(h / 3), int( h*2 /3 ), 50):
-        last_pixel = im_pixel[0,i]
+    for i in range(int(h / 3), int(h*2 / 3), 50):
+        last_pixel = im_pixel[0, i]
         for j in range(1, w):
-            pixel=im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
             if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
                 scan_start_y = i - 50
@@ -153,7 +153,7 @@ def find_piece_and_board(im):
     # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
-            pixel = im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
             if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
                 piece_x_sum += j
@@ -173,7 +173,7 @@ def find_piece_and_board(im):
         board_x_c = 0
 
         for j in range(w):
-            pixel = im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 修掉脑袋比下一个小格子还高的情况的 bug
             if abs(j - piece_x) < piece_body_width:
                 continue
