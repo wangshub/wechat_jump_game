@@ -187,8 +187,26 @@ def find_piece_and_board(im):
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
+            board_color = im_pixel[board_x, i]
+            # 根据横轴，计算纵轴的坐标
+            board_y_sum = 0
+            board_y_c = 0
+            # 一个柱子高度不超过屏幕的六分之一
+            for k in range(i,i+h/6):
+                # 获取当前点的颜色
+                temp_pixel = im_pixel[board_x, k]
+                if temp_pixel[0] == board_color[0] and temp_pixel[1] == board_color[1] and temp_pixel[2] == board_color[2]:
+                    # 如果当前点的颜色和开始点的一样，则这个点是柱子的上表面的一部分
+                    board_y_sum += k
+                    board_y_c += 1
+                # 如果点的颜色和背景色一致，则已经离开了当前柱子
+                if temp_pixel[0] == last_pixel[0] and temp_pixel[1] == last_pixel[1] and temp_pixel[2] == last_pixel[2]:
+                    break
+            board_y = board_y_sum/board_y_c
     # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该是30°,值应该是tan 30°, math.sqrt(3) / 3
-    board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
+    # 这个算法不精确，如果前一步有误差，角度就不是30度，如果还按照30度计算，则会累计误差
+    #board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
+
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
