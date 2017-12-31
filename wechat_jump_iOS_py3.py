@@ -15,7 +15,7 @@ c = wda.Client()
 s = c.session()
 
 def pull_screenshot():
-    c.screenshot('1.png')
+    c.screenshot('autojump.png')
 
 def jump(distance):
     press_time = distance * time_coefficient
@@ -27,14 +27,14 @@ fig = plt.figure()
 index = 0
 cor = [0, 0]
 pull_screenshot()
-img = np.array(Image.open('1.png'))
+img = np.array(Image.open('autojump.png'))
 
 update = True
 click_count = 0
 cor = []
 
 def update_data():
-    return np.array(Image.open('1.png'))
+    return np.array(Image.open('autojump.png'))
 
 im = plt.imshow(img, animated=True)
 
