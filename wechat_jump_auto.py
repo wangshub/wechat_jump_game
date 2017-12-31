@@ -31,7 +31,8 @@ import re
 
 def open_accordant_config():
     screen_size = _get_screen_size()
-    config_file = "./config/{screen_size}/config.json".format(
+    config_file = "{path}/config/{screen_size}/config.json".format(
+        path=sys.path[0],
         screen_size=screen_size
     )
     if os.path.exists(config_file):
@@ -39,7 +40,7 @@ def open_accordant_config():
             print("Load config file from {}".format(config_file))
             return json.load(f)
     else:
-        with open('config.json', 'r') as f:
+        with open('{}/config/default.json'.format(sys.path[0]), 'r') as f:
             print("Load default config")
             return json.load(f)
 
@@ -76,7 +77,9 @@ if not os.path.isdir(screenshot_backup_dir):
 
 def pull_screenshot():
     process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-    screenshot = process.stdout.read().replace(b'\r\n', b'\n')
+    screenshot = process.stdout.read()
+    if sys.platform == 'win32':
+        screenshot = screenshot.replace(b'\r\n', b'\n')
     f = open('autojump.png', 'wb')
     f.write(screenshot)
     f.close()
