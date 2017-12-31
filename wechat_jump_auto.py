@@ -200,11 +200,13 @@ def dump_device_info():
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.model').read()
     density_str = os.popen('adb shell wm density').read()
-    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n=====\
-           \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\n=====".format(
+    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n**********\
+        \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\nOS: {os}\nPython: {python}\n**********".format(
             size=size_str.strip(),
             type=device_str.strip(),
-            dpi=density_str.strip()
+            dpi=density_str.strip(),
+            os=sys.platform,
+            python=sys.version
     ))
 
 def check_adb():
