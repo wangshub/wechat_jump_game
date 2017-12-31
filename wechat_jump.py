@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -24,21 +26,21 @@ def search(img):
 
 def pull_screenshot():
     filename = datetime.datetime.now().strftime("%H%M%S") + '.png'
-    os.system('mv 1.png {}'.format(filename))
-    os.system('adb shell screencap -p /sdcard/1.png')
-    os.system('adb pull /sdcard/1.png .')
+    os.system('mv autojump.png {}'.format(filename))
+    os.system('adb shell screencap -p /sdcard/autojump.png')
+    os.system('adb pull /sdcard/autojump.png .')
 
 def jump(distance):
     press_time = distance * 1.35
     press_time = int(press_time)
     cmd = 'adb shell input swipe 320 410 320 410 ' + str(press_time)
-    print cmd
+    print(cmd)
     os.system(cmd)
 
 def update_data():
     global src_x, src_y
 
-    img = cv2.imread('1.png')
+    img = cv2.imread('autojump.png')
     img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
 
     img, src_x, src_y = search(img)
@@ -73,7 +75,7 @@ def onClick(event):
 
     distance = (dst_x - src_x)**2 + (dst_y - src_y)**2 
     distance = (distance ** 0.5) / scale
-    print 'distance = ', distance
+    print('distance = ', distance)
     jump(distance)
     update = True
 
