@@ -97,10 +97,15 @@
 
 1. 运行安装好的 `WebDriverAgentRunner`
 2. 将手机点击到《跳一跳》小程序界面
-3. `python3 wechat_jump_iOS_py3.py`
-4. 依次点击起始位置和目标位置，实现蓄力一跳
-5. 打开 `python3 wechat_jump_iOS_py3.py`，根据蓄力一跳的精准情况更改其中的 `time_coefficient`，直到获得最佳取值
-
+3. 运行脚本。有两种模式可供选择：手动辅助跳 和 自动连续跳
+    * 手动辅助跳
+        * 命令行运行`python3 wechat_jump_iOS_py3.py`
+        * 依次点击弹出的窗口中的起始位置和目标位置，会自动计算距离后起跳
+        * 根据起跳的精准情况更改 `python3 wechat_jump_iOS_py3.py` 中的 `time_coefficient`参数，直到获得最佳取值
+    * 自动连续跳
+        * 拷贝`./config/iPhone`目录下对应的设备配置文件，重命名并替换到`./config.json`
+        * 命令行运行`python3 wechat_jump_auto_iOS.py`
+        * 会自动计算坐标并连续起跳，根据起跳的精准情况更改 `./config.json` 中的 `press_coefficient`参数，直到获得最佳取值
 
 ## 实验结果
 
