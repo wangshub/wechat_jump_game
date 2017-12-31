@@ -8,74 +8,70 @@ import time
 import os
 
 # 截图距离 * time_coefficient = 按键时长
-# 此数据是 iPhoneX 的推荐系数，可根据手机型号进行调整
-time_coefficient = 0.00125
+# 此数据是 iPhoneSE 的推荐系数，可根据手机型号进行调整
+time_coefficient = 0.00225
 
 c = wda.Client()
 s = c.session()
 
-def pull_screenshot():
-    c.screenshot('autojump.png')
+# 截屏并保存
+def pull_screenshot(filename):
+    c.screenshot(filename)
 
+# 跳
 def jump(distance):
     press_time = distance * time_coefficient
-    press_time = press_time
-    print(press_time)
+    print('按压时间:', press_time)
     s.tap_hold(200,200,press_time)
 
-fig = plt.figure()
-index = 0
-cor = [0, 0]
-pull_screenshot()
-img = np.array(Image.open('autojump.png'))
 
-update = True
-click_count = 0
-cor = []
+# 初始化图像
+def initFigure():
+    pull_screenshot('screen.png')
+    return plt.imshow(np.array(Image.open('screen.png')), animated=True)
 
-def update_data():
-    return np.array(Image.open('autojump.png'))
+# 更新图像
+def updateFigure(*args):
+    global im
 
-im = plt.imshow(img, animated=True)
+    pull_screenshot('screen.png')
+    im.set_array(np.array(Image.open('screen.png')))
 
-def updatefig(*args):
-    global update
-    if update:
-        time.sleep(1)
-        pull_screenshot()
-        im.set_array(update_data())
-        update = False
-    return im,
 
+# 坐标数组
+coords = []
+
+# 鼠标点击事件
 def onClick(event):
-    global update
-    global ix, iy
-    global click_count
-    global cor
+    global coords
 
-    # next screenshot
+    # 提取坐标
     ix, iy = event.xdata, event.ydata
-    coords = []
     coords.append((ix, iy))
-    print('now = ', coords)
-    cor.append(coords)
+    print('now = ', (ix, iy))
 
 
-    click_count += 1
-    if click_count > 1:
-        click_count = 0
+    if len(coords) == 2:
+        cor1 = coords.pop()
+        cor2 = coords.pop()
 
-        cor1 = cor.pop()
-        cor2 = cor.pop()
-
-        distance = (cor1[0][0] - cor2[0][0])**2 + (cor1[0][1] - cor2[0][1])**2
+        distance = (cor1[0] - cor2[0])**2 + (cor1[1] - cor2[1])**2
         distance = distance ** 0.5
         print('distance = ', distance)
         jump(distance)
-        update = True
 
+
+fig = plt.figure()
+
+im = initFigure()
+
+# 绑定事件
 fig.canvas.mpl_connect('button_press_event', onClick)
-ani = animation.FuncAnimation(fig, updatefig, interval=50, blit=True)
+
+# 设置更新函数
+ani = animation.FuncAnimation(fig, updateFigure, interval=50, blit=False)
+
+
 plt.show()
 
 
