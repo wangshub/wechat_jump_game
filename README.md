@@ -9,7 +9,7 @@
 
 > 2017-12-29 ： 增加更新自动化运行脚本，感谢github上的binderclip
 
-> 2017-12-30 : 请将安卓手机的usb调试模式打开，》开发者选项》USB调试
+> 2017-12-30 : 请将安卓手机的usb调试模式打开，设置》更多设置》开发者选项》USB调试，如果出现运行脚本后小人不跳的情况，请检查是否有打开“USB调试（安全模式）”
 
 > 2017-12-30 ： 根据大家反馈：1080屏幕距离系数**1.393**,2k屏幕为**1**
 
@@ -45,8 +45,8 @@
 
 - Python 2.7
 - Android 手机
-- Adb 驱动
-- Python Matplot绘图
+- Adb 驱动，可以到[这里](https://adb.clockworkmod.com/)下载
+- Python Matplotlib绘图
 
 如果你是`iOS`，请参考下面的配置：
 - 使用真机调试wda，参考iOS 真机如何安装 [WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)
@@ -65,17 +65,17 @@
 2. 用Adb 工具获取当前手机截图，并用adb将截图pull上来
 
 ```shell
-    adb shell screencap -p /sdcard/1.png
-    adb pull /sdcard/1.png .
+    adb shell screencap -p /sdcard/autojump.png
+    adb pull /sdcard/autojump.png .
 ```
 
-3. 用matplot显示截图；
+3. 用matplotlib显示截图；
 4. 用鼠标点击起始点和目标位置，计算像素距离；
 5. 根据像素距离，计算按压时间；
 6. 用Adb工具点击屏幕蓄力一跳；
 
 ```shell
-    adb shell input swipe x y x y time
+    adb shell input swipe x y x y time(ms)
 ```
 
 如果你是 `iOS`：
