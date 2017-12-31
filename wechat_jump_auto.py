@@ -12,7 +12,7 @@ import json
 # === 思路 ===
 # 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
 #      根据两个点的距离乘以一个时间系数获得长按的时间
-# 识别棋子：靠棋子的颜色来识别位置，通过截图发现最下面一行大概是一条直线，就从上往下一行一行遍历，
+# 识别棋子：靠棋子的颜色来识别位置，通过截图发现最下面一行大概是一条直线，就从下往上一行一行遍历，
 #         比较颜色（颜色用了一个区间来比较）找到最下面的那一行的所有点，然后求个中点，
 #         求好之后再让 Y 轴坐标减小棋子底盘的一半高度从而得到中心点的坐标
 # 识别棋盘：靠底色和方块的色差来做，从分数之下的位置开始，一行一行扫描，由于圆形的块最顶上是一条线，
@@ -102,21 +102,25 @@ def find_piece_and_board(im):
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
     im_pixel=im.load()
+
     # 以50px步长，尝试探测scan_start_y
-    for i in range(int(h / 3), int( h*2 /3 ), 50):
+    for i in range(int(h*2 / 3), int(h / 3), -50):
         last_pixel = im_pixel[0,i]
         for j in range(1, w):
             pixel=im_pixel[j,i]
             # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
             if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
-                scan_start_y = i - 50
+                scan_start_y = i + 50
                 break
         if scan_start_y:
             break
+
     print('scan_start_y: ', scan_start_y)
 
-    # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
-    for i in range(scan_start_y, int(h * 2 / 3)):
+    # 从scan_start_y开始往上扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
+    for i in range(int(h*2 / 3), int(h / 3), -1):
+        if piece_y_max:
+            break
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
             pixel = im_pixel[j,i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
