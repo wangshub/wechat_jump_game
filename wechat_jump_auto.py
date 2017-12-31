@@ -155,12 +155,13 @@ def get_number(image):
 def get_score(image):
     # 获取当前得分
     img = cv2.imread(image)
-    number0 = get_number(cv2.cvtColor(img[205:288,444:511], cv2.COLOR_RGB2GRAY))
-    number1 = get_number(cv2.cvtColor(img[205:288,364:431], cv2.COLOR_RGB2GRAY))
-    number2 = get_number(cv2.cvtColor(img[205:288,284:351], cv2.COLOR_RGB2GRAY))
-    number3 = get_number(cv2.cvtColor(img[205:288,204:271], cv2.COLOR_RGB2GRAY))
-    number4 = get_number(cv2.cvtColor(img[205:288,124:191], cv2.COLOR_RGB2GRAY))
-    number_real = [number0, number1, number2, number3, number4]
+    global config
+    score_min_y = config['score_min_y']
+    score_max_y = config['score_max_y']
+    score_x1_min = config['score_x1_min']
+    score_x1_max = config['score_x1_max']
+    score_x_diff = config['score_x_diff']
+    number_real = [get_number(cv2.cvtColor(img[score_min_y:score_max_y,score_x1_min + score_x_diff * x:score_x1_max + score_x_diff * x], cv2.COLOR_RGB2GRAY)) for x in range(0, 5)]
     last = 0
     for i in range(0, 5):
         if number_real[i] != 0:
@@ -229,8 +230,11 @@ def find_piece_and_board(im, image2, ts):
     im_pixel=im.load()
 
     piece_x, piece_y = find_piece(image2, "train_data/character3.png", ts)
+    if not os.path.isfile('{}{}_d1.png'.format(screenshot_backup_dir, ts)):
+        print("Error and Exit")
+        sys.exit(-1)
     board_x, board_y = find_piece('{}{}_d1.png'.format(screenshot_backup_dir, ts), "train_data/character4.png", ts)
-    if board_x != 0 and board_y < piece_y:
+    if board_x != 0 and board_y < piece_y and abs(board_x - piece_x) > 100:
         print("\033[91m" + "method2" + "\033[0m")
         return piece_x, piece_y, board_x, board_y
 
@@ -294,7 +298,7 @@ def main():
         im = Image.open('./autojump.png')
         current_score = get_score("./autojump.png")
         # 只保留特定分数间隔的debug文件，防止文件过多
-        if (current_score - last_score) not in [1, 2, 3, 6, 11, 17, 31]:
+        if (current_score - last_score) not in [0, 1, 2, 3, 6, 11, 17, 31]:
             del_screenshot(last_ts)
         # 获取棋子和 board 的位置
         ts = int(time.time())
