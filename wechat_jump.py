@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -32,7 +34,7 @@ def jump(distance):
     press_time = distance * 1.35
     press_time = int(press_time)
     cmd = 'adb shell input swipe 320 410 320 410 ' + str(press_time)
-    print cmd
+    print(cmd)
     os.system(cmd)
 
 def update_data():
@@ -73,7 +75,7 @@ def onClick(event):
 
     distance = (dst_x - src_x)**2 + (dst_y - src_y)**2 
     distance = (distance ** 0.5) / scale
-    print 'distance = ', distance
+    print('distance = ', distance)
     jump(distance)
     update = True
 
