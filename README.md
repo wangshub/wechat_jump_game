@@ -41,10 +41,23 @@
 - Adb 驱动
 - Python Matplot绘图
 
-如果你是`iOS`，请参考下面的配置：
+如果你是 `iOS` + MacOs，请参考下面的配置：
 - 使用真机调试wda，参考iOS 真机如何安装 [WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)
 - 安装[openatx/facebook-wda](https://github.com/openatx/facebook-wda)
 - Python 3
+
+如果你是 `Android` + MacOS，请参考下面的配置：
+- 使用brew进行安装 `brew cask install android-platform-tools`
+- 安装完后插入安卓设备且安卓已打开usb调试模式显示如下表明设备已连接
+
+```
+> adb devices
+List of devices attached
+6934dc33	device
+
+```
+- Python 3
+
 
 ## 依赖安装
 
