@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import sys
 import shutil
 import time
 import math
@@ -26,7 +27,7 @@ import json
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
-with open('config.json','r') as f:
+with open(sys.path[0] + '/config.json','r') as f:
     config = json.load(f)
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
