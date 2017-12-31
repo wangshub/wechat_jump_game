@@ -1,23 +1,25 @@
 # coding: utf-8
 import os
+import sys
 import shutil
 import time
 import math
 from PIL import Image, ImageDraw
 import random
 import json
+import re
 
 
 # === 思路 ===
 # 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
 #      根据两个点的距离乘以一个时间系数获得长按的时间
 # 识别棋子：靠棋子的颜色来识别位置，通过截图发现最下面一行大概是一条直线，就从上往下一行一行遍历，
-#         比较颜色（颜色用了一个区间来比较）找到最下面的那一行的所有点，然后求个中点，
-#         求好之后再让 Y 轴坐标减小棋子底盘的一半高度从而得到中心点的坐标
+#      比较颜色（颜色用了一个区间来比较）找到最下面的那一行的所有点，然后求个中点，
+#      求好之后再让 Y 轴坐标减小棋子底盘的一半高度从而得到中心点的坐标
 # 识别棋盘：靠底色和方块的色差来做，从分数之下的位置开始，一行一行扫描，由于圆形的块最顶上是一条线，
-#          方形的上面大概是一个点，所以就用类似识别棋子的做法多识别了几个点求中点，
-#          这时候得到了块中点的 X 轴坐标，这时候假设现在棋子在当前块的中心，
-#          根据一个通过截图获取的固定的角度来推出中点的 Y 坐标
+#      方形的上面大概是一个点，所以就用类似识别棋子的做法多识别了几个点求中点，
+#      这时候得到了块中点的 X 轴坐标，这时候假设现在棋子在当前块的中心，
+#      根据一个通过截图获取的固定的角度来推出中点的 Y 坐标
 # 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 
 
@@ -26,8 +28,31 @@ import json
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
-with open('config.json','r') as f:
-    config = json.load(f)
+def open_accordant_config():
+    screen_size = _get_screen_size()
+    config_file = "./config/{screen_size}/config.json".format(
+        screen_size=screen_size
+    )
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            print("Load config file from {}".format(config_file))
+            return json.load(f)
+    else:
+        with open('config.json', 'r') as f:
+            print("Load default config")
+            return json.load(f)
+
+
+def _get_screen_size():
+    size_str = os.popen('adb shell wm size').read()
+    m = re.search('(\d+)x(\d+)', size_str)
+    if m:
+        width = m.group(1)
+        height = m.group(2)
+        return "{height}x{width}".format(height=height, width=width)
+
+
+config = open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 resolution = 'default' # 此处使用默认参数，你应该修改为适配你自己机型的参数,请参考config.json文件
@@ -36,10 +61,12 @@ press_coefficient = config[resolution]['press_coefficient']       # 长按的时
 piece_base_height_1_2 = config[resolution]['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = config[resolution]['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
-swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410     # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
-
-piece_base_height_1_2 = 25   # 二分之一的棋子底座高度，可能要调节
-piece_body_width = 80       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
+# 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
+if config.get('swipe'):
+    swipe = config['swipe']
+else:
+    swipe = {}
+    swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
 screenshot_backup_dir = 'screenshot_backups/'
@@ -48,15 +75,18 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    os.system('adb shell screencap -p /sdcard/1.png')
-    os.system('adb pull /sdcard/1.png .')
+    flag = os.system('adb shell screencap -p /sdcard/autojump.png')
+    if flag == 1:
+        print('请安装ADB并配置环境变量')
+        sys.exit()
+    os.system('adb pull /sdcard/autojump.png .')
 
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
     if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
-    shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
+    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
@@ -70,7 +100,7 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save("{}{}_d.png".format(screenshot_backup_dir, ts))
+    im.save('{}{}_d.png'.format(screenshot_backup_dir, ts))
 
 
 def set_button_position(im):
@@ -86,7 +116,13 @@ def jump(distance):
     press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {} {} {} {} {}'.format(swipe_x1, swipe_y1, swipe_x2, swipe_y2, press_time)
+    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+        x1=swipe['x1'],
+        y1=swipe['y1'],
+        x2=swipe['x2'],
+        y2=swipe['y2'],
+        duration=press_time
+    )
     print(cmd)
     os.system(cmd)
 
@@ -113,10 +149,10 @@ def find_piece_and_board(im):
                 break
         if scan_start_y:
             break
-    print("scan_start_y: ", scan_start_y)
+    print('scan_start_y: ', scan_start_y)
 
     # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
-    for i in range(int(h / 3), int(h * 2 / 3)):
+    for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
             pixel = im_pixel[j,i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
@@ -161,7 +197,7 @@ def find_piece_and_board(im):
 def main():
     while True:
         pull_screenshot()
-        im = Image.open("./1.png")
+        im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
