@@ -110,7 +110,7 @@ def set_button_position(im):
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
     left = w / 2
-    top = 1003 * (h / 1280.0) + 10
+    top = 1584 * (h / 1920.0) 
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -119,14 +119,15 @@ def jump(distance):
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe['x1'],
-        y1=swipe['y1'],
-        x2=swipe['x2'],
-        y2=swipe['y2'],
+        x1=swipe_x1,
+        y1=swipe_y1,
+        x2=swipe_x2,
+        y2=swipe_y2,
         duration=press_time
     )
     print(cmd)
     os.system(cmd)
+    return press_time
 
 
 def find_piece_and_board(im):
@@ -189,21 +190,23 @@ def find_piece_and_board(im):
             board_x = board_x_sum / board_x_c
     last_pixel=im_pixel[board_x,i]
     
-    #从菱形或矩形的上顶点开始往下遍历，找到颜色不一样的点为下顶点，取平均为正中间的纵坐标，若表面有花纹则出错
-    for k in range(i, i+500):
+    #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
+    #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
+    for k in range(i+274, i, -1): #274取开局时最大的方块的上下顶点距离
         pixel = im_pixel[board_x,k]
-        if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 2:
+        if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) < 10:
             break
     board_y = int((i+k) / 2)
-    
-    #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码对花纹不兼容的问题
-    #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有花纹，则出错
-    #结合这两步操作准确率大大提高，但仍然有无解的时候
-    for l in range(k, k+200):
+
+    #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码可能存在的判断错误
+    #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
+    for l in range(i, i+200):
         pixel = im_pixel[board_x,l]
-        if abs(pixel[0] - 245) == 0:
+        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
             board_y = l+10
             break
+    
+
         
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
@@ -241,11 +244,12 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        delay = jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
-        time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(delay/1000 + 0.9)   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
 if __name__ == '__main__':
     main()
+    
