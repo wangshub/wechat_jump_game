@@ -187,9 +187,24 @@ def find_piece_and_board(im):
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
-    # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该是30°,值应该是tan 30°, math.sqrt(3) / 3
-    board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
-
+    last_pixel=im_pixel[board_x,i]
+    
+    #从菱形或矩形的上顶点开始往下遍历，找到颜色不一样的点为下顶点，取平均为正中间的纵坐标，若表面有花纹则出错
+    for k in range(i, i+500):
+        pixel = im_pixel[board_x,k]
+        if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 2:
+            break
+    board_y = int((i+k) / 2)
+    
+    #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码对花纹不兼容的问题
+    #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有花纹，则出错
+    #结合这两步操作准确率大大提高，但仍然有无解的时候
+    for l in range(k, k+200):
+        pixel = im_pixel[board_x,l]
+        if abs(pixel[0] - 245) == 0:
+            board_y = l+10
+            break
+        
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
 
