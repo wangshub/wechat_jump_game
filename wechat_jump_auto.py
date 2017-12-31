@@ -45,7 +45,10 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    os.system('adb shell screencap -p /sdcard/1.png')
+    flag = os.system('adb shell screencap -p /sdcard/1.png')
+    if flag == 1:
+        print('请安装ADB并配置环境变量')
+        sys.exit()
     os.system('adb pull /sdcard/1.png .')
 
 
