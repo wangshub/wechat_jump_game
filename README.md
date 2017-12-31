@@ -4,7 +4,9 @@
 
 [github项目地址](https://github.com/wangshub/wechat_jump_game)
 
-QQ群：github微信跳一跳 **314659953**
+* QQ群
+    * github微信跳一跳    **314659953**(已满)
+    * github微信跳一跳(2) **176740763**
 
 ### **更新日志：**
 
