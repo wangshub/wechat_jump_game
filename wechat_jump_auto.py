@@ -150,7 +150,7 @@ def get_number(image):
         loc = np.where(res >= 0.9)
         if len(loc[0]) > 0:
             return item
-    return 0
+    return -1
 
 def get_score(image):
     # 获取当前得分
@@ -161,10 +161,10 @@ def get_score(image):
     score_x1_min = config['score_x1_min']
     score_x1_max = config['score_x1_max']
     score_x_diff = config['score_x_diff']
-    number_real = [get_number(cv2.cvtColor(img[score_min_y:score_max_y,score_x1_min + score_x_diff * x:score_x1_max + score_x_diff * x], cv2.COLOR_RGB2GRAY)) for x in range(0, 5)]
+    number_real = [get_number(cv2.cvtColor(img[score_min_y:score_max_y,score_x1_min + score_x_diff * x:score_x1_max + score_x_diff * x], cv2.COLOR_RGB2GRAY)) for x in range(4, -1, -1)]
     last = 0
     for i in range(0, 5):
-        if number_real[i] != 0:
+        if number_real[i] != -1:
             last = i
             break
     number = 0
@@ -297,6 +297,7 @@ def main():
         pull_screenshot()
         im = Image.open('./autojump.png')
         current_score = get_score("./autojump.png")
+        print(current_score)
         # 只保留特定分数间隔的debug文件，防止文件过多
         if (current_score - last_score) not in [0, 1, 2, 3, 6, 11, 17, 31]:
             del_screenshot(last_ts)
