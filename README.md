@@ -46,7 +46,7 @@
 - Python 2.7
 - Android 手机
 - Adb 驱动
-- Python Matplot绘图
+- Python Matplotlib绘图
 
 如果你是`iOS`，请参考下面的配置：
 - 使用真机调试wda，参考iOS 真机如何安装 [WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)
@@ -65,17 +65,17 @@
 2. 用Adb 工具获取当前手机截图，并用adb将截图pull上来
 
 ```shell
-    adb shell screencap -p /sdcard/1.png
-    adb pull /sdcard/1.png .
+    adb shell screencap -p /sdcard/autojump.png
+    adb pull /sdcard/autojump.png .
 ```
 
-3. 用matplot显示截图；
+3. 用matplotlib显示截图；
 4. 用鼠标点击起始点和目标位置，计算像素距离；
 5. 根据像素距离，计算按压时间；
 6. 用Adb工具点击屏幕蓄力一跳；
 
 ```shell
-    adb shell input swipe x y x y time
+    adb shell input swipe x y x y time(ms)
 ```
 
 如果你是 `iOS`：

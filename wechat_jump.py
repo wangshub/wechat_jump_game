@@ -24,9 +24,9 @@ def search(img):
 
 def pull_screenshot():
     filename = datetime.datetime.now().strftime("%H%M%S") + '.png'
-    os.system('mv 1.png {}'.format(filename))
-    os.system('adb shell screencap -p /sdcard/1.png')
-    os.system('adb pull /sdcard/1.png .')
+    os.system('mv autojump.png {}'.format(filename))
+    os.system('adb shell screencap -p /sdcard/autojump.png')
+    os.system('adb pull /sdcard/autojump.png .')
 
 def jump(distance):
     press_time = distance * 1.35
@@ -38,7 +38,7 @@ def jump(distance):
 def update_data():
     global src_x, src_y
 
-    img = cv2.imread('1.png')
+    img = cv2.imread('autojump.png')
     img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
 
     img, src_x, src_y = search(img)

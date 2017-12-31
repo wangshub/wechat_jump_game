@@ -6,6 +6,7 @@ import math
 from PIL import Image, ImageDraw
 import random
 import json
+import re
 
 
 # === 思路 ===
@@ -26,8 +27,32 @@ import json
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
-with open('config.json', 'r') as f:
-    config = json.load(f)
+
+def open_accordant_config():
+    screen_size = _get_screen_size()
+    config_file = "./config/{screen_size}/config.json".format(
+        screen_size=screen_size
+    )
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            print("Load config file from {}".format(config_file))
+            return json.load(f)
+    else:
+        with open('config.json', 'r') as f:
+            print("Load default config")
+            return json.load(f)
+
+
+def _get_screen_size():
+    size_str = os.popen('adb shell wm size').read()
+    m = re.search('(\d+)x(\d+)', size_str)
+    if m:
+        width = m.group(1)
+        height = m.group(2)
+        return "{height}x{width}".format(height=height, width=width)
+
+
+config = open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 # 截图中刚好低于分数显示区域的 Y 坐标，300 是 1920x1080 的值，2K 屏、全面屏请根据实际情况修改
@@ -38,8 +63,11 @@ press_coefficient = config['press_coefficient']
 piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
+is_debug = config['debug']
+
 # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
 swipe_x1, swipe_y1, swipe_x2, swipe_y2 = 320, 410, 320, 410
+
 
 piece_base_height_1_2 = 25   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = 80       # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
@@ -51,15 +79,15 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    os.system('adb shell screencap -p /sdcard/1.png')
-    os.system('adb pull /sdcard/1.png .')
+    os.system('adb shell screencap -p /sdcard/autojump.png')
+    os.system('adb pull /sdcard/autojump.png .')
 
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
     if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
-    shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
+    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
@@ -92,7 +120,7 @@ def set_button_position(im):
 
 
 def jump(distance):
-    press_time = distance * press_coefficient
+    press_time = math.pow(distance,0.85) * press_coefficient
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
@@ -182,15 +210,16 @@ def find_piece_and_board(im):
 def main():
     while True:
         pull_screenshot()
-        im = Image.open("./1.png")
+        im = Image.open("./autojump.png")
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
-        save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
-        backup_screenshot(ts)
+        if is_debug:
+            save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
+            backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
