@@ -47,17 +47,13 @@
 - Python 3
 
 如果你是 `Android` + MacOS，请参考下面的配置：
+- Python 3
 - 使用brew进行安装 `brew cask install android-platform-tools`
-- 安装完后插入安卓设备且安卓已打开usb调试模式显示如下表明设备已连接
-
+- 安装完后插入安卓设备且安卓已打开usb调试模式，终端输入 `adb devices` ,显示如下表明设备已连接
 ```
-> adb devices
 List of devices attached
 6934dc33	device
-
 ```
-- Python 3
-
 
 ## 依赖安装
 
