@@ -193,7 +193,20 @@ def find_piece_and_board(im):
     return piece_x, piece_y, board_x, board_y
 
 
+def dump_device_info():
+    size_str = os.popen('adb shell wm size').read()
+    device_str = os.popen('adb shell getprop ro.product.model').read()
+    density_str = os.popen('adb shell wm density').read()
+    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n=====\
+           \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\n=====".format(
+            size=size_str.strip(),
+            type=device_str.strip(),
+            dpi=density_str.strip()
+    ))
+
+
 def main():
+    dump_device_info()
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
