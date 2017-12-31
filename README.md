@@ -1,10 +1,9 @@
 # 教你用Python来玩微信跳一跳
 
-> 2017年12月28日下午，微信发布了 6.6.1 版本，加入了「小游戏」功能，并提供了官方 demo「跳一跳」。
 
 [https://wangshub.github.io](https://wangshub.github.io)
 
-[项目地址](https://github.com/wangshub/wechat_jump_game)
+[github项目地址](https://github.com/wangshub/wechat_jump_game)
 
 ### **更新日志：**
 
@@ -15,7 +14,23 @@
 > 2017-12-30 ： 根据大家反馈：1080屏幕距离系数**1.393**,2k屏幕为**1**
 
 
+
+### 相关问题
+
+请先查阅一下issue区
+
+- 参数出错请在这里提交：[issues/62](https://github.com/wangshub/wechat_jump_game/issues/62)
+- 如果你是ios参考一下： [issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和
+[/issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
+- 如果你想自动运行：请运行`wechat_jump_auto.py`，记得修改`config.json`参数
+- 如果你是1280x720屏幕分辨率：请运行`wechat_jump_auto_1280_720.py`
+- 如果你是ios，请运行：`wechat_jump_iOS_py3.py`
+- 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到*.py同级目录;
+- 注意：别刷太高，已经有同学遇到分数清零的情况了[164](https://github.com/wangshub/wechat_jump_game/issues/164)
+
 ## 游戏模式
+
+> 2017年12月28日下午，微信发布了 6.6.1 版本，加入了「小游戏」功能，并提供了官方 demo「跳一跳」。
 
 这是一个 2.5D 插画风格的益智游戏，玩家可以通过按压屏幕时间的长短来控制这个「小人」跳跃的距离。可能刚开始上手的时候，因为时间距离之间的关系把握不恰当，只能跳出几个就掉到了台子下面。
 玩法类似于《flappy bird》
@@ -41,7 +56,7 @@
 ## 依赖安装
 
 ``` bash
-pip install -r requirements.txt
+    pip install -r requirements.txt
 ```
 
 ## 原理说明
