@@ -11,7 +11,7 @@ QQ群：github微信跳一跳 **314659953**
 * 2017-12-29 ：
   * 增加更新自动化运行脚本，感谢github上的 [@binderclip](https://github.com/binderclip)
 
-* 2017-12-30 : 
+* 2017-12-30 :
   * 请将安卓手机的usb调试模式打开，设置》更多设置》开发者选项》USB调试，如果出现运行脚本后小人不跳的情况，请检查是否有打开“USB调试（安全模式）”
   * 根据大家反馈：1080屏幕距离系数**1.393**，2k屏幕为**1**
   * 添加部分机型配置文件，可直接复制使用
@@ -26,11 +26,10 @@ QQ群：github微信跳一跳 **314659953**
 - 如果你是ios参考一下： [issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和
 [/issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
 - 如果你想自动运行：请运行`wechat_jump_auto.py`，记得修改`config.json`参数
-- 如果你是1280x720屏幕分辨率：请运行`wechat_jump_auto_1280_720.py`
 - 如果你是ios，请运行：`wechat_jump_iOS_py3.py`
 - 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到*.py同级目录;
 - 注意：别刷太高，已经有同学遇到分数清零的情况了[164](https://github.com/wangshub/wechat_jump_game/issues/164)
-- 如果有找不到`./1.png`图片的错误，请查阅[194](https://github.com/wangshub/wechat_jump_game/issues/194)
+- 如果有找不到`./autojump.png`图片的错误，请查阅[194](https://github.com/wangshub/wechat_jump_game/issues/194)
 
 ## 游戏模式
 
@@ -105,7 +104,7 @@ QQ群：github微信跳一跳 **314659953**
 
 ![](https://ws1.sinaimg.cn/large/c3a916a7gy1fmxel5dkxvj20u01hcmzx.jpg)
 
-## TODO 
+## TODO
 
 - [x] 可以对拉上来的图片进行颜色分割，识别小人和目标中心，这样就不需要手动点击自动弹跳。
 

@@ -74,18 +74,18 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    flag = os.system('adb shell screencap -p /sdcard/1.png')
+    flag = os.system('adb shell screencap -p /sdcard/autojump.png')
     if flag == 1:
         print('请安装ADB并配置环境变量')
         sys.exit()
-    os.system('adb pull /sdcard/1.png .')
+    os.system('adb pull /sdcard/autojump.png .')
 
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
     if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
-    shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
+    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
@@ -196,7 +196,7 @@ def find_piece_and_board(im):
 def main():
     while True:
         pull_screenshot()
-        im = Image.open('./1.png')
+        im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
