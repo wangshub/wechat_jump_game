@@ -228,7 +228,7 @@ def check_screenshot():
     pull_screenshot()
     try:
         im = Image.open('./autojump.png')
-    except IOError:
+    except:
         screenshot_way += 1
         check_screenshot()
 
