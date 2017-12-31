@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import sys
+import subprocess
 import shutil
 import time
 import math
@@ -30,7 +31,8 @@ import re
 
 def open_accordant_config():
     screen_size = _get_screen_size()
-    config_file = "./config/{screen_size}/config.json".format(
+    config_file = "{path}/config/{screen_size}/config.json".format(
+        path=sys.path[0],
         screen_size=screen_size
     )
     if os.path.exists(config_file):
@@ -38,7 +40,7 @@ def open_accordant_config():
             print("Load config file from {}".format(config_file))
             return json.load(f)
     else:
-        with open('config.json', 'r') as f:
+        with open('{}/config/default.json'.format(sys.path[0]), 'r') as f:
             print("Load default config")
             return json.load(f)
 
@@ -75,12 +77,13 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    flag = os.system('adb shell screencap -p /sdcard/autojump.png')
-    if flag == 1:
-        print('请安装ADB并配置环境变量')
-        sys.exit()
-    os.system('adb pull /sdcard/autojump.png .')
-
+    process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
+    screenshot = process.stdout.read()
+    if sys.platform == 'win32':
+        screenshot = screenshot.replace(b'\r\n', b'\n')
+    f = open('autojump.png', 'wb')
+    f.write(screenshot)
+    f.close()
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
@@ -194,7 +197,26 @@ def find_piece_and_board(im):
     return piece_x, piece_y, board_x, board_y
 
 
+def dump_device_info():
+    size_str = os.popen('adb shell wm size').read()
+    device_str = os.popen('adb shell getprop ro.product.model').read()
+    density_str = os.popen('adb shell wm density').read()
+    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n=====\
+           \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\n=====".format(
+            size=size_str.strip(),
+            type=device_str.strip(),
+            dpi=density_str.strip()
+    ))
+
+def check_adb():
+    flag = os.system('adb devices')
+    if flag == 1:
+        print('请安装ADB并配置环境变量')
+        sys.exit()
+
 def main():
+    dump_device_info()
+    check_adb()
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')

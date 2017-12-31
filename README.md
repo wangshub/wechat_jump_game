@@ -4,7 +4,9 @@
 
 [github项目地址](https://github.com/wangshub/wechat_jump_game)
 
-QQ群：github微信跳一跳 **314659953**
+* QQ群
+    * github微信跳一跳    **314659953**(已满)
+    * github微信跳一跳(2) **176740763**
 
 ### **更新日志：**
 
@@ -25,9 +27,9 @@ QQ群：github微信跳一跳 **314659953**
 - 参数出错请在这里提交：[issues/62](https://github.com/wangshub/wechat_jump_game/issues/62)
 - 如果你是ios参考一下： [issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和
 [/issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
-- 如果你想自动运行：请运行`wechat_jump_auto.py`，记得修改`config.json`参数
+- 如果你想自动运行：请运行`wechat_jump_auto.py`，记得修改`/config/default.json`参数（这个是默认的配置）
 - 如果你是ios，请运行：`wechat_jump_iOS_py3.py`
-- 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到*.py同级目录;
+- 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到*.py同级目录;（如果屏幕分辨率能成功探测，会直接调用config目录的配置，不需要复制）
 - 注意：别刷太高，已经有同学遇到分数清零的情况了[164](https://github.com/wangshub/wechat_jump_game/issues/164)
 - 如果有找不到`./autojump.png`图片的错误，请查阅[194](https://github.com/wangshub/wechat_jump_game/issues/194)
 
