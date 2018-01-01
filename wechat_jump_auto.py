@@ -47,6 +47,9 @@ def open_accordant_config():
 
 def _get_screen_size():
     size_str = os.popen('adb shell wm size').read()
+    if not size_str:
+        print('请安装ADB及驱动并配置环境变量')
+        sys.exit()
     m = re.search('(\d+)x(\d+)', size_str)
     if m:
         width = m.group(1)
@@ -331,12 +334,6 @@ def dump_device_info():
     ))
 
 
-def check_adb():
-    flag = os.system('adb devices')
-    if flag == 1:
-        print('请安装ADB并配置环境变量')
-        sys.exit()
-
 def check_screenshot():
     global screenshot_way
     if os.path.isfile('autojump.png'):
@@ -346,7 +343,7 @@ def check_screenshot():
         sys.exit()
     pull_screenshot()
     try:
-        Image.open('./autojump.png')
+        Image.open('./autojump.png').load()
         print('采用方式{}获取截图'.format(screenshot_way))
     except:
         screenshot_way -= 1
@@ -360,7 +357,6 @@ def main():
     print(r, g, b)
 
     dump_device_info()
-    check_adb()
     check_screenshot()
     while True:
         pull_screenshot()
