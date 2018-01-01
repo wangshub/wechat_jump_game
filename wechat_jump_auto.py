@@ -199,7 +199,7 @@ def find_piece_and_board(im):
         board_x_sum = 0
         board_x_c = 0
 
-        for j in range(board_x_start, board_x_end):
+        for j in range(int(board_x_start), int(board_x_end)):
             pixel = im_pixel[j,i]
             # 修掉脑袋比下一个小格子还高的情况的 bug
             if abs(j - piece_x) < piece_body_width:
