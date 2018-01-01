@@ -32,6 +32,7 @@
 - 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到 *.py 同级目录（如果屏幕分辨率能成功探测，会直接调用 config 目录的配置，不需要复制）
 - 注意：别刷太高，已经有同学遇到分数清零的情况了[164](https://github.com/wangshub/wechat_jump_game/issues/164)
 - 如果有找不到`./autojump.png`图片的错误，请查阅[194](https://github.com/wangshub/wechat_jump_game/issues/194)
+- 小白用户可以参考一个B站UP主的视频教程 [【微信跳一跳】教你如何不用双手还能霸占排行榜第一名](https://www.bilibili.com/video/av17796840/?redirectFrom=h5)
 
 ## 游戏模式
 
@@ -143,3 +144,4 @@ List of devices attached
 - [x] 可以对拉上来的图片进行颜色分割，识别小人和目标中心，这样就不需要手动点击自动弹跳。
 
 > 事实证明，机器人比人更会玩儿游戏。
+
