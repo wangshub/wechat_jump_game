@@ -91,6 +91,8 @@ List of devices attached
 - 安装 [ADB](https://adb.clockworkmod.com/) 后，请在 环境变量 里将 adb 的安装路径保存到 PATH 变量里，确保 `adb` 命令可以被识别到。
 - 同 `Android` + MacOS 测试连接
 
+**关于Win+Android的adb调试添加路径等问题，可以尝试使用Tools文件夹中adb文件夹进行调试，详见adb中readme文件**
+
 ## 依赖安装
 
 ``` bash
