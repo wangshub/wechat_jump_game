@@ -265,6 +265,15 @@ def check_screenshot():
         screenshot_way -= 1
         check_screenshot()
 
+def gettmp(distance):
+    tmp = 0
+    if distance < 600:
+        tmp = 15 + (600 - distance) / 100 * 5
+        if tmp > 25:
+            tmp = 25
+
+    return tmp
+
 def main():
 
     dump_device_info()
@@ -278,7 +287,10 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+	distance = math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)
+        tmp = gettmp(distance)
+        distance = distance + tmp
+        jump(distance)
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(1)   # 为了保证截图的时候应落稳了，多延迟一会儿
