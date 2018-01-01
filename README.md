@@ -29,7 +29,6 @@
 [/issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
 - [iOS 苹果手机操作步骤](#ios-%E6%89%8B%E6%9C%BA%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
 - [Android 安卓手机操作步骤](#%E5%AE%89%E5%8D%93%E6%89%8B%E6%9C%BA%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
-- 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到 *.py 同级目录（如果屏幕分辨率能成功探测，会直接调用 config 目录的配置，不需要复制）
 - 注意：别刷太高，已经有同学遇到分数清零的情况了[164](https://github.com/wangshub/wechat_jump_game/issues/164)
 - 如果有找不到`./autojump.png`图片的错误，请查阅[194](https://github.com/wangshub/wechat_jump_game/issues/194)
 
@@ -100,7 +99,7 @@ List of devices attached
 - 电脑与手机 USB 线连接，确保执行`adb devices`可以找到设备 ID
 - 界面转至微信跳一跳游戏，点击开始游戏
 - 运行`python wechat_jump_auto.py`，如果手机界面显示 USB 授权，请点击确认
-- 根据设备情况配置`/config/default.json`参数（这个是默认的配置）
+- 请按照你的手机分辨率从`./config/`文件夹找到相应的配置，拷贝到 *.py 同级目录`./config.json`（如果屏幕分辨率能成功探测，会直接调用 config 目录的配置，不需要复制）
 
 
 ## iOS 手机操作步骤
