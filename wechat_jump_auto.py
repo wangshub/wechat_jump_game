@@ -211,6 +211,15 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         i = input(prompt)
 
 
+def getTmp(distance):
+    tmp = 0
+    if distance < 600:
+        tmp = 15 + (600 - distance) / 100 * 5
+        if tmp > 25:
+            tmp = 25
+
+    return tmp
+
 def main():
     """
     主函数
@@ -235,7 +244,11 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        distance = math.sqrt((board_x - piece_x) ** 2 +
+                             (board_y - piece_y) ** 2)
+        tmp = getTmp(distance)
+        distance = distance + tmp
+        jump(distance)
         if DEBUG_SWITCH:
             debug.save_debug_screenshot(ts, im, piece_x,
                                         piece_y, board_x, board_y)
