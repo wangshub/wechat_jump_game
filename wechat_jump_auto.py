@@ -294,7 +294,7 @@ def find_piece_and_board(im):
                 if (abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2])
                     > 10) and (abs(pixel[0] - r) + abs(pixel[1] - g) + abs(pixel[2] - b) > 10):
                     if right_value == j:
-                        right_count = left_count + 1
+                        right_count = right_count + 1
                     else:
                         right_value = j
                         right_count = 1
