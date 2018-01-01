@@ -6,7 +6,8 @@
 
 * QQ 群
     * github微信跳一跳    **314659953**(已满)
-    * github微信跳一跳(2) **176740763**
+    * github微信跳一跳(2) **176740763**（满）
+    * 跳一跳 **89213434**
 
 ### **更新日志：**
 
@@ -25,13 +26,13 @@
 > 请先查阅一下 issue 区
 
 - 参数出错请在这里提交：[issues/62](https://github.com/wangshub/wechat_jump_game/issues/62)
-- 如果你是 iOS 参考一下：[issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和
+- iOS 相关问题：[issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和
 [/issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
-- 如果你想自动运行：请运行`wechat_jump_auto.py`，记得修改`/config/default.json`参数（这个是默认的配置）
-- 如果你是 iOS，请运行：`wechat_jump_iOS_py3.py`
-- 更新了一些分辨率参数配置，请按照你的手机分辨率从`config/`文件夹找到相应的配置，拷贝到 *.py 同级目录（如果屏幕分辨率能成功探测，会直接调用 config 目录的配置，不需要复制）
+- [iOS 苹果手机操作步骤](#ios-%E6%89%8B%E6%9C%BA%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
+- [Android 安卓手机操作步骤](#%E5%AE%89%E5%8D%93%E6%89%8B%E6%9C%BA%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
 - 注意：别刷太高，已经有同学遇到分数清零的情况了[164](https://github.com/wangshub/wechat_jump_game/issues/164)
 - 如果有找不到`./autojump.png`图片的错误，请查阅[194](https://github.com/wangshub/wechat_jump_game/issues/194)
+- 小白用户可以参考一个B站UP主的视频教程 [【微信跳一跳】教你如何不用双手还能霸占排行榜第一名](https://www.bilibili.com/video/av17796840/?redirectFrom=h5)
 
 ## 游戏模式
 
@@ -45,6 +46,24 @@
 **如果能精确测量出起始和目标点之间测距离，就可以估计按压的时间来精确跳跃？所以花 2 个小时写了一个 Python 脚本进行验证**
 
 希望不要把分数刷太高，容易没朋友的。。。
+
+## 操作规范
+> 考虑到生产环境的规范性，实验与项目之间不受干扰，请尽量用新的虚拟环境来完成实验
+
+MacOS/Win,请使用如下操作开辟新的虚拟环境（不强调表示MacOS/Win相同操作）
+- 下载Anaconda. MacOS:默认安装/Win:注意安装时候勾选配置路径或者之后手动配置，直至cmd后conda关键字有效
+- 查看所有的虚拟环境`conda info --envs`
+- 使用命令：`conda create -n wechat_env python=3`，创建名为`wechat_env`的虚拟环境，且配置python版本为python3
+- 激活虚拟环境：MacOS: `source activate wechat_env`/Win：`activate wechat_env`
+- 安装所需要的包，比如`matplotlib`等，建议使用`conda install package_name`来避免虚拟环境包的路径问题
+
+**接下来的操作非必须，仅当实验完成后可操作，试验阶段全程在虚拟环境中操作，进入虚拟环境会有前置符号表示如：**
+```
+(wechat_env) ~/Desktop/wechat_jump_game-master>
+```
+- 退出虚拟环境：MacOS: `source deactivate wechat_env` / Win: `deactivate wecha_env`
+- 删除虚拟环境： `conda remove -n wechat_env --all`
+
 
 ## 工具介绍
 
@@ -100,6 +119,7 @@ List of devices attached
 - 电脑与手机 USB 线连接，确保执行`adb devices`可以找到设备 ID
 - 界面转至微信跳一跳游戏，点击开始游戏
 - 运行`python wechat_jump_auto.py`，如果手机界面显示 USB 授权，请点击确认
+- 请按照你的手机分辨率从`./config/`文件夹找到相应的配置，拷贝到 *.py 同级目录`./config.json`（如果屏幕分辨率能成功探测，会直接调用 config 目录的配置，不需要复制）
 
 
 ## iOS 手机操作步骤
@@ -125,3 +145,4 @@ List of devices attached
 - [x] 可以对拉上来的图片进行颜色分割，识别小人和目标中心，这样就不需要手动点击自动弹跳。
 
 > 事实证明，机器人比人更会玩儿游戏。
+

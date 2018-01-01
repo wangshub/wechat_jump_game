@@ -47,6 +47,9 @@ def open_accordant_config():
 
 def _get_screen_size():
     size_str = os.popen('adb shell wm size').read()
+    if not size_str:
+        print('请安装ADB及驱动并配置环境变量')
+        sys.exit()
     m = re.search('(\d+)x(\d+)', size_str)
     if m:
         width = m.group(1)
@@ -70,19 +73,28 @@ else:
     swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
+screenshot_way = 2
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
-        os.mkdir(screenshot_backup_dir)
+    os.mkdir(screenshot_backup_dir)
 
 
 def pull_screenshot():
-    process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-    screenshot = process.stdout.read()
-    if sys.platform == 'win32':
-        screenshot = screenshot.replace(b'\r\n', b'\n')
-    f = open('autojump.png', 'wb')
-    f.write(screenshot)
-    f.close()
+    global screenshot_way
+    # 新的方法请根据效率及适用性由高到低排序
+    if screenshot_way == 2 or screenshot_way == 1:
+        process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
+        screenshot = process.stdout.read()
+        if screenshot_way == 2:
+          binary_screenshot = screenshot.replace(b'\r\n', b'\n')
+        else:
+          binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
+        f = open('autojump.png', 'wb')
+        f.write(binary_screenshot)
+        f.close()
+    elif screenshot_way == 0:
+        os.system('adb shell screencap -p /sdcard/autojump.png')
+        os.system('adb pull /sdcard/autojump.png .')
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
@@ -129,6 +141,49 @@ def jump(distance):
     os.system(cmd)
     return press_time
 
+# 转换色彩模式hsv2rgb
+def hsv2rgb(h, s, v):
+    h = float(h)
+    s = float(s)
+    v = float(v)
+    h60 = h / 60.0
+    h60f = math.floor(h60)
+    hi = int(h60f) % 6
+    f = h60 - h60f
+    p = v * (1 - s)
+    q = v * (1 - f * s)
+    t = v * (1 - (1 - f) * s)
+    r, g, b = 0, 0, 0
+    if hi == 0: r, g, b = v, t, p
+    elif hi == 1: r, g, b = q, v, p
+    elif hi == 2: r, g, b = p, v, t
+    elif hi == 3: r, g, b = p, q, v
+    elif hi == 4: r, g, b = t, p, v
+    elif hi == 5: r, g, b = v, p, q
+    r, g, b = int(r * 255), int(g * 255), int(b * 255)
+    return r, g, b
+
+# 转换色彩模式rgb2hsv
+def rgb2hsv(r, g, b):
+    r, g, b = r/255.0, g/255.0, b/255.0
+    mx = max(r, g, b)
+    mn = min(r, g, b)
+    df = mx-mn
+    if mx == mn:
+        h = 0
+    elif mx == r:
+        h = (60 * ((g-b)/df) + 360) % 360
+    elif mx == g:
+        h = (60 * ((b-r)/df) + 120) % 360
+    elif mx == b:
+        h = (60 * ((r-g)/df) + 240) % 360
+    if mx == 0:
+        s = 0
+    else:
+        s = df/mx
+    v = mx
+    return h, s, v
+
 
 def find_piece_and_board(im):
     w, h = im.size
@@ -138,6 +193,15 @@ def find_piece_and_board(im):
     piece_y_max = 0
     board_x = 0
     board_y = 0
+
+    left_value = 0
+    left_count = 0
+    right_value = 0
+    right_count = 0
+    from_left_find_board_y = 0
+    from_right_find_board_y = 0
+
+
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
     im_pixel=im.load()
@@ -170,11 +234,14 @@ def find_piece_and_board(im):
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     for i in range(int(h / 3), int(h * 2 / 3)):
+
         last_pixel = im_pixel[0, i]
-        if board_x or board_y:
+        # 计算阴影的RGB值,通过photoshop观察,阴影部分其实就是背景色的明度V 乘以0.7的样子
+        h, s, v = rgb2hsv(last_pixel[0], last_pixel[1], last_pixel[2])
+        r, g, b = hsv2rgb(h, s, v * 0.7)
+
+        if from_left_find_board_y and from_right_find_board_y:
             break
-        board_x_sum = 0
-        board_x_c = 0
 
         for j in range(w):
             pixel = im_pixel[j,i]
@@ -205,13 +272,11 @@ def find_piece_and_board(im):
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
             board_y = l+10
             break
-    
 
-        
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
 
-    return piece_x, piece_y, board_x, board_y
+    return piece_x, piece_y, board_x, new_board_y
 
 
 def dump_device_info():
@@ -227,15 +292,31 @@ def dump_device_info():
             python=sys.version
     ))
 
-def check_adb():
-    flag = os.system('adb devices')
-    if flag == 1:
-        print('请安装ADB并配置环境变量')
+
+def check_screenshot():
+    global screenshot_way
+    if os.path.isfile('autojump.png'):
+        os.remove('autojump.png')
+    if (screenshot_way < 0):
+        print('暂不支持当前设备')
         sys.exit()
+    pull_screenshot()
+    try:
+        Image.open('./autojump.png').load()
+        print('采用方式{}获取截图'.format(screenshot_way))
+    except:
+        screenshot_way -= 1
+        check_screenshot()
 
 def main():
+
+    h, s, v = rgb2hsv(201, 204, 214)
+    print(h, s, v)
+    r, g, b = hsv2rgb(h, s, v*0.7)
+    print(r, g, b)
+
     dump_device_info()
-    check_adb()
+    check_screenshot()
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
@@ -248,6 +329,8 @@ def main():
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         time.sleep(delay/1000 + 0.9)   # 为了保证截图的时候应落稳了，多延迟一会儿
+
+
 
 
 if __name__ == '__main__':
