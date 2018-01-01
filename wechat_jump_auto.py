@@ -124,7 +124,7 @@ def set_button_position(im):
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
     left = w / 2
-    top = 1003 * (h / 1280.0) + 10
+    top = int(1584 * (h / 1920.0)) 
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -133,14 +133,15 @@ def jump(distance):
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe['x1'],
-        y1=swipe['y1'],
-        x2=swipe['x2'],
-        y2=swipe['y2'],
+        x1=swipe_x1,
+        y1=swipe_y1,
+        x2=swipe_x2,
+        y2=swipe_y2,
         duration=press_time
     )
     print(cmd)
     os.system(cmd)
+    return press_time
 
 
 # 转换色彩模式hsv2rgb
