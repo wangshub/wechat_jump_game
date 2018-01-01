@@ -76,13 +76,10 @@ if not os.path.isdir(screenshot_backup_dir):
 
 
 def pull_screenshot():
-    process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-    screenshot = process.stdout.read()
-    if sys.platform == 'win32':
-        screenshot = screenshot.replace(b'\r\n', b'\n')
-    f = open('autojump.png', 'wb')
-    f.write(screenshot)
-    f.close()
+    # 直接使用 adb pull， 解决issue #357
+    os.system('adb shell screencap -p /sdcard/autojump.png')
+    os.system('adb pull /sdcard/autojump.png .')
+   
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
