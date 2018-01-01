@@ -1,6 +1,6 @@
 {
     "under_game_score_y": 420,
-    "press_coefficient": 1.475,
+    "press_coefficient": 1.371, //调整参数，使用vivox20，夏普全面屏和小米mix2测试过，均可达到2000+分数（记得在开发者设置打开usb安全验证）
     "piece_base_height_1_2": 25,
     "piece_body_width": 85
 }
