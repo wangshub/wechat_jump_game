@@ -12,6 +12,7 @@ import re
 
 
 # === 思路 ===
+
 # 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
 #      根据两个点的距离乘以一个时间系数获得长按的时间
 # 识别棋子：靠棋子的颜色来识别位置，通过截图发现最下面一行大概是一条直线，就从上往下一行一行遍历，
@@ -28,6 +29,64 @@ import re
 # TODO: 看看两个块中心到中轴距离是否相同，如果是的话靠这个来判断一下当前超前还是落后，便于矫正
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
+
+def get_score(im):
+    im_pixel=im.load()
+
+    #如下三行为荣耀9适配起始位置，1920*1080，offset为取样位置间隔
+    #将数字字符的像素点拆分成5*4的区域，取每个区域中心位置判断是否为某个数字
+
+    num_s_x=132
+    num_s_y=213
+    offset=16
+
+
+    #k定义第k位数字，暂设定为5位数字，如有超过10w分情况可继续添加
+    for k in range(5):
+        for j in range(5):
+            num_y=num_s_y+offset*j
+            S_Pixel=im_pixel[0,num_y]
+
+            for i in range(4):
+                num_x=num_s_x+offset*i+k*offset*5
+                P_Pixel=im_pixel[num_x,num_y]
+                if P_Pixel[0]!=S_Pixel[0] :
+                    matrix_n[k][j][i]='1'
+
+    #如下开始为数字识别算法，比较简单粗暴，耗时比较长，需进一步精简
+
+    num_dict={
+        '110101':'0',
+        '001010':'1',
+        '011101':'2',
+        '011001':'3',
+        '110110':'4',
+        '101001':'5',
+        '101101':'6',
+        '010010':'7',
+        '111101':'8',
+        '111000':'9',
+        }
+                    
+    result_f=0
+
+    for k in range(5):
+
+        Num_Matrix=[
+            matrix_n[k-1][1][0],
+            matrix_n[k-1][1][3],
+            matrix_n[k-1][2][1],
+            matrix_n[k-1][3][0],
+            matrix_n[k-1][3][1],
+            matrix_n[k-1][4][0]
+                 ]
+        
+        Num_1=''.join(Num_Matrix)
+
+        if num_dict.has_key(Num_1):
+            result_f=int(num_dict[Num_1])+10*result_f
+    #print result_f    
+    return result_f                                        
 
 
 def open_accordant_config():
@@ -221,6 +280,8 @@ def find_piece_and_board(im):
             break
     board_y = int((i+k) / 2)
 
+    
+    
     #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码可能存在的判断错误
     #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
     for l in range(i, i+200):
@@ -267,12 +328,23 @@ def check_screenshot():
 
 def main():
 
+    #第一个参数记录为目标积分
+    target_n=sys.argv[1]
+    
     dump_device_info()
     check_screenshot()
     
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
+        
+        print("Target: ",target_n)
+        score_now=get_score(im)
+        print("Scorce:" ,score_now)
+        if score_now>=int(target_n):
+                print("Target Complete! Score now is" ,score_now)
+                break
+        
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
