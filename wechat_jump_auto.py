@@ -29,6 +29,7 @@ import re
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
+
 def open_accordant_config():
     screen_size = _get_screen_size()
     config_file = "{path}/config/{screen_size}/config.json".format(
@@ -96,6 +97,7 @@ def pull_screenshot():
         os.system('adb shell screencap -p /sdcard/autojump.png')
         os.system('adb pull /sdcard/autojump.png .')
 
+
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
     if not os.path.isdir(screenshot_backup_dir):
@@ -140,6 +142,7 @@ def jump(distance):
     print(cmd)
     os.system(cmd)
 
+
 # 转换色彩模式hsv2rgb
 def hsv2rgb(h, s, v):
     h = float(h)
@@ -161,6 +164,7 @@ def hsv2rgb(h, s, v):
     elif hi == 5: r, g, b = v, p, q
     r, g, b = int(r * 255), int(g * 255), int(b * 255)
     return r, g, b
+
 
 # 转换色彩模式rgb2hsv
 def rgb2hsv(r, g, b):
@@ -199,7 +203,6 @@ def find_piece_and_board(im):
     right_count = 0
     from_left_find_board_y = 0
     from_right_find_board_y = 0
-
 
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
@@ -350,7 +353,6 @@ def check_screenshot():
         check_screenshot()
 
 def main():
-
     h, s, v = rgb2hsv(201, 204, 214)
     print(h, s, v)
     r, g, b = hsv2rgb(h, s, v*0.7)
@@ -358,6 +360,7 @@ def main():
 
     dump_device_info()
     check_screenshot()
+    
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
