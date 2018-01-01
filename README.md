@@ -45,6 +45,24 @@
 
 希望不要把分数刷太高，容易没朋友的。。。
 
+## 操作规范
+> 考虑到生产环境的规范性，实验与项目之间不受干扰，请尽量用新的虚拟环境来完成实验
+
+MacOS/Win,请使用如下操作开辟新的虚拟环境（不强调表示MacOS/Win相同操作）
+- 下载Anaconda. MacOS:默认安装/Win:注意安装时候勾选配置路径或者之后手动配置，直至cmd后conda关键字有效
+- 查看所有的虚拟环境`conda info --envs`
+- 使用命令：`conda create -n wechat_env python=3`，创建名为`wechat_env`的虚拟环境，且配置python版本为python3
+- 激活虚拟环境：MacOS: `source activate wechat_env`/Win：`activate wechat_env`
+- 安装所需要的包，比如`matplotlib`等，建议使用`conda install package_name`来避免虚拟环境包的路径问题
+
+**接下来的操作非必须，仅当实验完成后可操作，试验阶段全程在虚拟环境中操作，进入虚拟环境会有前置符号表示如：**
+```
+(wechat_env) ~/Desktop/wechat_jump_game-master>
+```
+- 退出虚拟环境：MacOS: `source deactivate wechat_env` / Win: `deactivate wecha_env`
+- 删除虚拟环境： `conda remove -n wechat_env --all`
+
+
 ## 工具介绍
 
 - Python
