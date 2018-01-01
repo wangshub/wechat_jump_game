@@ -80,11 +80,16 @@ MacOS/Win,请使用如下操作开辟新的虚拟环境（不强调表示MacOS/W
 如果你是 `Android` + MacOS，请参考下面的配置：
 - Python 3
 - 使用brew进行安装 `brew cask install android-platform-tools`
-- 安装完后插入安卓设备且安卓已打开usb调试模式，终端输入 `adb devices` ,显示如下表明设备已连接
+- 安装完后插入安卓设备且安卓已打开usb调试模式（部分新机型可能需要再另外勾上 允许模拟点击 权限），终端输入 `adb devices` ,显示如下表明设备已连接
 ```
 List of devices attached
 6934dc33	device
 ```
+
+如果你是 `Android` + Windows，请参考下面的配置：
+- Python 3
+- 安装 [ADB](https://adb.clockworkmod.com/) 后，请在 环境变量 里将 adb 的安装路径保存到 PATH 变量里，确保 `adb` 命令可以被识别到。
+- 同 `Android` + MacOS 测试连接
 
 ## 依赖安装
 
