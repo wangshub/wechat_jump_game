@@ -79,7 +79,7 @@ def pull_screenshot():
     process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
     screenshot = process.stdout.read()
     if sys.platform == 'win32':
-        screenshot = screenshot.replace(b'\r\n', b'\n')
+        screenshot = screenshot.replace(b'\r\r\n', b'\n')
     f = open('autojump.png', 'wb')
     f.write(screenshot)
     f.close()
