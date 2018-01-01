@@ -67,7 +67,7 @@ MacOS/Win,请使用如下操作开辟新的虚拟环境（不强调表示MacOS/W
 
 ## 工具介绍
 
-- Python
+- Python2.7/3
 - 手机或模拟器
 - [ADB](https://developer.android.com/studio/releases/platform-tools.html) 驱动，可以到[这里](https://adb.clockworkmod.com/)下载
 - 相关依赖
@@ -75,10 +75,10 @@ MacOS/Win,请使用如下操作开辟新的虚拟环境（不强调表示MacOS/W
 如果你是`iOS` + MacOS，请参考下面的配置：
 - 使用真机调试 WDA，参考 iOS 真机如何安装[WebDriverAgent · TesterHome](https://testerhome.com/topics/7220)
 - 安装[openatx/facebook-wda](https://github.com/openatx/facebook-wda)
-- Python 3
+- Python 2.7/3
 
 如果你是 `Android` + MacOS，请参考下面的配置：
-- Python 3
+- Python 2.7/3
 - 使用brew进行安装 `brew cask install android-platform-tools`
 - 安装完后插入安卓设备且安卓已打开usb调试模式，终端输入 `adb devices` ,显示如下表明设备已连接
 ```
