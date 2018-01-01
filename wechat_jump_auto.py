@@ -70,7 +70,7 @@ else:
     swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
-screenshot_way = 0
+screenshot_way = 2
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
     os.mkdir(screenshot_backup_dir)
@@ -79,15 +79,18 @@ if not os.path.isdir(screenshot_backup_dir):
 def pull_screenshot():
     global screenshot_way
     if screenshot_way == 0:
+        os.system('adb shell screencap -p /sdcard/autojump.png')
+        os.system('adb pull /sdcard/autojump.png .')
+    elif screenshot_way == 1 or screenshot_way == 2:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screenshot = process.stdout.read()
-        binary_screenshot = screenshot.replace(b'\r\n', b'\n')
+        if screenshot_way == 1:
+          binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
+        else:
+          binary_screenshot = screenshot.replace(b'\r\n', b'\n')
         f = open('autojump.png', 'wb')
         f.write(binary_screenshot)
         f.close()
-    elif screenshot_way == 1:
-        os.system('adb shell screencap -p /sdcard/autojump.png')
-        os.system('adb pull /sdcard/autojump.png .')
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
@@ -133,6 +136,49 @@ def jump(distance):
     print(cmd)
     os.system(cmd)
 
+# 转换色彩模式hsv2rgb
+def hsv2rgb(h, s, v):
+    h = float(h)
+    s = float(s)
+    v = float(v)
+    h60 = h / 60.0
+    h60f = math.floor(h60)
+    hi = int(h60f) % 6
+    f = h60 - h60f
+    p = v * (1 - s)
+    q = v * (1 - f * s)
+    t = v * (1 - (1 - f) * s)
+    r, g, b = 0, 0, 0
+    if hi == 0: r, g, b = v, t, p
+    elif hi == 1: r, g, b = q, v, p
+    elif hi == 2: r, g, b = p, v, t
+    elif hi == 3: r, g, b = p, q, v
+    elif hi == 4: r, g, b = t, p, v
+    elif hi == 5: r, g, b = v, p, q
+    r, g, b = int(r * 255), int(g * 255), int(b * 255)
+    return r, g, b
+
+# 转换色彩模式rgb2hsv
+def rgb2hsv(r, g, b):
+    r, g, b = r/255.0, g/255.0, b/255.0
+    mx = max(r, g, b)
+    mn = min(r, g, b)
+    df = mx-mn
+    if mx == mn:
+        h = 0
+    elif mx == r:
+        h = (60 * ((g-b)/df) + 360) % 360
+    elif mx == g:
+        h = (60 * ((b-r)/df) + 120) % 360
+    elif mx == b:
+        h = (60 * ((r-g)/df) + 240) % 360
+    if mx == 0:
+        s = 0
+    else:
+        s = df/mx
+    v = mx
+    return h, s, v
+
 
 def find_piece_and_board(im):
     w, h = im.size
@@ -142,6 +188,15 @@ def find_piece_and_board(im):
     piece_y_max = 0
     board_x = 0
     board_y = 0
+
+    left_value = 0
+    left_count = 0
+    right_value = 0
+    right_count = 0
+    from_left_find_board_y = 0
+    from_right_find_board_y = 0
+
+
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
     im_pixel=im.load()
@@ -174,43 +229,106 @@ def find_piece_and_board(im):
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     for i in range(int(h / 3), int(h * 2 / 3)):
+
         last_pixel = im_pixel[0, i]
-        if board_x or board_y:
+        # 计算阴影的RGB值,通过photoshop观察,阴影部分其实就是背景色的明度V 乘以0.7的样子
+        h, s, v = rgb2hsv(last_pixel[0], last_pixel[1], last_pixel[2])
+        r, g, b = hsv2rgb(h, s, v * 0.7)
+
+        if from_left_find_board_y and from_right_find_board_y:
             break
-        board_x_sum = 0
-        board_x_c = 0
 
-        for j in range(w):
-            pixel = im_pixel[j,i]
-            # 修掉脑袋比下一个小格子还高的情况的 bug
-            if abs(j - piece_x) < piece_body_width:
-                continue
+        if not board_x:
+            board_x_sum = 0
+            board_x_c = 0
 
-            # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
-            if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
-                board_x_sum += j
-                board_x_c += 1
-        if board_x_sum:
-            board_x = board_x_sum / board_x_c
-    # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该是30°,值应该是tan 30°, math.sqrt(3) / 3
+            for j in range(w):
+                pixel = im_pixel[j,i]
+                # 修掉脑袋比下一个小格子还高的情况的 bug
+                if abs(j - piece_x) < piece_body_width:
+                    continue
+
+                # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
+                if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
+                    board_x_sum += j
+                    board_x_c += 1
+            if board_x_sum:
+                board_x = board_x_sum / board_x_c
+        else:
+            # 继续往下查找,从左到右扫描,找到第一个与背景颜色不同的像素点,记录位置
+            # 当有连续3个相同的记录时,表示发现了一条直线
+            # 这条直线即为目标board的左边缘
+            # 然后当前的 y 值减 3 获得左边缘的第一个像素
+            # 就是顶部的左边顶点
+            for j in range(w):
+                pixel = im_pixel[j, i]
+                # 修掉脑袋比下一个小格子还高的情况的 bug
+                if abs(j - piece_x) < piece_body_width:
+                    continue
+                if (abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2])
+                        > 10) and (abs(pixel[0] - r) + abs(pixel[1] - g) + abs(pixel[2] - b) > 10):
+                    if left_value == j:
+                        left_count = left_count+1
+                    else:
+                        left_value = j
+                        left_count = 1
+
+                    if left_count > 3:
+                        from_left_find_board_y = i - 3
+                    break
+            # 逻辑跟上面类似,但是方向从右向左
+            # 当有遮挡时,只会有一边有遮挡
+            # 算出来两个必然有一个是对的
+            for j in range(w)[::-1]:
+                pixel = im_pixel[j, i]
+                # 修掉脑袋比下一个小格子还高的情况的 bug
+                if abs(j - piece_x) < piece_body_width:
+                    continue
+                if (abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2])
+                    > 10) and (abs(pixel[0] - r) + abs(pixel[1] - g) + abs(pixel[2] - b) > 10):
+                    if right_value == j:
+                        right_count = left_count + 1
+                    else:
+                        right_value = j
+                        right_count = 1
+
+                    if right_count > 3:
+                        from_right_find_board_y = i - 3
+                    break
+
+    # 如果顶部像素比较多,说明图案近圆形,相应的求出来的值需要增大,这里暂定增大顶部宽的三分之一
+    if board_x_c > 5:
+        from_left_find_board_y = from_left_find_board_y + board_x_c / 3
+        from_right_find_board_y = from_right_find_board_y + board_x_c / 3
+
+    # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该是30°,值应该是tan 30°,math.sqrt(3) / 3
     board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
+
+    # 从左从右取出两个数据进行对比,选出来更接近原来老算法的那个值
+    if abs(board_y - from_left_find_board_y) > abs(from_right_find_board_y):
+        new_board_y = from_right_find_board_y
+    else:
+        new_board_y = from_left_find_board_y
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
 
-    return piece_x, piece_y, board_x, board_y
+    return piece_x, piece_y, board_x, new_board_y
 
 
 def dump_device_info():
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.model').read()
     density_str = os.popen('adb shell wm density').read()
-    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n=====\
-           \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\n=====".format(
+    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n**********\
+        \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\nOS: {os}\nPython: {python}\n**********".format(
             size=size_str.strip(),
             type=device_str.strip(),
-            dpi=density_str.strip()
+            dpi=density_str.strip(),
+            os=sys.platform,
+            python=sys.version
     ))
+
 
 def check_adb():
     flag = os.system('adb devices')
@@ -222,17 +340,24 @@ def check_screenshot():
     global screenshot_way
     if os.path.isfile('autojump.png'):
         os.remove('autojump.png')
-    if (screenshot_way >= 2):
+    if (screenshot_way < 0):
         print('暂不支持当前设备')
         sys.exit()
     pull_screenshot()
     try:
-        im = Image.open('./autojump.png')
+        Image.open('./autojump.png')
+        print('采用方式{}获取截图'.format(screenshot_way))
     except:
-        screenshot_way += 1
+        screenshot_way -= 1
         check_screenshot()
 
 def main():
+
+    h, s, v = rgb2hsv(201, 204, 214)
+    print(h, s, v)
+    r, g, b = hsv2rgb(h, s, v*0.7)
+    print(r, g, b)
+
     dump_device_info()
     check_adb()
     check_screenshot()
@@ -247,7 +372,7 @@ def main():
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
-        time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(random.uniform(1.2, 1.4))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
 if __name__ == '__main__':
