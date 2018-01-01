@@ -71,6 +71,8 @@ if config.get('swipe'):
     swipe = config['swipe']
 else:
     swipe = {}
+    #设置模拟按压各项参数，经过多台手机测试，其中2160x1080建议调整参数为320，1210，720，910
+    #使用vivox20，夏普全面屏和小米mix2测试过，均可达到2000+分数（记得在开发者设置打开usb安全验证）
     swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
