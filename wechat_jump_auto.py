@@ -59,6 +59,7 @@ config = open_accordant_config()
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 under_game_score_y = config['under_game_score_y']
 press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
+long_distance_coefficient = config['long_distance_coefficient']       # 长按的时间系数，请自己根据实际情况调节
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
@@ -107,17 +108,22 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
 
 def set_button_position(im):
     # 将swipe设置为 `再来一局` 按钮的位置
-    global swipe_x1, swipe_y1, swipe_x2, swipe_y2
+    global swipe
     w, h = im.size
     left = w / 2
     top = 1003 * (h / 1280.0) + 10
-    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
+    swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = left, top, left, top
 
 
 def jump(distance):
-    press_time = distance * press_coefficient
+    # 460 508
+    if distance >= 460:
+        press_time = distance * long_distance_coefficient
+    else:
+        press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
+    print(distance, press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe['x1'],
         y1=swipe['y1'],
@@ -125,7 +131,6 @@ def jump(distance):
         y2=swipe['y2'],
         duration=press_time
     )
-    print(cmd)
     os.system(cmd)
 
 
@@ -166,7 +171,8 @@ def find_piece_and_board(im):
     if not all((piece_x_sum, piece_x_c)):
         return 0, 0, 0, 0
     piece_x = piece_x_sum / piece_x_c
-    piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
+    #piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
+    piece_y = piece_y_max
 
     for i in range(int(h / 3), int(h * 2 / 3)):
         last_pixel = im_pixel[0, i]
@@ -188,7 +194,23 @@ def find_piece_and_board(im):
         if board_x_sum:
             board_x = board_x_sum / board_x_c
     # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该是30°,值应该是tan 30°, math.sqrt(3) / 3
-    board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
+    board_y = math.ceil(piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3)
+    if board_y > (piece_y - 210):
+        print "xxxxxx", piece_x, piece_y, board_x, board_y
+        board_y = piece_y - 210
+    if board_y >= i + 110:
+        print "yyyyyy", board_y, i
+        board_y = i + 80
+    if board_y < i:
+        print "zzzzzz", board_y, i
+        board_y = i + 20
+    if abs(board_y - i) < 20:
+        print "aaaaaa", board_y, i
+        board_y = i + 20
+    if abs(board_y - i) > 45:
+        print "bbbbbb", board_y, i
+        board_y = i + 45
+
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
@@ -226,7 +248,7 @@ def main():
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
-        backup_screenshot(ts)
+        #backup_screenshot(ts)
         time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
