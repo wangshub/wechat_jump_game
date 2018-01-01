@@ -1,4 +1,5 @@
 # coding: utf-8
+from __future__ import print_function,division
 import os
 import sys
 import subprocess
@@ -9,7 +10,6 @@ from PIL import Image, ImageDraw
 import random
 import json
 import re
-
 
 # === 思路 ===
 # 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
