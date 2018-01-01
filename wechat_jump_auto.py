@@ -126,7 +126,7 @@ def set_button_position(im):
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
     left = w / 2
-    top = int(1584 * (h / 1920.0)) 
+    top = int(1584 * (h / 1920.0))
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -181,7 +181,7 @@ def find_piece_and_board(im):
 
     if not all((piece_x_sum, piece_x_c)):
         return 0, 0, 0, 0
-    piece_x = piece_x_sum / piece_x_c
+    piece_x = int(piece_x_sum / piece_x_c);
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     #限制棋盘扫描的横坐标，避免音符bug
@@ -191,7 +191,7 @@ def find_piece_and_board(im):
     else:
         board_x_start = 0
         board_x_end = piece_x
-        
+
     for i in range(int(h / 3), int(h * 2 / 3)):
         last_pixel = im_pixel[0, i]
         if board_x or board_y:
@@ -212,7 +212,7 @@ def find_piece_and_board(im):
         if board_x_sum:
             board_x = board_x_sum / board_x_c
     last_pixel=im_pixel[board_x,i]
-    
+
     #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
     #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
     for k in range(i+274, i, -1): #274取开局时最大的方块的上下顶点距离
@@ -228,9 +228,9 @@ def find_piece_and_board(im):
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
             board_y = l+10
             break
-    
 
-        
+
+
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
 
@@ -269,7 +269,7 @@ def main():
 
     dump_device_info()
     check_screenshot()
-    
+
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
