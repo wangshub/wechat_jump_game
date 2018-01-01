@@ -35,7 +35,7 @@ def get_score(im):
 
     #如下三行为荣耀9适配起始位置，1920*1080，offset为取样位置间隔
     #将数字字符的像素点拆分成5*4的区域，取每个区域中心位置判断是否为某个数字
-    matrix_n = [[['0' for i in range(5)] for i in range(5)]for i in range(4)]
+    matrix_n = [[['0' for i in range(4)] for i in range(5)]for i in range(5)]
     num_s_x=132
     num_s_y=213
     offset=16
