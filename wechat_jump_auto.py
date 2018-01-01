@@ -124,7 +124,7 @@ def set_button_position(im):
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
     left = w / 2
-    top = 1003 * (h / 1280.0) + 10
+    top = 1584 * (h / 1920.0) 
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -133,14 +133,15 @@ def jump(distance):
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe['x1'],
-        y1=swipe['y1'],
-        x2=swipe['x2'],
-        y2=swipe['y2'],
+        x1=swipe_x1,
+        y1=swipe_y1,
+        x2=swipe_x2,
+        y2=swipe_y2,
         duration=press_time
     )
     print(cmd)
     os.system(cmd)
+    return press_time
 
 
 # 转换色彩模式hsv2rgb
@@ -245,77 +246,35 @@ def find_piece_and_board(im):
         if from_left_find_board_y and from_right_find_board_y:
             break
 
-        if not board_x:
-            board_x_sum = 0
-            board_x_c = 0
+        for j in range(w):
+            pixel = im_pixel[j,i]
+            # 修掉脑袋比下一个小格子还高的情况的 bug
+            if abs(j - piece_x) < piece_body_width:
+                continue
 
-            for j in range(w):
-                pixel = im_pixel[j,i]
-                # 修掉脑袋比下一个小格子还高的情况的 bug
-                if abs(j - piece_x) < piece_body_width:
-                    continue
+            # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
+            if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
+                board_x_sum += j
+                board_x_c += 1
+        if board_x_sum:
+            board_x = board_x_sum / board_x_c
+    last_pixel=im_pixel[board_x,i]
+    
+    #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
+    #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
+    for k in range(i+274, i, -1): #274取开局时最大的方块的上下顶点距离
+        pixel = im_pixel[board_x,k]
+        if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) < 10:
+            break
+    board_y = int((i+k) / 2)
 
-                # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
-                if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) > 10:
-                    board_x_sum += j
-                    board_x_c += 1
-            if board_x_sum:
-                board_x = board_x_sum / board_x_c
-        else:
-            # 继续往下查找,从左到右扫描,找到第一个与背景颜色不同的像素点,记录位置
-            # 当有连续3个相同的记录时,表示发现了一条直线
-            # 这条直线即为目标board的左边缘
-            # 然后当前的 y 值减 3 获得左边缘的第一个像素
-            # 就是顶部的左边顶点
-            for j in range(w):
-                pixel = im_pixel[j, i]
-                # 修掉脑袋比下一个小格子还高的情况的 bug
-                if abs(j - piece_x) < piece_body_width:
-                    continue
-                if (abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2])
-                        > 10) and (abs(pixel[0] - r) + abs(pixel[1] - g) + abs(pixel[2] - b) > 10):
-                    if left_value == j:
-                        left_count = left_count+1
-                    else:
-                        left_value = j
-                        left_count = 1
-
-                    if left_count > 3:
-                        from_left_find_board_y = i - 3
-                    break
-            # 逻辑跟上面类似,但是方向从右向左
-            # 当有遮挡时,只会有一边有遮挡
-            # 算出来两个必然有一个是对的
-            for j in range(w)[::-1]:
-                pixel = im_pixel[j, i]
-                # 修掉脑袋比下一个小格子还高的情况的 bug
-                if abs(j - piece_x) < piece_body_width:
-                    continue
-                if (abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2])
-                    > 10) and (abs(pixel[0] - r) + abs(pixel[1] - g) + abs(pixel[2] - b) > 10):
-                    if right_value == j:
-                        right_count = left_count + 1
-                    else:
-                        right_value = j
-                        right_count = 1
-
-                    if right_count > 3:
-                        from_right_find_board_y = i - 3
-                    break
-
-    # 如果顶部像素比较多,说明图案近圆形,相应的求出来的值需要增大,这里暂定增大顶部宽的三分之一
-    if board_x_c > 5:
-        from_left_find_board_y = from_left_find_board_y + board_x_c / 3
-        from_right_find_board_y = from_right_find_board_y + board_x_c / 3
-
-    # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该是30°,值应该是tan 30°,math.sqrt(3) / 3
-    board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
-
-    # 从左从右取出两个数据进行对比,选出来更接近原来老算法的那个值
-    if abs(board_y - from_left_find_board_y) > abs(from_right_find_board_y):
-        new_board_y = from_right_find_board_y
-    else:
-        new_board_y = from_left_find_board_y
+    #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码可能存在的判断错误
+    #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
+    for l in range(i, i+200):
+        pixel = im_pixel[board_x,l]
+        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
+            board_y = l+10
+            break
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
@@ -369,11 +328,14 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        delay = jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
-        time.sleep(random.uniform(1.2, 1.4))   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(delay/1000 + 0.9)   # 为了保证截图的时候应落稳了，多延迟一会儿
+
+
 
 
 if __name__ == '__main__':
     main()
+    
