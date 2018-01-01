@@ -70,7 +70,7 @@ else:
     swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
-screenshot_way = 1
+screenshot_way = 2
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
     os.mkdir(screenshot_backup_dir)
@@ -81,10 +81,13 @@ def pull_screenshot():
     if screenshot_way == 0:
         os.system('adb shell screencap -p /sdcard/autojump.png')
         os.system('adb pull /sdcard/autojump.png .')
-    elif screenshot_way == 1:
+    elif screenshot_way == 1 or screenshot_way == 2:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screenshot = process.stdout.read()
-        binary_screenshot = screenshot.replace(b'\r\n', b'\n')
+        if screenshot_way == 1:
+          binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
+        else:
+          binary_screenshot = screenshot.replace(b'\r\n', b'\n')
         f = open('autojump.png', 'wb')
         f.write(binary_screenshot)
         f.close()
@@ -343,6 +346,7 @@ def check_screenshot():
     pull_screenshot()
     try:
         Image.open('./autojump.png')
+        print('采用方式{}获取截图'.format(screenshot_way))
     except:
         screenshot_way -= 1
         check_screenshot()
