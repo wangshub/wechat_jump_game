@@ -29,6 +29,7 @@ import re
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
+
 def open_accordant_config():
     screen_size = _get_screen_size()
     config_file = "{path}/config/{screen_size}/config.json".format(
@@ -47,6 +48,9 @@ def open_accordant_config():
 
 def _get_screen_size():
     size_str = os.popen('adb shell wm size').read()
+    if not size_str:
+        print('请安装ADB及驱动并配置环境变量')
+        sys.exit()
     m = re.search('(\d+)x(\d+)', size_str)
     if m:
         width = m.group(1)
@@ -68,22 +72,34 @@ if config.get('swipe'):
     swipe = config['swipe']
 else:
     swipe = {}
+    #设置模拟按压各项参数，经过多台手机测试，其中2160x1080建议调整参数为320，1210，720，910
+    #使用vivox20，夏普全面屏和小米mix2测试过，均可达到2000+分数（记得在开发者设置打开usb安全验证）
     swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
+screenshot_way = 2
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
-        os.mkdir(screenshot_backup_dir)
+    os.mkdir(screenshot_backup_dir)
 
 
 def pull_screenshot():
-    process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-    screenshot = process.stdout.read()
-    if sys.platform == 'win32':
-        screenshot = screenshot.replace(b'\r\n', b'\n')
-    f = open('autojump.png', 'wb')
-    f.write(screenshot)
-    f.close()
+    global screenshot_way
+    # 新的方法请根据效率及适用性由高到低排序
+    if screenshot_way == 2 or screenshot_way == 1:
+        process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
+        screenshot = process.stdout.read()
+        if screenshot_way == 2:
+          binary_screenshot = screenshot.replace(b'\r\n', b'\n')
+        else:
+          binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
+        f = open('autojump.png', 'wb')
+        f.write(binary_screenshot)
+        f.close()
+    elif screenshot_way == 0:
+        os.system('adb shell screencap -p /sdcard/autojump.png')
+        os.system('adb pull /sdcard/autojump.png .')
+
 
 def backup_screenshot(ts):
     # 为了方便失败的时候 debug
@@ -125,14 +141,14 @@ def jump(distance):
     press_time = int(press_time)
     print(distance, press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe['x1'],
-        y1=swipe['y1'],
-        x2=swipe['x2'],
-        y2=swipe['y2'],
+        x1=swipe_x1,
+        y1=swipe_y1,
+        x2=swipe_x2,
+        y2=swipe_y2,
         duration=press_time
     )
     os.system(cmd)
-
+    return press_time
 
 def find_piece_and_board(im):
     w, h = im.size
@@ -174,6 +190,14 @@ def find_piece_and_board(im):
     #piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
     piece_y = piece_y_max
 
+    #限制棋盘扫描的横坐标，避免音符bug
+    if piece_x < w/2:
+        board_x_start = piece_x
+        board_x_end = w
+    else:
+        board_x_start = 0
+        board_x_end = piece_x
+
     for i in range(int(h / 3), int(h * 2 / 3)):
         last_pixel = im_pixel[0, i]
         if board_x or board_y:
@@ -181,7 +205,7 @@ def find_piece_and_board(im):
         board_x_sum = 0
         board_x_c = 0
 
-        for j in range(w):
+        for j in range(int(board_x_start), int(board_x_end)):
             pixel = im_pixel[j,i]
             # 修掉脑袋比下一个小格子还高的情况的 bug
             if abs(j - piece_x) < piece_body_width:
@@ -210,34 +234,63 @@ def find_piece_and_board(im):
     if abs(board_y - i) > 45:
         print "bbbbbb", board_y, i
         board_y = i + 45
+    last_pixel=im_pixel[board_x,i]
 
+    #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
+    #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
+    for k in range(i+274, i, -1): #274取开局时最大的方块的上下顶点距离
+        pixel = im_pixel[board_x,k]
+        if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) < 10:
+            break
+    board_y = int((i+k) / 2)
+
+    #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码可能存在的判断错误
+    #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
+    for l in range(i, i+200):
+        pixel = im_pixel[board_x,l]
+        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
+            board_y = l+10
+            break
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
 
     return piece_x, piece_y, board_x, board_y
 
-
 def dump_device_info():
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.model').read()
     density_str = os.popen('adb shell wm density').read()
-    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n=====\
-           \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\n=====".format(
+    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n**********\
+        \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\nOS: {os}\nPython: {python}\n**********".format(
             size=size_str.strip(),
             type=device_str.strip(),
-            dpi=density_str.strip()
+            dpi=density_str.strip(),
+            os=sys.platform,
+            python=sys.version
     ))
 
-def check_adb():
-    flag = os.system('adb devices')
-    if flag == 1:
-        print('请安装ADB并配置环境变量')
+
+def check_screenshot():
+    global screenshot_way
+    if os.path.isfile('autojump.png'):
+        os.remove('autojump.png')
+    if (screenshot_way < 0):
+        print('暂不支持当前设备')
         sys.exit()
+    pull_screenshot()
+    try:
+        Image.open('./autojump.png').load()
+        print('采用方式{}获取截图'.format(screenshot_way))
+    except:
+        screenshot_way -= 1
+        check_screenshot()
 
 def main():
+
     dump_device_info()
-    check_adb()
+    check_screenshot()
+
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
@@ -249,7 +302,7 @@ def main():
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         #backup_screenshot(ts)
-        time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(1)   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
 if __name__ == '__main__':
