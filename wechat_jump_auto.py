@@ -342,7 +342,7 @@ def check_screenshot():
         sys.exit()
     pull_screenshot()
     try:
-        im = Image.open('./autojump.png')
+        Image.open('./autojump.png')
     except:
         screenshot_way += 1
         check_screenshot()
