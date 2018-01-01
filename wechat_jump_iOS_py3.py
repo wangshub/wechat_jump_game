@@ -9,9 +9,11 @@ import os
 
 # 截图距离 * time_coefficient = 按键时长
 # iphonex
-time_coefficient = 0.00125
+# time_coefficient = 0.00125
 #iphone6
 # time_coefficient = 0.00196
+#iphone6s plus
+time_coefficient = 0.00120
 
 
 c = wda.Client()
