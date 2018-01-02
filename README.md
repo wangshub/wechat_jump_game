@@ -5,8 +5,7 @@
 
 ![](https://ws1.sinaimg.cn/large/006tNc79ly1fn29l1ywd6g309o0eex6r.gif)
 
-可能刚开始上手的时候，因为时间距离之间的关系把握不恰当，只能跳出几个就掉到了台子下面。
-**如果能利用图像识别精确测量出起始和目标点之间测距离，就可以估计按压的时间来精确跳跃。**
+可能刚开始上手的时候，因为时间距离之间的关系把握不恰当，只能跳出几个就掉到了台子下面。**如果能利用图像识别精确测量出起始和目标点之间测距离，就可以估计按压的时间来精确跳跃。**
 
 ## 原理说明
 
@@ -47,7 +46,7 @@ adb shell input swipe x y x y time(ms)
 4. 如果你的分数被微信清零或者排名不显示？
     - 注意不要刷太高分数，适当休息，参见 [issues/164](https://github.com/wangshub/wechat_jump_game/issues/164)
 
-5. 如果有找不到 `./autojump.png` 文件的错误，
+5. 如果有找不到 `./autojump.png` 文件的错误？
     - 请查阅 [issue/194](https://github.com/wangshub/wechat_jump_game/issues/194)
 
 6. 如果你在苦苦寻找视频教程？
@@ -61,7 +60,7 @@ adb shell input swipe x y x y time(ms)
 
 - 详见 [contributors](https://github.com/wangshub/wechat_jump_game/graphs/contributors)
 
-## QQ交流
+## QQ 交流
 
 - 314659953 (1000人 已满)
 - 176740763 (500人 已满)
