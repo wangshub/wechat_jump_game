@@ -77,7 +77,7 @@ else:
     swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
-screenshot_way = 2
+screenshot_way = 0
 screenshot_backup_dir = 'screenshot_backups/'
 if not os.path.isdir(screenshot_backup_dir):
     os.mkdir(screenshot_backup_dir)
@@ -99,14 +99,6 @@ def pull_screenshot():
     elif screenshot_way == 0:
         os.system('adb shell screencap -p /sdcard/autojump.png')
         os.system('adb pull /sdcard/autojump.png .')
-
-
-def backup_screenshot(ts):
-    # 为了方便失败的时候 debug
-    if not os.path.isdir(screenshot_backup_dir):
-        os.mkdir(screenshot_backup_dir)
-    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
-
 
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
@@ -141,10 +133,10 @@ def jump(distance):
     press_time = int(press_time)
     print(distance, press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe_x1,
-        y1=swipe_y1,
-        x2=swipe_x2,
-        y2=swipe_y2,
+        x1=swipe['x1'],
+        y1=swipe['y1'],
+        x2=swipe['x2'],
+        y2=swipe['y2'],
         duration=press_time
     )
     os.system(cmd)
@@ -187,7 +179,6 @@ def find_piece_and_board(im):
     if not all((piece_x_sum, piece_x_c)):
         return 0, 0, 0, 0
     piece_x = piece_x_sum / piece_x_c
-    #piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
     piece_y = piece_y_max
 
     #限制棋盘扫描的横坐标，避免音符bug
@@ -234,23 +225,6 @@ def find_piece_and_board(im):
     if abs(board_y - i) > 45:
         print "bbbbbb", board_y, i
         board_y = i + 45
-    last_pixel=im_pixel[board_x,i]
-
-    #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
-    #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
-    for k in range(i+274, i, -1): #274取开局时最大的方块的上下顶点距离
-        pixel = im_pixel[board_x,k]
-        if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) < 10:
-            break
-    board_y = int((i+k) / 2)
-
-    #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码可能存在的判断错误
-    #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
-    for l in range(i, i+200):
-        pixel = im_pixel[board_x,l]
-        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
-            board_y = l+10
-            break
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
@@ -270,26 +244,9 @@ def dump_device_info():
             python=sys.version
     ))
 
-
-def check_screenshot():
-    global screenshot_way
-    if os.path.isfile('autojump.png'):
-        os.remove('autojump.png')
-    if (screenshot_way < 0):
-        print('暂不支持当前设备')
-        sys.exit()
-    pull_screenshot()
-    try:
-        Image.open('./autojump.png').load()
-        print('采用方式{}获取截图'.format(screenshot_way))
-    except:
-        screenshot_way -= 1
-        check_screenshot()
-
 def main():
 
     dump_device_info()
-    check_screenshot()
 
     while True:
         pull_screenshot()
@@ -301,7 +258,6 @@ def main():
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
-        #backup_screenshot(ts)
         time.sleep(1)   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
