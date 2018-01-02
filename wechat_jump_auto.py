@@ -19,11 +19,19 @@ import time
 import math
 from PIL import Image
 import random
-from WechatJump import Debug, Config
 from six.moves import input
+try:
+    from common import debug, config
+except ImportError:
+    print('请在项目根目录中运行脚本')
+    exit(-1)
 
-debug_switch = False # debug 开关，需要调试的时候请改为：True
-config = Config.open_accordant_config()
+
+VERSION = "1.1.1"
+
+
+debug_switch = False    # debug 开关，需要调试的时候请改为：True
+config = config.open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置，设置保存在 config 文件夹中
 under_game_score_y = config['under_game_score_y']
@@ -229,7 +237,8 @@ def main():
     if not op:
         print('bye')
         return
-    Debug.dump_device_info()
+    print('程序版本号：{}'.format(VERSION))
+    debug.dump_device_info()
     check_screenshot()
 
     i, next_rest, next_rest_time = 0, random.randrange(3, 10), random.randrange(5, 10)
@@ -243,8 +252,8 @@ def main():
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         if debug_switch:
-            Debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
-            Debug.backup_screenshot(ts)
+            debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
+            debug.backup_screenshot(ts)
         i += 1
         if i == next_rest:
             print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))

@@ -50,8 +50,7 @@ def dump_device_info():
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.model').read()
     density_str = os.popen('adb shell wm density').read()
-    print("""如果你的脚本无法工作，上报 issue 时请 copy 如下信息：
-**********
+    print("""**********
 Screen: {size}
 Density: {dpi}
 DeviceType: {type}

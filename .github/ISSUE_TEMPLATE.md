@@ -7,6 +7,7 @@ issue应包含如下几个信息
 具体实例如下，按照该例进行提交 issue
 -->
 
+程序版本号：1.1.0
 **********
 Screen: Physical size: 1080x2160
 Density: Physical density: 400
