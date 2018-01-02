@@ -41,7 +41,7 @@ piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋�
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
 
-screenshot_way = 2
+screenshot_way = 3
 
 
 def pull_screenshot():
