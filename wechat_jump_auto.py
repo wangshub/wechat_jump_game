@@ -30,7 +30,7 @@ except ImportError:
 VERSION = "1.1.1"
 
 
-debug_switch = False    # debug 开关，需要调试的时候请改为：True
+debug_switch = True    # debug 开关，需要调试的时候请改为：True
 config = config.open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置，设置保存在 config 文件夹中
