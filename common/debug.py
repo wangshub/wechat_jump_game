@@ -1,4 +1,4 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
 '''
 默认PEP8的docstring，文件注释写在这里
 '''
