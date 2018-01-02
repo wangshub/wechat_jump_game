@@ -28,39 +28,57 @@ except ImportError:
 
 
 VERSION = "1.1.1"
+DEBUG_SWITCH = False    # debug 开关，需要调试的时候请改为True，不需要调试的时候为False
 
-
-debug_switch = False    # debug 开关，需要调试的时候请改为：True
-config = config.open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置，设置保存在 config 文件夹中
-under_game_score_y = config['under_game_score_y']
-press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
+config = config.open_accordant_config()
+under_game_score_y    = config['under_game_score_y']
+press_coefficient     = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
-piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
+piece_body_width      = config['piece_body_width']        # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
 
-screenshot_way = 3
+SCREENSHOT_WAY = 3
 
 
 def pull_screenshot():
     '''
-    新的方法请根据效率及适用性由高到低排序
+    获取屏幕接入，目前有 0 1 2 三种方法，未来添加新的平台监测方法时，请根据效率及适用性由高到低排序
     '''
-    global screenshot_way
-    if screenshot_way >= 1 and screenshot_way <= 3:
+    global SCREENSHOT_WAY
+    if SCREENSHOT_WAY >= 1 and SCREENSHOT_WAY <= 3:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         binary_screenshot = process.stdout.read()
-        if screenshot_way == 2:
+        if SCREENSHOT_WAY == 2:
             binary_screenshot = binary_screenshot.replace(b'\r\n', b'\n')
-        elif screenshot_way == 1:
+        elif SCREENSHOT_WAY == 1:
             binary_screenshot = binary_screenshot.replace(b'\r\r\n', b'\n')
         f = open('autojump.png', 'wb')
         f.write(binary_screenshot)
         f.close()
-    elif screenshot_way == 0:
+    elif SCREENSHOT_WAY == 0:
         os.system('adb shell screencap -p /sdcard/autojump.png')
         os.system('adb pull /sdcard/autojump.png .')
+
+
+def check_screenshot():
+    '''
+    检查获取截图的方式
+    '''
+    global SCREENSHOT_WAY
+    if os.path.isfile('autojump.png'):
+        os.remove('autojump.png')
+    if (SCREENSHOT_WAY < 0):
+        print('暂不支持当前设备')
+        sys.exit()
+    pull_screenshot()
+    try:
+        Image.open('./autojump.png').load()
+        print('采用方式 {} 获取截图'.format(SCREENSHOT_WAY))
+    except Exception:
+        SCREENSHOT_WAY -= 1
+        check_screenshot()
 
 
 def set_button_position(im):
@@ -188,25 +206,6 @@ def find_piece_and_board(im):
     return piece_x, piece_y, board_x, board_y
 
 
-def check_screenshot():
-    '''
-    检查获取截图的方式
-    '''
-    global screenshot_way
-    if os.path.isfile('autojump.png'):
-        os.remove('autojump.png')
-    if (screenshot_way < 0):
-        print('暂不支持当前设备')
-        sys.exit()
-    pull_screenshot()
-    try:
-        Image.open('./autojump.png').load()
-        print('采用方式 {} 获取截图'.format(screenshot_way))
-    except Exception:
-        screenshot_way -= 1
-        check_screenshot()
-
-
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     default_value = true_value if default else false_value
     prompt = '%s %s/%s [%s]: ' % (prompt, true_value, false_value, default_value)
@@ -244,7 +243,7 @@ def main():
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
-        if debug_switch:
+        if DEBUG_SWITCH:
             debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
             debug.backup_screenshot(ts)
         i += 1
