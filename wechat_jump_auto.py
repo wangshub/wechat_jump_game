@@ -148,7 +148,7 @@ def find_piece_and_board(im):
         board_x_start = 0
         board_x_end = piece_x
 
-    for i in range(int(h / 3), int(h * 2 / 3)):
+    for i in range(int(h / 3), piece_y):
         last_pixel = im_pixel[0, i]
         if board_x or board_y:
             break
@@ -167,7 +167,7 @@ def find_piece_and_board(im):
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
-    last_pixel = im_pixel[board_x, i]
+    last_pixel = im_pixel[board_x, i+2]
 
     #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
     #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
@@ -181,15 +181,15 @@ def find_piece_and_board(im):
     #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
     for l in range(i, i+200):
         pixel = im_pixel[board_x, l]
-        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
-            board_y = l+10
+        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) <= 1:
+            board_y = l+11
             break
 
 
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
-
+    piece_y = piece_y_max + piece_base_height_1_2
     return piece_x, piece_y, board_x, board_y
 
 
@@ -231,7 +231,7 @@ def main():
         if debug_switch:
             Debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
             Debug.backup_screenshot(ts)
-        time.sleep(1)   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(1.5+0.5*(random.random()-0.5))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
 if __name__ == '__main__':
