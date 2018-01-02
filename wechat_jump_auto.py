@@ -229,7 +229,7 @@ def main():
     Debug.dump_device_info()
     check_screenshot()
 
-    i, next_rest, next_rest_time = 0, random.randrange(30, 100), random.randrange(10, 60)
+    i, next_rest, next_rest_time = 0, random.randrange(3, 10), random.randrange(5, 10)
     while True:
         pull_screenshot()
         im = Image.open('./autojump.png')
@@ -243,11 +243,10 @@ def main():
             Debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
             Debug.backup_screenshot(ts)
         i += 1
-        print(i, next_rest, next_rest_time)
         if i == next_rest:
             print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
             for j in xrange(next_rest_time):
-                print(next_rest_time - j)
+                print('程序将在 {}s 后继续'.format(next_rest_time - j))
                 time.sleep(1)
             i, next_rest, next_rest_time = 0, random.randrange(30, 100), random.randrange(10, 60)
         time.sleep(random.uniform(0.9, 1.2))   # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
