@@ -11,12 +11,6 @@
 #      这时候得到了块中点的 X 轴坐标，这时候假设现在棋子在当前块的中心，
 #      根据一个通过截图获取的固定的角度来推出中点的 Y 坐标
 # 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
-
-TODO:
- 解决定位偏移的问题
- 看看两个块中心到中轴距离是否相同，如果是的话靠这个来判断一下当前超前还是落后，便于矫正
- 一些固定值根据截图的具体大小计算
- 直接用 X 轴距离简化逻辑
 '''
 import os
 import sys
@@ -27,10 +21,10 @@ from PIL import Image
 import random
 from WechatJump import Debug, Config
 
-debug_switch = False # debug开关，需要调试的时候请改为：True
+debug_switch = False # debug 开关，需要调试的时候请改为：True
 config = Config.open_accordant_config()
 
-# Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
+# Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置，设置保存在 config 文件夹中
 under_game_score_y = config['under_game_score_y']
 press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
@@ -41,8 +35,6 @@ if config.get('swipe'):
     swipe = config['swipe']
 else:
     swipe = {}
-    #设置模拟按压各项参数，经过多台手机测试，其中2160x1080建议调整参数为320，1210，720，910
-    #使用vivox20，夏普全面屏和小米mix2测试过，均可达到2000+分数（记得在开发者设置打开usb安全验证）
     swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
@@ -71,7 +63,7 @@ def pull_screenshot():
 
 def set_button_position(im):
     '''
-    将swipe设置为 `再来一局` 按钮的位置
+    将 swipe 设置为 `再来一局` 按钮的位置
     '''
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
@@ -85,7 +77,7 @@ def jump(distance):
     跳跃一定的距离
     '''
     press_time = distance * press_coefficient
-    press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
+    press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
@@ -97,6 +89,7 @@ def jump(distance):
     print(cmd)
     os.system(cmd)
     return press_time
+
 
 def find_piece_and_board(im):
     '''
@@ -110,22 +103,22 @@ def find_piece_and_board(im):
     board_x = 0
     board_y = 0
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
-    scan_start_y = 0  # 扫描的起始y坐标
+    scan_start_y = 0  # 扫描的起始 y 坐标
     im_pixel = im.load()
-    # 以50px步长，尝试探测scan_start_y
+    # 以 50px 步长，尝试探测 scan_start_y
     for i in range(int(h / 3), int(h*2 / 3), 50):
         last_pixel = im_pixel[0, i]
         for j in range(1, w):
             pixel = im_pixel[j, i]
-            # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
+            # 不是纯色的线，则记录 scan_start_y 的值，准备跳出循环
             if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
                 scan_start_y = i - 50
                 break
         if scan_start_y:
             break
-    print('scan_start_y: ', scan_start_y)
+    print('scan_start_y: {}'.format(scan_start_y))
 
-    # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
+    # 从 scan_start_y 开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
             pixel = im_pixel[j, i]
@@ -137,10 +130,10 @@ def find_piece_and_board(im):
 
     if not all((piece_x_sum, piece_x_c)):
         return 0, 0, 0, 0
-    piece_x = int(piece_x_sum / piece_x_c);
+    piece_x = int(piece_x_sum / piece_x_c)
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
-    #限制棋盘扫描的横坐标，避免音符bug
+    # 限制棋盘扫描的横坐标，避免音符 bug
     if piece_x < w/2:
         board_x_start = piece_x
         board_x_end = w
@@ -169,29 +162,26 @@ def find_piece_and_board(im):
             board_x = board_x_sum / board_x_c
     last_pixel = im_pixel[board_x, i]
 
-    #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
-    #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
-    for k in range(i+274, i, -1): #274取开局时最大的方块的上下顶点距离
+    # 从上顶点往下 +274 的位置开始向上找颜色与上顶点一样的点，为下顶点
+    # 该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
+    for k in range(i+274, i, -1): # 274 取开局时最大的方块的上下顶点距离
         pixel = im_pixel[board_x, k]
         if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) < 10:
             break
     board_y = int((i+k) / 2)
 
-    #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码可能存在的判断错误
-    #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
+    # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个属性弥补上一段代码可能存在的判断错误
+    # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
     for l in range(i, i+200):
         pixel = im_pixel[board_x, l]
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
             board_y = l+10
             break
 
-
-
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
 
     return piece_x, piece_y, board_x, board_y
-
 
 
 def check_screenshot():
@@ -207,15 +197,35 @@ def check_screenshot():
     pull_screenshot()
     try:
         Image.open('./autojump.png').load()
-        print('采用方式{}获取截图'.format(screenshot_way))
-    except:
+        print('采用方式 {} 获取截图'.format(screenshot_way))
+    except Exception:
         screenshot_way -= 1
         check_screenshot()
+
+
+def yes_or_no(prompt, true_value='y', false_value='n', default=True):
+    default_value = true_value if default else false_value
+    prompt = '%s %s/%s [%s]: ' % (prompt, true_value, false_value, default_value)
+    i = raw_input(prompt)
+    if not i:
+        return default
+    while True:
+        if i == true_value:
+            return True
+        elif i == false_value:
+            return False
+        prompt = 'Please input %s or %s: ' % (true_value, false_value)
+        i = raw_input(prompt)
+
 
 def main():
     '''
     主函数
     '''
+    op = yes_or_no('请确保手机打开了 ADB 并连接了电脑，然后打开跳一跳游戏再用本程序，确定开始？')
+    if not op:
+        print('bye')
+        return
     Debug.dump_device_info()
     check_screenshot()
 
@@ -231,7 +241,7 @@ def main():
         if debug_switch:
             Debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
             Debug.backup_screenshot(ts)
-        time.sleep(1)   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(random.uniform(1, 1.2))   # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
 
 
 if __name__ == '__main__':
