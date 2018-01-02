@@ -20,6 +20,7 @@ import math
 from PIL import Image
 import random
 from WechatJump import Debug, Config
+from six.moves import input
 
 debug_switch = False # debug 开关，需要调试的时候请改为：True
 config = Config.open_accordant_config()
@@ -69,8 +70,8 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left-50,left+50))
-    top = int(random.uniform(top-10,top+10))    #随机防ban
+    left = int(random.uniform(left-50, left+50))
+    top = int(random.uniform(top-10, top+10))    # 随机防 ban
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -208,7 +209,7 @@ def check_screenshot():
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     default_value = true_value if default else false_value
     prompt = '%s %s/%s [%s]: ' % (prompt, true_value, false_value, default_value)
-    i = raw_input(prompt)
+    i = input(prompt)
     if not i:
         return default
     while True:
@@ -217,7 +218,7 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         elif i == false_value:
             return False
         prompt = 'Please input %s or %s: ' % (true_value, false_value)
-        i = raw_input(prompt)
+        i = input(prompt)
 
 
 def main():
