@@ -203,10 +203,29 @@ def check_screenshot():
         check_screenshot()
 
 
+def yes_or_no(prompt, true_value='y', false_value='n', default=True):
+    default_value = true_value if default else false_value
+    prompt = '%s %s/%s [%s]: ' % (prompt, true_value, false_value, default_value)
+    i = raw_input(prompt)
+    if not i:
+        return default
+    while True:
+        if i == true_value:
+            return True
+        elif i == false_value:
+            return False
+        prompt = 'Please input %s or %s: ' % (true_value, false_value)
+        i = raw_input(prompt)
+
+
 def main():
     '''
     主函数
     '''
+    op = yes_or_no('请确保手机打开了 ADB 并连接了电脑，然后打开跳一跳游戏再用本程序，确定开始？')
+    if not op:
+        print('bye')
+        return
     Debug.dump_device_info()
     check_screenshot()
 
