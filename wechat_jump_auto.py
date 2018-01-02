@@ -33,10 +33,10 @@ DEBUG_SWITCH = False    # debug 开关，需要调试的时候请改为True，�
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置，设置保存在 config 文件夹中
 config = config.open_accordant_config()
-under_game_score_y    = config['under_game_score_y']
-press_coefficient     = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
+under_game_score_y = config['under_game_score_y']
+press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
-piece_body_width      = config['piece_body_width']        # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
+piece_body_width = config['piece_body_width']        # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
 
 SCREENSHOT_WAY = 3
@@ -44,7 +44,7 @@ SCREENSHOT_WAY = 3
 
 def pull_screenshot():
     '''
-    获取屏幕接入，目前有 0 1 2 三种方法，未来添加新的平台监测方法时，请根据效率及适用性由高到低排序
+    获取屏幕接入，目前有 0 1 2 4 三、四种方法，未来添加新的平台监测方法时，可根据效率及适用性由高到低排序
     '''
     global SCREENSHOT_WAY
     if SCREENSHOT_WAY >= 1 and SCREENSHOT_WAY <= 3:
