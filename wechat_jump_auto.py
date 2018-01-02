@@ -49,7 +49,7 @@ def pull_screenshot():
     新的方法请根据效率及适用性由高到低排序
     '''
     global screenshot_way
-    if screenshot_way >=1 and screenshot_way <=3:
+    if screenshot_way >= 1 and screenshot_way <= 3:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screenshot = process.stdout.read()
         if platform.system() == 'Windows':
