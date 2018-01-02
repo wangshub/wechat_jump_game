@@ -80,10 +80,10 @@ def jump(distance):
     press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe_x1,
-        y1=swipe_y1,
-        x2=swipe_x2,
-        y2=swipe_y2,
+        x1=swipe_x1 + random.randrange(-10, 10),
+        y1=swipe_y1 + random.randrange(-10, 10),
+        x2=swipe_x2 + random.randrange(-10, 10),
+        y2=swipe_y2 + random.randrange(-10, 10),
         duration=press_time
     )
     print(cmd)
@@ -241,7 +241,7 @@ def main():
         if debug_switch:
             Debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
             Debug.backup_screenshot(ts)
-        time.sleep(random.uniform(1, 1.2))   # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
+        time.sleep(random.uniform(0.9, 1.2))   # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
 
 
 if __name__ == '__main__':
