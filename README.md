@@ -39,7 +39,7 @@ adb shell input swipe x y x y time(ms)
     - 请在这里提交你的问题 [issues/62](https://github.com/wangshub/wechat_jump_game/issues/62)，或者将参数PR给我们并附上你的最高成绩。
 
 2. 如果你是 iOS，遇到问题怎么办？
-    - 请移步参考：[issues/99](https://github.com/wangshub/wechat_jump_game/issues/99)和 [issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
+    - 请移步参考：[issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和 [issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
 
 3. 如果你对环境安装和操作步骤不熟悉？
     - [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
