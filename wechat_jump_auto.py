@@ -80,14 +80,16 @@ def jump(distance):
     '''
     跳跃一定的距离
     '''
+    # 增加jump位置修正值，模拟手动点击误差
+    delta = {'x':(int(random.uniform(-10, 10)*10))/10, 'y':(int(random.uniform(-10, 10)*10))/10}
     press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe_x1,
-        y1=swipe_y1,
-        x2=swipe_x2,
-        y2=swipe_y2,
+        x1=swipe_x1+delta['x'],
+        y1=swipe_y1+delta['y'],
+        x2=swipe_x2+delta['x'],
+        y2=swipe_y2+delta['y'],
         duration=press_time
     )
     print(cmd)
