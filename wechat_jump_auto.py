@@ -100,6 +100,13 @@ def pull_screenshot():
         os.system('adb shell screencap -p /sdcard/autojump.png')
         os.system('adb pull /sdcard/autojump.png .')
 
+def backup_screenshot(ts):
+    # 为了方便失败的时候 debug
+    if not os.path.isdir(screenshot_backup_dir):
+        os.mkdir(screenshot_backup_dir)
+    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
+
+
 def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
     # 对debug图片加上详细的注释
@@ -124,7 +131,7 @@ def set_button_position(im):
 
 
 def jump(distance):
-    # 460 508
+    # 跳跃距离太长
     if distance >= 460:
         press_time = distance * long_distance_coefficient
     else:
@@ -213,9 +220,6 @@ def find_piece_and_board(im):
     if board_y > (piece_y - 210):
         print "xxxxxx", piece_x, piece_y, board_x, board_y
         board_y = piece_y - 210
-    if board_y >= i + 110:
-        print "yyyyyy", board_y, i
-        board_y = i + 80
     if board_y < i:
         print "zzzzzz", board_y, i
         board_y = i + 20
@@ -225,6 +229,8 @@ def find_piece_and_board(im):
     if abs(board_y - i) > 45:
         print "bbbbbb", board_y, i
         board_y = i + 45
+
+    # come here meeans: 20 <= abs(board_y - i) <= 45
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
@@ -258,6 +264,7 @@ def main():
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
+        # backup_screenshot(ts)
         time.sleep(1)   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
