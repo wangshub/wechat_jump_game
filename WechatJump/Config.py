@@ -7,6 +7,7 @@ import sys
 import json
 import re
 
+
 def open_accordant_config():
     '''
     调用配置文件
@@ -32,7 +33,7 @@ def _get_screen_size():
     '''
     size_str = os.popen('adb shell wm size').read()
     if not size_str:
-        print('请安装ADB及驱动并配置环境变量')
+        print('请安装 ADB 及驱动并配置环境变量')
         sys.exit()
     m = re.search(r'(\d+)x(\d+)', size_str)
     if m:
