@@ -40,7 +40,7 @@ piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋�
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
 
-screenshot_way = 2
+screenshot_way = 3
 
 
 def pull_screenshot():
@@ -48,13 +48,13 @@ def pull_screenshot():
     新的方法请根据效率及适用性由高到低排序
     '''
     global screenshot_way
-    if screenshot_way == 2 or screenshot_way == 1:
+    if screenshot_way >= 1 and screenshot_way <= 3:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-        screenshot = process.stdout.read()
+        binary_screenshot = process.stdout.read()
         if screenshot_way == 2:
-            binary_screenshot = screenshot.replace(b'\r\n', b'\n')
-        else:
-            binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
+            binary_screenshot = binary_screenshot.replace(b'\r\n', b'\n')
+        elif screenshot_way == 1:
+            binary_screenshot = binary_screenshot.replace(b'\r\r\n', b'\n')
         f = open('autojump.png', 'wb')
         f.write(binary_screenshot)
         f.close()
