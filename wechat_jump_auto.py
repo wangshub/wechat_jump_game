@@ -1,13 +1,5 @@
 # coding: utf-8
-import os
-import sys
-import subprocess
-import time
-import math
-from PIL import Image
-import random
-from WechatJump import Debug, Config
-
+'''
 # === 思路 ===
 # 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
 #      根据两个点的距离乘以一个时间系数获得长按的时间
@@ -20,11 +12,20 @@ from WechatJump import Debug, Config
 #      根据一个通过截图获取的固定的角度来推出中点的 Y 坐标
 # 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 
-
-# TODO: 解决定位偏移的问题
-# TODO: 看看两个块中心到中轴距离是否相同，如果是的话靠这个来判断一下当前超前还是落后，便于矫正
-# TODO: 一些固定值根据截图的具体大小计算
-# TODO: 直接用 X 轴距离简化逻辑
+TODO:
+ 解决定位偏移的问题
+ 看看两个块中心到中轴距离是否相同，如果是的话靠这个来判断一下当前超前还是落后，便于矫正
+ 一些固定值根据截图的具体大小计算
+ 直接用 X 轴距离简化逻辑
+'''
+import os
+import sys
+import subprocess
+import time
+import math
+from PIL import Image
+import random
+from WechatJump import Debug, Config
 
 debug_switch = False # debug开关，需要调试的时候请改为：True
 config = Config.open_accordant_config()
@@ -49,15 +50,17 @@ screenshot_way = 2
 
 
 def pull_screenshot():
+    '''
+    新的方法请根据效率及适用性由高到低排序
+    '''
     global screenshot_way
-    # 新的方法请根据效率及适用性由高到低排序
     if screenshot_way == 2 or screenshot_way == 1:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screenshot = process.stdout.read()
         if screenshot_way == 2:
-          binary_screenshot = screenshot.replace(b'\r\n', b'\n')
+            binary_screenshot = screenshot.replace(b'\r\n', b'\n')
         else:
-          binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
+            binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
         f = open('autojump.png', 'wb')
         f.write(binary_screenshot)
         f.close()
@@ -67,7 +70,9 @@ def pull_screenshot():
 
 
 def set_button_position(im):
-    # 将swipe设置为 `再来一局` 按钮的位置
+    '''
+    将swipe设置为 `再来一局` 按钮的位置
+    '''
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
     left = w / 2
@@ -76,6 +81,9 @@ def set_button_position(im):
 
 
 def jump(distance):
+    '''
+    跳跃一定的距离
+    '''
     press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200 ms 是最小的按压时间
     press_time = int(press_time)
@@ -91,6 +99,9 @@ def jump(distance):
     return press_time
 
 def find_piece_and_board(im):
+    '''
+    寻找关键坐标
+    '''
     w, h = im.size
 
     piece_x_sum = 0
@@ -100,12 +111,12 @@ def find_piece_and_board(im):
     board_y = 0
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
-    im_pixel=im.load()
+    im_pixel = im.load()
     # 以50px步长，尝试探测scan_start_y
-    for i in range(int(h / 3), int( h*2 /3 ), 50):
-        last_pixel = im_pixel[0,i]
+    for i in range(int(h / 3), int(h*2 / 3), 50):
+        last_pixel = im_pixel[0, i]
         for j in range(1, w):
-            pixel=im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
             if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
                 scan_start_y = i - 50
@@ -117,7 +128,7 @@ def find_piece_and_board(im):
     # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
-            pixel = im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
             if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
                 piece_x_sum += j
@@ -145,7 +156,7 @@ def find_piece_and_board(im):
         board_x_c = 0
 
         for j in range(int(board_x_start), int(board_x_end)):
-            pixel = im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 修掉脑袋比下一个小格子还高的情况的 bug
             if abs(j - piece_x) < piece_body_width:
                 continue
@@ -156,12 +167,12 @@ def find_piece_and_board(im):
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
-    last_pixel=im_pixel[board_x,i]
+    last_pixel = im_pixel[board_x, i]
 
     #从上顶点往下+274的位置开始向上找颜色与上顶点一样的点，为下顶点
     #该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
     for k in range(i+274, i, -1): #274取开局时最大的方块的上下顶点距离
-        pixel = im_pixel[board_x,k]
+        pixel = im_pixel[board_x, k]
         if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) < 10:
             break
     board_y = int((i+k) / 2)
@@ -169,7 +180,7 @@ def find_piece_and_board(im):
     #如果上一跳命中中间，则下个目标中心会出现r245 g245 b245的点，利用这个属性弥补上一段代码可能存在的判断错误
     #若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
     for l in range(i, i+200):
-        pixel = im_pixel[board_x,l]
+        pixel = im_pixel[board_x, l]
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
             board_y = l+10
             break
@@ -184,6 +195,9 @@ def find_piece_and_board(im):
 
 
 def check_screenshot():
+    '''
+    检查获取截图的方式
+    '''
     global screenshot_way
     if os.path.isfile('autojump.png'):
         os.remove('autojump.png')
@@ -199,7 +213,9 @@ def check_screenshot():
         check_screenshot()
 
 def main():
-
+    '''
+    主函数
+    '''
     Debug.dump_device_info()
     check_screenshot()
 

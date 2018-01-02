@@ -1,5 +1,9 @@
 # coding: utf-8
+'''
+默认PEP8的docstring，文件注释写在这里
+'''
 import os
+import sys
 import shutil
 from PIL import ImageDraw
 
@@ -36,14 +40,22 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     im.save('{}{}_d.png'.format(screenshot_backup_dir, ts))
 
 def dump_device_info():
+    '''
+    显示设备信息
+    '''
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.model').read()
     density_str = os.popen('adb shell wm density').read()
     print("如果你的脚本无法工作，上报issue时请copy如下信息:\n**********\
-        \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\nOS: {os}\nPython: {python}\n**********".format(
+        \nScreen: {size}\
+        \nDensity: {dpi}\
+        \nDeviceType: {type}\
+        \nOS: {os}\
+        \nPython: {python}\n**********".format(
             size=size_str.strip(),
             type=device_str.strip(),
             dpi=density_str.strip(),
             os=sys.platform,
             python=sys.version
-    ))
+        )
+    )
