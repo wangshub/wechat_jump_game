@@ -250,7 +250,7 @@ def main():
         i += 1
         if i == next_rest:
             print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
-            for j in xrange(next_rest_time):
+            for j in range(next_rest_time):
                 sys.stdout.write('\r程序将在 {}s 后继续'.format(next_rest_time - j))
                 sys.stdout.flush()
                 time.sleep(1)
