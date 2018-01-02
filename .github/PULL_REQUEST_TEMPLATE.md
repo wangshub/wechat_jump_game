@@ -4,6 +4,7 @@
 
 在 PR 前请尽量做到：
 
+- 更新脚本中的 VERSION 字段
 - PR 应基于最新的 master 分支
 - 尽量遵守 PEP8 规范
 - 分支名是有意义的名称，如 add-config-file-for-mi5s 而不是 patch-1

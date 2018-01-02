@@ -19,23 +19,25 @@ import time
 import math
 from PIL import Image
 import random
-from WechatJump import Debug, Config
+from six.moves import input
+try:
+    from common import debug, config
+except ImportError:
+    print('请在项目根目录中运行脚本')
+    exit(-1)
 
-debug_switch = False # debug 开关，需要调试的时候请改为：True
-config = Config.open_accordant_config()
+
+VERSION = "1.1.1"
+
+
+debug_switch = False    # debug 开关，需要调试的时候请改为：True
+config = config.open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置，设置保存在 config 文件夹中
 under_game_score_y = config['under_game_score_y']
 press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
-
-# 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
-if config.get('swipe'):
-    swipe = config['swipe']
-else:
-    swipe = {}
-    swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 410, 320, 410
 
 
 screenshot_way = 2
@@ -67,8 +69,10 @@ def set_button_position(im):
     '''
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
-    left = w / 2
+    left = int(w / 2)
     top = int(1584 * (h / 1920.0))
+    left = int(random.uniform(left-50, left+50))
+    top = int(random.uniform(top-10, top+10))    # 随机防 ban
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -206,7 +210,7 @@ def check_screenshot():
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     default_value = true_value if default else false_value
     prompt = '%s %s/%s [%s]: ' % (prompt, true_value, false_value, default_value)
-    i = raw_input(prompt)
+    i = input(prompt)
     if not i:
         return default
     while True:
@@ -215,18 +219,19 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         elif i == false_value:
             return False
         prompt = 'Please input %s or %s: ' % (true_value, false_value)
-        i = raw_input(prompt)
+        i = input(prompt)
 
 
 def main():
     '''
     主函数
     '''
-    op = yes_or_no('请确保手机打开了 ADB 并连接了电脑，然后打开跳一跳游戏再用本程序，确定开始？')
+    op = yes_or_no('请确保手机打开了 ADB 并连接了电脑，然后打开跳一跳并【开始游戏】后再用本程序，确定开始？')
     if not op:
         print('bye')
         return
-    Debug.dump_device_info()
+    print('程序版本号：{}'.format(VERSION))
+    debug.dump_device_info()
     check_screenshot()
 
     i, next_rest, next_rest_time = 0, random.randrange(3, 10), random.randrange(5, 10)
@@ -240,12 +245,12 @@ def main():
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
         if debug_switch:
-            Debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
-            Debug.backup_screenshot(ts)
+            debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
+            debug.backup_screenshot(ts)
         i += 1
         if i == next_rest:
             print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
-            for j in xrange(next_rest_time):
+            for j in range(next_rest_time):
                 sys.stdout.write('\r程序将在 {}s 后继续'.format(next_rest_time - j))
                 sys.stdout.flush()
                 time.sleep(1)
