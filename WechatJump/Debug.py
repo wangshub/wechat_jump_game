@@ -9,12 +9,14 @@ from PIL import ImageDraw
 
 screenshot_backup_dir = 'screenshot_backups/'
 
+
 def make_debug_dir(screenshot_backup_dir):
     '''
     创建备份文件夹
     '''
     if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
+
 
 def backup_screenshot(ts):
     '''
@@ -23,9 +25,10 @@ def backup_screenshot(ts):
     make_debug_dir(screenshot_backup_dir)
     shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
+
 def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     '''
-    对debug图片加上详细的注释
+    对 debug 图片加上详细的注释
     '''
     make_debug_dir(screenshot_backup_dir)
     draw = ImageDraw.Draw(im)
@@ -39,6 +42,7 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     del draw
     im.save('{}{}_d.png'.format(screenshot_backup_dir, ts))
 
+
 def dump_device_info():
     '''
     显示设备信息
@@ -46,16 +50,17 @@ def dump_device_info():
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.model').read()
     density_str = os.popen('adb shell wm density').read()
-    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n**********\
-        \nScreen: {size}\
-        \nDensity: {dpi}\
-        \nDeviceType: {type}\
-        \nOS: {os}\
-        \nPython: {python}\n**********".format(
-            size=size_str.strip(),
-            type=device_str.strip(),
-            dpi=density_str.strip(),
-            os=sys.platform,
-            python=sys.version
-        )
-    )
+    print("""如果你的脚本无法工作，上报 issue 时请 copy 如下信息：
+**********
+Screen: {size}
+Density: {dpi}
+DeviceType: {type}
+OS: {os}
+Python: {python}
+**********""".format(
+        size=size_str.strip(),
+        type=device_str.strip(),
+        dpi=density_str.strip(),
+        os=sys.platform,
+        python=sys.version
+    ))
