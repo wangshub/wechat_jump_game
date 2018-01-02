@@ -20,7 +20,6 @@ import math
 from PIL import Image
 import random
 from six.moves import input
-import platform
 try:
     from common import debug, config
 except ImportError:
@@ -51,14 +50,11 @@ def pull_screenshot():
     global screenshot_way
     if screenshot_way >= 1 and screenshot_way <= 3:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-        screenshot = process.stdout.read()
-        if platform.system() == 'Windows':
-            if screenshot_way == 2:
-                binary_screenshot = screenshot.replace(b'\r\n', b'\n')
-            else:
-                binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
+        binary_screenshot = process.stdout.read()
+        if screenshot_way == 2:
+            binary_screenshot = binary_screenshot.replace(b'\r\n', b'\n')
         elif screenshot_way == 1:
-            binary_screenshot = screenshot
+            binary_screenshot = binary_screenshot.replace(b'\r\r\n', b'\n')
         f = open('autojump.png', 'wb')
         f.write(binary_screenshot)
         f.close()
