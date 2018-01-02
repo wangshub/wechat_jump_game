@@ -17,15 +17,14 @@
 具体实例如下，按照该例进行提交 issue
 -->
 
-程序版本号：1.1.0
+程序版本号：x.x.x
 **********
-Screen: Physical size: 1080x2160
-Density: Physical density: 400
-Override density: 480
-DeviceType: OS105
-OS: darwin
-Python: 2.7.13 |Anaconda 4.4.0 (x86_64)| (default, Dec 20 2016, 23:05:08)
-[GCC 4.2.1 Compatible Apple LLVM 6.0 (clang-600.0.57)]
+Screen: Physical size: x
+Density: Physical density: x
+Override density: x
+DeviceType: x
+OS: x
+Python: x
 **********
 遇到问题：（请说清楚自己遇到了啥问题，不然可能被 close。还没有自己机型配置文件的请自己去创建一个，好用的话欢迎 PR。）
 ![]()
