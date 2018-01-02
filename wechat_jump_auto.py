@@ -49,7 +49,7 @@ def pull_screenshot():
     新的方法请根据效率及适用性由高到低排序
     '''
     global screenshot_way
-    if screenshot_way == 2 or screenshot_way == 1:
+    if screenshot_way >=1 and screenshot_way <=3:
         process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
         screenshot = process.stdout.read()
         if platform.system() == 'Windows':
@@ -57,7 +57,7 @@ def pull_screenshot():
                 binary_screenshot = screenshot.replace(b'\r\n', b'\n')
             else:
                 binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
-        else:
+        elif screenshot_way == 1:
             binary_screenshot = screenshot
         f = open('autojump.png', 'wb')
         f.write(binary_screenshot)
