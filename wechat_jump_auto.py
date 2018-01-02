@@ -2,14 +2,11 @@
 import os
 import sys
 import subprocess
-import shutil
 import time
 import math
-from PIL import Image, ImageDraw
+from PIL import Image
 import random
-import json
-import re
-
+from WechatJump import Debug, Config
 
 # === 思路 ===
 # 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
@@ -29,36 +26,8 @@ import re
 # TODO: 一些固定值根据截图的具体大小计算
 # TODO: 直接用 X 轴距离简化逻辑
 
-
-def open_accordant_config():
-    screen_size = _get_screen_size()
-    config_file = "{path}/config/{screen_size}/config.json".format(
-        path=sys.path[0],
-        screen_size=screen_size
-    )
-    if os.path.exists(config_file):
-        with open(config_file, 'r') as f:
-            print("Load config file from {}".format(config_file))
-            return json.load(f)
-    else:
-        with open('{}/config/default.json'.format(sys.path[0]), 'r') as f:
-            print("Load default config")
-            return json.load(f)
-
-
-def _get_screen_size():
-    size_str = os.popen('adb shell wm size').read()
-    if not size_str:
-        print('请安装ADB及驱动并配置环境变量')
-        sys.exit()
-    m = re.search('(\d+)x(\d+)', size_str)
-    if m:
-        width = m.group(1)
-        height = m.group(2)
-        return "{height}x{width}".format(height=height, width=width)
-
-
-config = open_accordant_config()
+debug_switch = False # debug开关，需要调试的时候请改为：True
+config = Config.open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 under_game_score_y = config['under_game_score_y']
@@ -77,9 +46,6 @@ else:
 
 
 screenshot_way = 2
-screenshot_backup_dir = 'screenshot_backups/'
-if not os.path.isdir(screenshot_backup_dir):
-    os.mkdir(screenshot_backup_dir)
 
 
 def pull_screenshot():
@@ -98,27 +64,6 @@ def pull_screenshot():
     elif screenshot_way == 0:
         os.system('adb shell screencap -p /sdcard/autojump.png')
         os.system('adb pull /sdcard/autojump.png .')
-
-
-def backup_screenshot(ts):
-    # 为了方便失败的时候 debug
-    if not os.path.isdir(screenshot_backup_dir):
-        os.mkdir(screenshot_backup_dir)
-    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
-
-
-def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
-    draw = ImageDraw.Draw(im)
-    # 对debug图片加上详细的注释
-    draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
-    draw.line((piece_x, 0, piece_x, im.size[1]), fill=(255, 0, 0))
-    draw.line((0, piece_y, im.size[0], piece_y), fill=(255, 0, 0))
-    draw.line((board_x, 0, board_x, im.size[1]), fill=(0, 0, 255))
-    draw.line((0, board_y, im.size[0], board_y), fill=(0, 0, 255))
-    draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
-    draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
-    del draw
-    im.save('{}{}_d.png'.format(screenshot_backup_dir, ts))
 
 
 def set_button_position(im):
@@ -236,18 +181,6 @@ def find_piece_and_board(im):
 
     return piece_x, piece_y, board_x, board_y
 
-def dump_device_info():
-    size_str = os.popen('adb shell wm size').read()
-    device_str = os.popen('adb shell getprop ro.product.model').read()
-    density_str = os.popen('adb shell wm density').read()
-    print("如果你的脚本无法工作，上报issue时请copy如下信息:\n**********\
-        \nScreen: {size}\nDensity: {dpi}\nDeviceType: {type}\nOS: {os}\nPython: {python}\n**********".format(
-            size=size_str.strip(),
-            type=device_str.strip(),
-            dpi=density_str.strip(),
-            os=sys.platform,
-            python=sys.version
-    ))
 
 
 def check_screenshot():
@@ -267,7 +200,7 @@ def check_screenshot():
 
 def main():
 
-    dump_device_info()
+    Debug.dump_device_info()
     check_screenshot()
 
     while True:
@@ -279,8 +212,9 @@ def main():
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
-        save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
-        backup_screenshot(ts)
+        if debug_switch:
+            Debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
+            Debug.backup_screenshot(ts)
         time.sleep(1)   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
