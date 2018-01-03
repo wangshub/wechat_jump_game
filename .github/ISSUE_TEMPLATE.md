@@ -22,8 +22,9 @@
 Screen: Physical size: x
 Density: Physical density: x
 Override density: x
-DeviceType: x
-OS: x
+Device: x
+Phone OS: x
+Host OS: x
 Python: x
 **********
 遇到问题：（请说清楚自己遇到了啥问题，不然可能被 close。还没有自己机型配置文件的请自己去创建一个，好用的话欢迎 PR。）
