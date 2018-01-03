@@ -8,14 +8,14 @@ import sys
 from PIL import Image
 
 
-# SCREENSHOT_WAY是截图方法，经过check_screenshot后，会自动递减，因此不需修改
+# SCREENSHOT_WAY 是截图方法，经过 check_screenshot 后，会自动递减，不需手动修改
 SCREENSHOT_WAY = 3
 
 
 def pull_screenshot():
     """
-    获取屏幕接入，目前有 0 1 2 3 四种方法，未来添加新的平台监测
-    方法时，可根据效率及适用性由高到低排序
+    获取屏幕截图，目前有 0 1 2 3 四种方法，未来添加新的平台监测方法时，
+    可根据效率及适用性由高到低排序
     """
     global SCREENSHOT_WAY
     if 1 <= SCREENSHOT_WAY <= 3:

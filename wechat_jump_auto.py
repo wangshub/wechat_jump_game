@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
 """
-# === 思路 ===
-# 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
-#      根据两个点的距离乘以一个时间系数获得长按的时间
-# 识别棋子：靠棋子的颜色来识别位置，通过截图发现最下面一行大概是一条
-           直线，就从上往下一行一行遍历，比较颜色（颜色用了一个区间来比较）
-           找到最下面的那一行的所有点，然后求个中点，求好之后再让 Y 轴坐标
-           减小棋子底盘的一半高度从而得到中心点的坐标
-# 识别棋盘：靠底色和方块的色差来做，从分数之下的位置开始，一行一行扫描，
-           由于圆形的块最顶上是一条线，方形的上面大概是一个点，所以就
-           用类似识别棋子的做法多识别了几个点求中点，这时候得到了块中点的 X
-           轴坐标，这时候假设现在棋子在当前块的中心，根据一个通过截图获取的
-           固定的角度来推出中点的 Y 坐标
-# 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
+=== 思路 ===
+核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
+    根据两个点的距离乘以一个时间系数获得长按的时间
+识别棋子：靠棋子的颜色来识别位置，通过截图发现最下面一行大概是一条
+    直线，就从上往下一行一行遍历，比较颜色（颜色用了一个区间来比较）
+    找到最下面的那一行的所有点，然后求个中点，求好之后再让 Y 轴坐标
+    减小棋子底盘的一半高度从而得到中心点的坐标
+识别棋盘：靠底色和方块的色差来做，从分数之下的位置开始，一行一行扫描，
+    由于圆形的块最顶上是一条线，方形的上面大概是一个点，所以就
+    用类似识别棋子的做法多识别了几个点求中点，这时候得到了块中点的 X
+    轴坐标，这时候假设现在棋子在当前块的中心，根据一个通过截图获取的
+    固定的角度来推出中点的 Y 坐标
+最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 """
 from __future__ import print_function, division
 import os
@@ -28,7 +28,7 @@ try:
 except Exception as ex:
     print(ex)
     print('请在项目根目录中运行脚本')
-    print('请检查项目根目录从的common文件夹是否存在')
+    print('请检查项目根目录从的 common 文件夹是否存在')
     exit(-1)
 
 
@@ -190,8 +190,8 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     检查是否已经为启动程序做好了准备
     """
     default_value = true_value if default else false_value
-    prompt = '%s %s/%s [%s]: ' % (prompt, true_value,
-                                  false_value, default_value)
+    prompt = '{} {}/{} [{}]: '.format(prompt, true_value,
+        false_value, default_value)
     i = input(prompt)
     if not i:
         return default
@@ -200,7 +200,7 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
             return True
         elif i == false_value:
             return False
-        prompt = 'Please input %s or %s: ' % (true_value, false_value)
+        prompt = 'Please input {} or {}: '.format(true_value, false_value)
         i = input(prompt)
 
 
