@@ -27,8 +27,8 @@ try:
     from common import debug, config, screenshot
 except Exception as ex:
     print(ex)
-    print('请在项目根目录中运行脚本')
-    print('请检查项目根目录从的 common 文件夹是否存在')
+    print('请将脚本放在项目根目录中运行')
+    print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
 
