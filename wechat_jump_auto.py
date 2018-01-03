@@ -15,6 +15,7 @@
            固定的角度来推出中点的 Y 坐标
 # 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 """
+from __future__ import print_function, division
 import os
 import sys
 import subprocess
@@ -25,7 +26,8 @@ from PIL import Image
 from six.moves import input
 try:
     from common import debug, config
-except ImportError:
+except Exception as ex:
+    print(ex)
     print('请在项目根目录中运行脚本')
     exit(-1)
 
@@ -53,7 +55,7 @@ SCREENSHOT_WAY = 3
 
 def pull_screenshot():
     """
-    获取屏幕接入，目前有 0 1 2 4 三、四种方法，未来添加新的平台监测
+    获取屏幕接入，目前有 0 1 2 3 四种方法，未来添加新的平台监测
     方法时，可根据效率及适用性由高到低排序
     """
     global SCREENSHOT_WAY
@@ -217,10 +219,10 @@ def find_piece_and_board(im):
     # 属性弥补上一段代码可能存在的判断错误
     # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有
     # 可能游戏失败，由于花纹面积通常比较大，失败概率较低
-    for l in range(i, i+200):
-        pixel = im_pixel[board_x, l]
+    for j in range(i, i+200):
+        pixel = im_pixel[board_x, j]
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
-            board_y = l + 10
+            board_y = j + 10
             break
 
     if not all((board_x, board_y)):
@@ -275,6 +277,7 @@ def main():
             debug.save_debug_screenshot(ts, im, piece_x,
                                         piece_y, board_x, board_y)
             debug.backup_screenshot(ts)
+        im.close()
         i += 1
         if i == next_rest:
             print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
