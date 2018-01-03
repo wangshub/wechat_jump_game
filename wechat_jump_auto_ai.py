@@ -394,8 +394,8 @@ def main():
         debug.computing_error(press_time, board_x, board_y, piece_x, piece_y, temp_piece_x, temp_piece_y)
 
         if debug_switch:
-            debug.save_debug_screenshot("d", ts, im, piece_x, piece_y, board_x, board_y)
-            debug.save_debug_screenshot("t", ts, im_temp, temp_piece_x, temp_piece_y, board_x, board_y)
+            debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, "d")
+            debug.save_debug_screenshot(ts, im_temp, temp_piece_x, temp_piece_y, board_x, board_y, "t")
             # debug.backup_screenshot(ts)
         i = 0
         if i == next_rest:
