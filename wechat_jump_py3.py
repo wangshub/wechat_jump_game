@@ -34,7 +34,7 @@ def update_data():
     return np.array(Image.open('autojump.png'))
 
 
-def updatefig():
+def updatefig(*args):
     global update
     if update:
         time.sleep(1.5)
