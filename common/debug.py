@@ -49,7 +49,7 @@ def dump_device_info():
     """
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.device').read()
-    os_version_str = os.popen('adb shell getprop ro.build.version.release').read()
+    phone_os_str = os.popen('adb shell getprop ro.build.version.release').read()
     density_str = os.popen('adb shell wm density').read()
     print("""**********
 Screen: {size}
@@ -62,7 +62,7 @@ Python: {python}
         size=size_str.strip(),
         dpi=density_str.strip(),
         device=device_str.strip(),
-        phone_os=os_version_str.strip(),
+        phone_os=phone_os_str.strip(),
         host_os=sys.platform,
         python=sys.version
     ))
