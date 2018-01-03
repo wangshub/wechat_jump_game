@@ -19,6 +19,7 @@ import time
 import math
 from PIL import Image
 import random
+import UnicodeStreamFilter
 from six.moves import input
 try:
     from common import debug, config
