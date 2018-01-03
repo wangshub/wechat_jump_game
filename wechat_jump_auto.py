@@ -18,17 +18,17 @@
 from __future__ import print_function, division
 import os
 import sys
-import subprocess
 import time
 import math
 import random
 from PIL import Image
 from six.moves import input
 try:
-    from common import debug, config
+    from common import debug, config, screenshot
 except Exception as ex:
     print(ex)
     print('请在项目根目录中运行脚本')
+    print('请检查项目根目录从的common文件夹是否存在')
     exit(-1)
 
 
@@ -48,51 +48,6 @@ press_coefficient = config['press_coefficient']
 piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
-
-
-SCREENSHOT_WAY = 3
-
-
-def pull_screenshot():
-    """
-    获取屏幕接入，目前有 0 1 2 3 四种方法，未来添加新的平台监测
-    方法时，可根据效率及适用性由高到低排序
-    """
-    global SCREENSHOT_WAY
-    if 1 <= SCREENSHOT_WAY <= 3:
-        process = subprocess.Popen(
-            'adb shell screencap -p',
-            shell=True, stdout=subprocess.PIPE)
-        binary_screenshot = process.stdout.read()
-        if SCREENSHOT_WAY == 2:
-            binary_screenshot = binary_screenshot.replace(b'\r\n', b'\n')
-        elif SCREENSHOT_WAY == 1:
-            binary_screenshot = binary_screenshot.replace(b'\r\r\n', b'\n')
-        f = open('autojump.png', 'wb')
-        f.write(binary_screenshot)
-        f.close()
-    elif SCREENSHOT_WAY == 0:
-        os.system('adb shell screencap -p /sdcard/autojump.png')
-        os.system('adb pull /sdcard/autojump.png .')
-
-
-def check_screenshot():
-    """
-    检查获取截图的方式
-    """
-    global SCREENSHOT_WAY
-    if os.path.isfile('autojump.png'):
-        os.remove('autojump.png')
-    if SCREENSHOT_WAY < 0:
-        print('暂不支持当前设备')
-        sys.exit()
-    pull_screenshot()
-    try:
-        Image.open('./autojump.png').load()
-        print('采用方式 {} 获取截图'.format(SCREENSHOT_WAY))
-    except Exception:
-        SCREENSHOT_WAY -= 1
-        check_screenshot()
 
 
 def set_button_position(im):
@@ -260,12 +215,12 @@ def main():
         return
     print('程序版本号：{}'.format(VERSION))
     debug.dump_device_info()
-    check_screenshot()
+    screenshot.check_screenshot()
 
     i, next_rest, next_rest_time = (0, random.randrange(3, 10),
                                     random.randrange(5, 10))
     while True:
-        pull_screenshot()
+        screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
