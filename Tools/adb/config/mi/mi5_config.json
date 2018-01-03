@@ -1,0 +1,13 @@
+{
+    "under_game_score_y": 300,
+    "press_coefficient": 1.475,
+    "piece_base_height_1_2": 20,
+    "piece_body_width": 70,
+
+    "swipe" : {
+      "x1": 540,
+      "y1": 1514,
+      "x2": 540,
+      "y2": 1514
+    }
+}

@@ -11,10 +11,10 @@ def pull_screenshot():
     os.system('adb pull /sdcard/autojump.png .')
 
 def jump(distance):
-    press_time = distance * 2.0
+    press_time = distance * 1.35
     press_time = int(press_time)
     cmd = 'adb shell input swipe 320 410 320 410 ' + str(press_time)
-    print (cmd)
+    print(cmd)
     os.system(cmd)
 
 fig = plt.figure()
@@ -54,7 +54,7 @@ def onClick(event):
     ix, iy = event.xdata, event.ydata
     coords = []
     coords.append((ix, iy))
-    print( 'now = ', coords)
+    print('now = ', coords)
     cor.append(coords)
     
 
@@ -67,7 +67,7 @@ def onClick(event):
 
         distance = (cor1[0][0] - cor2[0][0])**2 + (cor1[0][1] - cor2[0][1])**2 
         distance = distance ** 0.5
-        print( 'distance = ', distance)
+        print('distance = ', distance)
         jump(distance)
         update = True
         
