@@ -1,7 +1,7 @@
-# coding: utf-8
-'''
-默认PEP8的docstring，文件注释写在这里
-'''
+# -*- coding: utf-8 -*-
+"""
+这儿是debug的代码，当DEBUG_SWITCH开关开启的时候，会将各种信息存在本地，方便检查故障
+"""
 import os
 import sys
 import shutil
@@ -13,25 +13,25 @@ screenshot_backup_dir = 'screenshot_backups/'
 
 
 def make_debug_dir(screenshot_backup_dir):
-    '''
+    """
     创建备份文件夹
-    '''
+    """
     if not os.path.isdir(screenshot_backup_dir):
         os.mkdir(screenshot_backup_dir)
 
 
 def backup_screenshot(ts):
-    '''
+    """
     为了方便失败的时候 debug
-    '''
+    """
     make_debug_dir(screenshot_backup_dir)
     shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
 def save_debug_screenshot(type, ts, im, piece_x, piece_y, board_x, board_y):
-    '''
+    """
     对 debug 图片加上详细的注释
-    '''
+    """
     make_debug_dir(screenshot_backup_dir)
     draw = ImageDraw.Draw(im)
     draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
@@ -59,9 +59,9 @@ def computing_error(last_press_time, target_board_x, target_board_y, last_piece_
         # print(round(actual_distance), round(last_press_time))
 
 def dump_device_info():
-    '''
+    """
     显示设备信息
-    '''
+    """
     size_str = os.popen('adb shell wm size').read()
     device_str = os.popen('adb shell getprop ro.product.device').read()
     phone_os_str = os.popen('adb shell getprop ro.build.version.release').read()
