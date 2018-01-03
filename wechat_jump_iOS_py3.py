@@ -6,6 +6,7 @@ from PIL import Image
 import math
 import time
 import os
+import random
 
 # 截图距离 * time_coefficient = 按键时长
 # iphonex
@@ -26,7 +27,7 @@ def jump(distance):
     press_time = distance * time_coefficient
     press_time = press_time
     print('press_time = ',press_time)
-    s.tap_hold(200,200,press_time)
+    s.tap_hold(random.uniform(400,600), random.uniform(600,800),press_time)
 
 fig = plt.figure()
 index = 0
