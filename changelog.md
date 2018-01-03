@@ -1,8 +1,8 @@
 ## 更新日志
 
 - 2018-1-3 ：
-  - 新增一键启动 app，目前适配 win64/macOS 平台的 Android 设备，详见 [STOP_jump](https://github.com/wangshub/wechat_jump_game/releases)
-  - 启动规范代码流程，对代码进行重构和修复，增加兼容性等
+  - 新增一键启动 app，目前适配 win64/macOS 平台的 Android 设备，详见 [STOP_jump](https://github.com/wangshub/wechat_jump_game/releases)
+  - 启动规范代码流程，对代码进行重构和修复，增加兼容性等
 
 - 2017-12-30 :
   - 请将安卓手机的 USB 调试模式打开，设置 》更多设置 》开发者选项 》USB 调试，如果出现运行脚本后小人不跳的情况，请检查是否有打开 “USB 调试（安全模式）”
