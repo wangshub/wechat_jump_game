@@ -28,9 +28,10 @@ def backup_screenshot(ts):
     shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
-def save_debug_screenshot(type, ts, im, piece_x, piece_y, board_x, board_y):
+def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype = 'auto'):
     """
     对 debug 图片加上详细的注释
+    
     """
     make_debug_dir(screenshot_backup_dir)
     draw = ImageDraw.Draw(im)
@@ -42,7 +43,7 @@ def save_debug_screenshot(type, ts, im, piece_x, piece_y, board_x, board_y):
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save('{}{}_{}.png'.format(screenshot_backup_dir, ts, type))
+    im.save('{}{}_{}.png'.format(screenshot_backup_dir, ts, debugtype))
 
 def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x, temp_piece_y):
     '''
