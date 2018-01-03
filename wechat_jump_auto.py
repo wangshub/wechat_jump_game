@@ -35,19 +35,19 @@ except Exception as ex:
 VERSION = "1.1.1"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
-DEBUG_SWITCH = False
+DEBUG_SWITCH = True
 
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需
 # 设置，设置保存在 config 文件夹中
 config = config.open_accordant_config()
-under_game_score_y = config['under_game_score_y']
+# under_game_score_y = config['under_game_score_y']
 # 长按的时间系数，请自己根据实际情况调节
 press_coefficient = config['press_coefficient']
 # 二分之一的棋子底座高度，可能要调节
-piece_base_height_1_2 = config['piece_base_height_1_2']
+# piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
-piece_body_width = config['piece_body_width']
+# piece_body_width = config['piece_body_width']
 
 
 def set_button_position(im):
@@ -109,24 +109,30 @@ def find_piece_and_board(im):
             break
     print('scan_start_y: {}'.format(scan_start_y))
 
-    # 从 scan_start_y 开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
+    # 使用像素聚集边界来判断中心
+    # j 横坐标
+    # i 纵坐标
+
+    pixel_dict_x = dict()
+    pixel_dict_y = dict()
+    # pixel_dict_y = dict()
     for i in range(scan_start_y, int(h * 2 / 3)):
         # 横坐标方面也减少了一部分扫描开销
         for j in range(scan_x_border, w - scan_x_border):
             pixel = im_pixel[j, i]
-            # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜
-            # 色这样应该 OK，暂时不提出来
-            if (50 < pixel[0] < 60) \
-                    and (53 < pixel[1] < 63) \
-                    and (95 < pixel[2] < 110):
-                piece_x_sum += j
-                piece_x_c += 1
-                piece_y_max = max(i, piece_y_max)
+            # 根据棋子颜色，进行像素积累记录，棋子最宽的地方即是纵坐标位置，同理可得
+            if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
+                if j not in pixel_dict_x:
+                    pixel_dict_x[j] = 0
+                pixel_dict_x[j] +=1
+                if i not in pixel_dict_y:
+                    pixel_dict_y[i] = 0
+                pixel_dict_y[i] +=1
 
-    if not all((piece_x_sum, piece_x_c)):
-        return 0, 0, 0, 0
-    piece_x = int(piece_x_sum / piece_x_c)
-    piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
+    piece_x = sorted(pixel_dict_x,key=lambda x:pixel_dict_x[x])[-1]  
+    piece_y = sorted(pixel_dict_y,key=lambda x:pixel_dict_y[x])[-1]
+    # print (piece_x, piece_y)
+
 
     # 限制棋盘扫描的横坐标，避免音符 bug
     if piece_x < w/2:
@@ -145,9 +151,10 @@ def find_piece_and_board(im):
 
         for j in range(int(board_x_start), int(board_x_end)):
             pixel = im_pixel[j, i]
-            # 修掉脑袋比下一个小格子还高的情况的 bug
-            if abs(j - piece_x) < piece_body_width:
-                continue
+
+            # 获取棋子半径
+            if abs(j - piece_x) < pixel_dict_y[sorted(pixel_dict_y,key=lambda x:pixel_dict_y[x])[-1]]:
+                  continue
 
             # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
             if abs(pixel[0] - last_pixel[0]) \
