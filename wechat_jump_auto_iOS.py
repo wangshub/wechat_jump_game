@@ -64,7 +64,7 @@ def pull_screenshot():
 def jump(distance):
     press_time = distance * time_coefficient / 1000
     print('press time: {}'.format(press_time))
-    s.tap_hold(200, 200, press_time)
+    s.tap_hold(random.randint(150,250), random.randint(728,850), press_time)
 
 
 def backup_screenshot(ts):
