@@ -33,7 +33,7 @@ except Exception as ex:
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
-VERSION = "1.1.1"
+VERSION = "1.2.1"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
@@ -49,7 +49,7 @@ piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
 # 图形中圆球的直径，可以利用系统自带画图工具，用直线测量像素，如果可以实现自动识别圆球直径，那么此处将可实现全自动。
-head_diameter = config['head_diameter']
+head_diameter = config.get('head_diameter', 60)
 
 
 def set_button_position(im):
