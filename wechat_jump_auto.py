@@ -84,10 +84,13 @@ def jump(distance):
     press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe_x1,
-        y1=swipe_y1,
-        x2=swipe_x2,
-        y2=swipe_y2,
+        '''
+        微信通过上传每次触摸位置屏蔽作弊.开启随机触摸,自动重新开局失效
+        '''
+        x1=random.uniform(0, 141),
+        y1=random.uniform(0, 592),
+        x2=random.uniform(0, 653),
+        y2=random.uniform(0, 589),
         duration=press_time
     )
     print(cmd)
