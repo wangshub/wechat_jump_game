@@ -58,7 +58,7 @@ im = plt.imshow(img, animated=True)
 update = True
 
 
-def updatefig():
+def updatefig(*args):
     global update
 
     if update:
