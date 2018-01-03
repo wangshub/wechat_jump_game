@@ -194,7 +194,10 @@ def check_screenshot():
     '''
     global screenshot_way
     if os.path.isfile('autojump.png'):
-        os.remove('autojump.png')
+        try:
+            os.remove('autojump.png')
+        except Exception,e:
+            pass
     if (screenshot_way < 0):
         print('暂不支持当前设备')
         sys.exit()
