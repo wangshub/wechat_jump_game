@@ -39,18 +39,6 @@ press_coefficient = config['press_coefficient']       # 长按的时间系数，
 piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
 piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
-<<<<<<< HEAD
-# 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
-if config.get('swipe'):
-    swipe = config['swipe']
-else:
-    swipe = {}
-    #设置模拟按压各项参数，经过多台手机测试，其中2160x1080建议调整参数为320，1210，720，910
-    #使用vivox20，夏普全面屏和小米mix2测试过，均可达到2000+分数（记得在开发者设置打开usb安全验证）
-    swipe['x1'], swipe['y1'], swipe['x2'], swipe['y2'] = 320, 1210, 720, 910
-=======
->>>>>>> upstream/master
-
 screenshot_way = 2
 
 
