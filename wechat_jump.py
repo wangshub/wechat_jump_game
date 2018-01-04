@@ -9,7 +9,7 @@ import cv2
 
 scale = 0.25
 
-template = cv2.imread('./train_data/character.png')
+template = cv2.imread('./resource/image/character.png')
 template = cv2.resize(template, (0, 0), fx=scale, fy=scale)
 template_size = template.shape[:2]
 
