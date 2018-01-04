@@ -5,6 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from PIL import Image
+import math
+import time
+import os
+import random
 
 # 截图距离 * time_coefficient = 按键时长
 # time_coefficient:
@@ -26,7 +30,7 @@ def jump(distance):
     press_time = distance * time_coefficient
     press_time = press_time
     print('press_time = ',press_time)
-    s.tap_hold(200, 200, press_time)
+    s.tap_hold(random.uniform(0, 320), random.uniform(64, 320), press_time)
 
 
 fig = plt.figure()
