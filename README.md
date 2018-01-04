@@ -70,4 +70,7 @@
 <https://github.com/Erimus-Koo/wechat_jump_game>  
 还搞不懂Github怎么用，不晓得怎么提交回去，就先这样吧。
 
+## 5. 更新
+- 更新为内存IO，不再写入根目录文件，减少磁盘IO。（其实是因为读写中途经常和onedrive起冲突）
+
 `微信 小程序 跳一跳 python 外挂`

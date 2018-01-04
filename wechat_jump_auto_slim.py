@@ -1,6 +1,7 @@
 # coding: utf-8
 import os,sys,subprocess,time,math,random
 from PIL import Image
+from io import BytesIO
 
 VERSION = "1.1.1"
 
@@ -15,9 +16,9 @@ def check_screenshot():
 	if (screenshot_way < 0):
 		print('暂不支持当前设备')
 		sys.exit()
-	pull_screenshot()
+	binary_screenshot = pull_screenshot()
 	try:
-		Image.open('./autojump.png').load()
+		im = Image.open(BytesIO(binary_screenshot)).load()
 		print('Capture Method: {}'.format(screenshot_way))
 	except Exception:
 		screenshot_way -= 1
@@ -26,16 +27,14 @@ def check_screenshot():
 # 新的方法请根据效率及适用性由高到低排序
 def pull_screenshot():
 	global screenshot_way
-	if screenshot_way == 2 or screenshot_way == 1:
+	if screenshot_way in [1,2]:
 		process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
 		screenshot = process.stdout.read()
 		if screenshot_way == 2:
 			binary_screenshot = screenshot.replace(b'\r\n', b'\n')
 		else:
 			binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
-		f = open('autojump.png', 'wb')
-		f.write(binary_screenshot)
-		f.close()
+		return binary_screenshot
 	elif screenshot_way == 0:
 		os.system('adb shell screencap -p /sdcard/autojump.png')
 		os.system('adb pull /sdcard/autojump.png .')
@@ -162,8 +161,9 @@ def main():
 		print('---\n%-12s %s (%s)'%('Times:',count,int(time.time())))
 
 		# 获取截图
-		pull_screenshot()
-		im = Image.open('./autojump.png')
+		binary_screenshot = pull_screenshot()
+		im = Image.open(BytesIO(binary_screenshot))
+		# im.show()
 		w,h = im.size
 		if w>h: #添加图片方向判断
 			im = im.rotate(-90,expand=True)
