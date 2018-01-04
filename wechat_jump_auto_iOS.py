@@ -39,16 +39,13 @@ piece_body_width = config['piece_body_width']             # 棋子的宽度，�
 time_coefficient = config['press_coefficient']
 
 # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
-if config.get('swipe'):
-    swipe = config['swipe']
+if config.get('tap'):
+    tap= config['tap']
 else:
-    swipe = {
-        "x1": 320,
-        "y1": 410,
-        "x2": 320,
-        "y2": 410
+    tap= {
+        "x": 380,
+        "y": 1096,
     }
-
 c = wda.Client()
 s = c.session()
 
@@ -64,7 +61,7 @@ def pull_screenshot():
 def jump(distance):
     press_time = distance * time_coefficient / 1000
     print('press time: {}'.format(press_time))
-    s.tap_hold(200, 200, press_time)
+    s.tap_hold(random.uniform(150, 250), random.uniform(150, 250), press_time)
 
 
 def backup_screenshot(ts):
@@ -74,7 +71,7 @@ def backup_screenshot(ts):
     shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
-def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
+def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
     # 对debug图片加上详细的注释
     draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
@@ -86,15 +83,6 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
     im.save('{}{}_d.png'.format(screenshot_backup_dir, ts))
-
-
-def set_button_position(im):
-    # 将swipe设置为 `再来一局` 按钮的位置
-    global swipe_x1, swipe_y1, swipe_x2, swipe_y2
-    w, h = im.size
-    left = w / 2
-    top = 1003 * (h / 1280.0) + 10
-    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
 def find_piece_and_board(im):
@@ -182,17 +170,17 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         if piece_x == 0:
-            return
-
-        set_button_position(im)
+            time.sleep(2)
+            s.tap_hold(tap['x'], tap['y'], 1)
+            continue
 
         distance = math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)
         jump(distance)
 
-        save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
+        save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
 
-        time.sleep(random.uniform(1, 1.1))   # 为了保证截图的时候应落稳了，多延迟一会儿
+        time.sleep(random.uniform(1.5, 1.8))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 
 if __name__ == '__main__':
