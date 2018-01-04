@@ -1,7 +1,7 @@
-# coding: utf-8
-'''
-默认PEP8的docstring，文件注释写在这里
-'''
+# -*- coding: utf-8 -*-
+"""
+调取配置文件和屏幕分辨率的代码
+"""
 import os
 import sys
 import json
@@ -9,9 +9,9 @@ import re
 
 
 def open_accordant_config():
-    '''
+    """
     调用配置文件
-    '''
+    """
     screen_size = _get_screen_size()
     config_file = "{path}/config/{screen_size}/config.json".format(
         path=sys.path[0],
@@ -28,9 +28,9 @@ def open_accordant_config():
 
 
 def _get_screen_size():
-    '''
+    """
     获取手机屏幕大小
-    '''
+    """
     size_str = os.popen('adb shell wm size').read()
     if not size_str:
         print('请安装 ADB 及驱动并配置环境变量')
