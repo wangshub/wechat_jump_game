@@ -28,29 +28,13 @@ adb shell input swipe x y x y time(ms)
 
 ## 使用教程
 
-相关软件工具安装，和使用步骤请参考 [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
+- 方法 1：使用 app 进行一键操作。目前已适配 Win10 64位/macOS 平台 Android 一键操作，下载请移步 [STOP_jump](https://github.com/wangshub/wechat_jump_game/releases)
+
+- 方法 2：相关软件工具安装和使用步骤请参考 [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
 
 ## FAQ
 
-> 请先查阅一下 issue 区，请按照 issue 模板正确提交问题
-
-1. 如果你手机的的 `config.json` 出错导致弹跳不准确，或者有更好的参数？
-    - 请在这里提交你的问题 [issues/62](https://github.com/wangshub/wechat_jump_game/issues/62)，或者将参数PR给我们并附上你的最高成绩。
-
-2. iOS 设备遇到问题怎么办？
-    - 请移步参考：[issues/99](https://github.com/wangshub/wechat_jump_game/issues/99) 和 [issues/4](https://github.com/wangshub/wechat_jump_game/issues/4)
-
-3. 如果你对环境安装和操作步骤不熟悉？
-    - [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
-
-4. 如果你的分数被微信清零或者排名不显示？
-    - 注意不要刷太高分数，适当休息，参见 [issues/164](https://github.com/wangshub/wechat_jump_game/issues/164)
-
-5. 如果有找不到 `./autojump.png` 文件的错误？
-    - 请查阅 [issue/194](https://github.com/wangshub/wechat_jump_game/issues/194)
-
-6. 如果你在苦苦寻找视频教程？
-    - 参考一位 B 站 UP 主的视频教程 [【微信跳一跳】教你如何不用双手还能霸占排行榜第一名](https://www.bilibili.com/video/av17796840/?redirectFrom=h5)
+- 详见 [Wiki-FAQ](https://github.com/wangshub/wechat_jump_game/wiki/FAQ)
 
 ## 更新日志
 
