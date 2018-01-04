@@ -1,9 +1,7 @@
 # coding: utf-8
 import os,sys,subprocess,time,math,random
-from PIL import Image
+from PIL import Image,ImageDraw
 from io import BytesIO
-
-VERSION = "1.1.1"
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
@@ -163,7 +161,6 @@ def main():
 		# 获取截图
 		binary_screenshot = pull_screenshot()
 		im = Image.open(BytesIO(binary_screenshot))
-		# im.show()
 		w,h = im.size
 		if w>h: #添加图片方向判断
 			im = im.rotate(-90,expand=True)
@@ -171,6 +168,13 @@ def main():
 
 		# 获取棋子和 board 的位置
 		piece_x, board_x = find_piece_and_board(im)
+
+		# 标注并显示图片
+		draw = ImageDraw.Draw(im)
+		draw.line([piece_x,0,piece_x,h],fill = (0,0,255),width = 1)
+		draw.line([board_x,0,board_x,h],fill = (255,0,0),width = 1)
+		im.show()
+
 		set_button_position(im) #随机点击位置
 		jump(piece_x, board_x,im)
 
