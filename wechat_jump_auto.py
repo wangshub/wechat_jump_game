@@ -32,7 +32,7 @@ except Exception as ex:
     exit(-1)
 
 
-VERSION = "1.1.1"
+VERSION = "nightly1.1.1"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = True
@@ -77,7 +77,8 @@ def jump(distance):
         y2=swipe_y2,
         duration=press_time
     )
-    print(cmd)
+    print ('蓄力时间 {times} s,跳跃长度 {pixels} pixel'.format(times=round(press_time/1000.0,2),pixels=round(distance,3)))
+    # print(cmd)
     os.system(cmd)
     return press_time
 
@@ -107,7 +108,7 @@ def find_piece_and_board(im):
                 break
         if scan_start_y:
             break
-    print('scan_start_y: {}'.format(scan_start_y))
+    # print('scan_start_y: {}'.format(scan_start_y))
 
     # 使用像素聚集边界来判断中心
     # j 横坐标
@@ -121,7 +122,8 @@ def find_piece_and_board(im):
         for j in range(scan_x_border, w - scan_x_border):
             pixel = im_pixel[j, i]
             # 根据棋子颜色，进行像素积累记录，棋子最宽的地方即是纵坐标位置，同理可得
-            if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
+            # if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
+            if (50 < pixel[0] < 60) and (50 < pixel[1] < 60) and (85 < pixel[2] < 105):
                 if j not in pixel_dict_x:
                     pixel_dict_x[j] = 0
                 pixel_dict_x[j] +=1
@@ -176,6 +178,12 @@ def find_piece_and_board(im):
                 + abs(pixel[2] - last_pixel[2]) < 10:
             break
     board_y = int((i+k) / 2)
+
+
+    # 增加对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机判断，如果非中心，特别是边角情况，则上下两边界限将会不同，进行修正工作
+    if im_pixel[board_x, board_y+3] != im_pixel[board_x, board_y-3]:
+        board_y = int((i*2+274/2) / 2)
+        #print ('here board_y',board_y)
 
     # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
     # 属性弥补上一段代码可能存在的判断错误
@@ -232,9 +240,11 @@ def main():
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
         ts = int(time.time())
-        print(ts, piece_x, piece_y, board_x, board_y)
+        time_now = time.asctime(time.localtime(time.time())) # 产生实际意义的时间戳
+        # print(time_now, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        
         if DEBUG_SWITCH:
             debug.save_debug_screenshot(ts, im, piece_x,
                                         piece_y, board_x, board_y)
