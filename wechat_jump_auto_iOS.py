@@ -64,7 +64,10 @@ def pull_screenshot():
 def jump(distance):
     press_time = distance * time_coefficient / 1000
     print('press time: {}'.format(press_time))
-    s.tap_hold(200, 200, press_time)
+    '''
+    64为导航栏高度，避免误操作点击了 关于跳一跳按钮
+    '''
+    s.tap_hold(random.uniform(0, 320), random.uniform(64, 320), press_time)
 
 
 def backup_screenshot(ts):

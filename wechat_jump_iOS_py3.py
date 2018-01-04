@@ -6,6 +6,7 @@ from PIL import Image
 import math
 import time
 import os
+import random
 
 # 截图距离 * time_coefficient = 按键时长
 # iphonex
