@@ -170,10 +170,10 @@ def main():
 		piece_x, board_x = find_piece_and_board(im)
 
 		# 标注并显示图片
-		draw = ImageDraw.Draw(im)
-		draw.line([piece_x,0,piece_x,h],fill = (0,0,255),width = 1)
-		draw.line([board_x,0,board_x,h],fill = (255,0,0),width = 1)
-		im.show()
+		# draw = ImageDraw.Draw(im)
+		# draw.line([piece_x,0,piece_x,h],fill = (0,0,255),width = 1)
+		# draw.line([board_x,0,board_x,h],fill = (255,0,0),width = 1)
+		# im.show()
 
 		set_button_position(im) #随机点击位置
 		jump(piece_x, board_x,im)
