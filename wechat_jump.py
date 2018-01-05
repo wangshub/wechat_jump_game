@@ -33,6 +33,7 @@ def pull_screenshot():
     os.system('adb shell screencap -p /sdcard/autojump.png')
     os.system('adb pull /sdcard/autojump.png ./autojump.png')
 
+
 def jump(distance):
     press_time = distance * 1.35
     press_time = int(press_time)
@@ -53,6 +54,7 @@ def update_data():
 fig = plt.figure()
 
 pull_screenshot()
+
 img = update_data()
 im = plt.imshow(img, animated=True)
 

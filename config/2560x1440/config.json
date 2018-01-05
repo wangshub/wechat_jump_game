@@ -1,6 +1,6 @@
 {
-    "under_game_score_y": 300,
-    "press_coefficient": 1.035,
+    "under_game_score_y": 410,
+    "press_coefficient": 1.475,
     "piece_base_height_1_2": 28,
     "piece_body_width": 110,
     "swipe": {
