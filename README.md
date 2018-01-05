@@ -74,6 +74,7 @@
 ## 5. 更新
 - 更新为内存IO，不再写入根目录文件，减少磁盘IO。（其实是因为读写中途经常和onedrive起冲突）
 - 更新了随机时间，扩大了点击的随机范围。但是发现腾讯很可能搞了服务器黑名单(详见[跳一跳外挂屏蔽规则](https://www.jianshu.com/p/4a49a6e2b88f))，就先凉着吧。
+- 从抓包数据看，这个版本已经绕过作弊检测了。[# 958](https://github.com/wangshub/wechat_jump_game/issues/958)
 
 
 `微信 小程序 跳一跳 python 外挂`
