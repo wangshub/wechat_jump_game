@@ -1,14 +1,17 @@
-# coding: utf-8
-import os,sys,subprocess,time,math,random
-from PIL import Image,ImageDraw
-from io import BytesIO
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+__author__ = 'Erimus'
 '''
 这个是精简版本，只取x轴距离。
 可以适配任意屏幕。
 把磁盘读写截图改为内存读写。
 可以防止被ban(从抓包数据看没有返回Error)。
 '''
+
+import os,sys,subprocess,time,math,random
+from PIL import Image,ImageDraw
+from io import BytesIO
+
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
 screenshot_way = 2
