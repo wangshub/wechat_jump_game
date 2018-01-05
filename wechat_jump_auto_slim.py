@@ -41,19 +41,22 @@ def pull_screenshot():
 
 # 重设点击位置 再来一局位置
 # 其实这个界面，应该是标准的9:16，然后fit当前窗体(600:800测试结果)。长窄屏可能需要特殊处理。
-def set_button_position(im):
-	global swipe_x1, swipe_y1, swipe_x2, swipe_y2
+def set_button_position(im,gameover=0):
 	w, h = im.size
 	if h//16>w//9+2: #长窄屏 2px容差 获取ui描绘的高度
 		uih = int(w/9*16)
 	else:
 		uih = h
 	uiw = int(uih/16*9)
-	left = int(w/2)
-	top = int((h-uih)/2+uih*0.825) #根据9:16实测高度参数0.825
-	left = int(random.uniform(left-uiw//5, left+uiw//5))
-	top = int(random.uniform(top-uih//28, top+uih//28))    # 随机防 ban
-	swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
+
+	left = int(w/2) #按钮半宽约uiw//5
+	top = int((h-uih)/2+uih*0.825) #根据9:16实测按钮高度中心0.825 按钮半高约uiw//28
+	if gameover: return left,top
+
+	# 随机防 ban
+	left = random.randint(uiw//4,uiw) #避开左下角按钮
+	top = random.randint(uih*3//4,uih)
+	return left, top
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
@@ -128,7 +131,7 @@ def find_piece_and_board(im):
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
-def jump(piece_x, board_x,im):
+def jump(piece_x,board_x,im,swipe_x1,swipe_y1):
 	distanceX = abs(board_x-piece_x)
 	shortEdge = min(im.size)
 	jumpLength = distanceX/shortEdge
@@ -138,11 +141,11 @@ def jump(piece_x, board_x,im):
 	print('%-12s %.2f%% (%s/%s) | Press: %sms'%('Distance:',jumpLength*100,distanceX,shortEdge,press_time))
 
 	cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-		x1=swipe_x1,
-		y1=swipe_y1,
-		x2=swipe_x2,
-		y2=swipe_y2,
-		duration=press_time
+		x1 = swipe_x1,
+		y1 = swipe_y1,
+		x2 = swipe_x1+random.randint(-10,10),
+		y2 = swipe_y1+random.randint(-10,10),
+		duration = press_time
 	)
 	# print(cmd)
 	os.system(cmd)
@@ -168,15 +171,16 @@ def main():
 
 		# 获取棋子和 board 的位置
 		piece_x, board_x = find_piece_and_board(im)
-
+		gameover = 0 if all((piece_x,board_x)) else 1
+		swipe_x1,swipe_y1 = set_button_position(im,gameover=gameover) #随机点击位置
 		# 标注并显示图片
 		# draw = ImageDraw.Draw(im)
-		# draw.line([piece_x,0,piece_x,h],fill = (0,0,255),width = 1)
-		# draw.line([board_x,0,board_x,h],fill = (255,0,0),width = 1)
+		# draw.line([piece_x,0,piece_x,h],fill='blue',width=1) #start
+		# draw.line([board_x,0,board_x,h],fill='red',width=1) #end
+		# draw.ellipse([swipe_x1-16,swipe_y1-16,swipe_x1+16,swipe_y1+16],fill='red') #click
 		# im.show()
 
-		set_button_position(im) #随机点击位置
-		jump(piece_x, board_x,im)
+		jump(piece_x,board_x,im,swipe_x1,swipe_y1)
 
 		wait = (random.random())**5*9+1 #停1~9秒 指数越高平均间隔越短
 		print('---\nWait %.3f s...'%wait)
