@@ -3,6 +3,12 @@ import os,sys,subprocess,time,math,random
 from PIL import Image,ImageDraw
 from io import BytesIO
 
+'''
+这个是精简版本，只取x轴距离。
+可以适配任意屏幕。
+把磁盘读写截图改为内存读写。
+可以防止被ban(从抓包数据看没有返回Error)。
+'''
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
 screenshot_way = 2
@@ -14,7 +20,7 @@ def check_screenshot():
 		sys.exit()
 	binary_screenshot = pull_screenshot()
 	try:
-		im = Image.open(BytesIO(binary_screenshot)).load()
+		im = Image.open(BytesIO(binary_screenshot)).load() #直接使用内存IO 不需要写入硬盘
 		print('Capture Method: {}'.format(screenshot_way))
 	except Exception:
 		screenshot_way -= 1
@@ -38,7 +44,7 @@ def pull_screenshot():
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
 # 重设点击位置 再来一局位置
-# 其实这个界面，应该是标准的9:16，然后fit当前窗体(600:800测试结果)。长窄屏可能需要特殊处理。
+# 其实这个界面，应该是标准的9:16，然后fit当前窗体(600:800测试结果)。长窄屏已经特殊处理。
 def set_button_position(im,gameover=0):
 	w, h = im.size
 	if h//16>w//9+2: #长窄屏 2px容差 获取ui描绘的高度
@@ -47,13 +53,14 @@ def set_button_position(im,gameover=0):
 		uih = h
 	uiw = int(uih/16*9)
 
+	# 如果游戏结束 点击再来一局
 	left = int(w/2) #按钮半宽约uiw//5
 	top = int((h-uih)/2+uih*0.825) #根据9:16实测按钮高度中心0.825 按钮半高约uiw//28
 	if gameover: return left,top
 
-	# 随机防 ban
-	left = random.randint(uiw//4,uiw) #避开左下角按钮
-	top = random.randint(uih*3//4,uih)
+	# 游戏中点击 随机位置防 ban
+	left = random.randint(w//4,w) #避开左下角按钮
+	top = random.randint(h*3//4,h)
 	return left, top
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
@@ -63,7 +70,7 @@ def find_piece_and_board(im):
 	w, h = im.size #图片宽高
 	im_pixel = im.load()
 
-	def find_piece(pixel):
+	def find_piece(pixel): #棋子取色精确范围
 		return (40 < pixel[0] < 65) and (40 < pixel[1] < 65) and (80 < pixel[2] < 105)
 
 	# 寻找棋子 ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
@@ -84,8 +91,7 @@ def find_piece_and_board(im):
 	if not piece_fx: return 0, 0 #没找到棋子
 
 	# 精查棋子位置
-	piece_x = 0
-	piece_x_set = set()
+	piece_x,piece_x_set = 0,[] #棋子x/棋子坐标集合
 	piece_width = w//14 #估算棋子宽度
 	piece_height = w//5 #估算棋子高度
 	for ny in range(piece_fy+scan_piece_unit,piece_fy-piece_height,-4):
@@ -93,7 +99,7 @@ def find_piece_and_board(im):
 			pixel = im_pixel[nx,ny]
 			# print(nx,ny,pixel)
 			if find_piece(pixel):
-				piece_x_set.add(nx)
+				piece_x_set.append(nx)
 		if len(piece_x_set)>10:
 			piece_x = sum(piece_x_set)/len(piece_x_set)
 			break
@@ -108,17 +114,17 @@ def find_piece_and_board(im):
 		board_x_start,board_x_end = 0,round(piece_x)
 
 	# 寻找落点顶点
+	board_x_set = [] #目标坐标集合/改为list避免去重
 	for by in range((h-w)//2,(h+w)//2,4):
 		bg_pixel = im_pixel[0, by]
-		board_x_set = set()
 		for bx in range(board_x_start, board_x_end):
 			pixel = im_pixel[bx, by]
 			# 修掉脑袋比下一个小格子还高的情况 屏蔽小人左右的范围
-			if abs(bx - piece_x) < piece_width*1.5: continue
+			if abs(bx - piece_x) < piece_width: continue
 
 			# 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
 			if abs(pixel[0]-bg_pixel[0]) + abs(pixel[1]-bg_pixel[1]) + abs(pixel[2]-bg_pixel[2]) > 10:
-				board_x_set.add(bx)
+				board_x_set.append(bx)
 
 		if len(board_x_set)>10:
 			board_x = sum(board_x_set)/len(board_x_set)
@@ -132,11 +138,11 @@ def find_piece_and_board(im):
 def jump(piece_x,board_x,im,swipe_x1,swipe_y1):
 	distanceX = abs(board_x-piece_x)
 	shortEdge = min(im.size)
-	jumpLength = distanceX/shortEdge
-	press_coefficient = 1700 #跳过整个宽度 需要按压的毫秒数
-	press_time = round(jumpLength*press_coefficient)
+	jumpPercent = distanceX/shortEdge
+	jumpFullWidth = 1700 #跳过整个宽度 需要按压的毫秒数
+	press_time = round(jumpPercent*jumpFullWidth)
 	press_time = 0 if not press_time else max(press_time,200) #press_time大于0时限定最小值
-	print('%-12s %.2f%% (%s/%s) | Press: %sms'%('Distance:',jumpLength*100,distanceX,shortEdge,press_time))
+	print('%-12s %.2f%% (%s/%s) | Press: %sms'%('Distance:',jumpPercent*100,distanceX,shortEdge,press_time))
 
 	cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
 		x1 = swipe_x1,
@@ -147,7 +153,6 @@ def jump(piece_x,board_x,im,swipe_x1,swipe_y1):
 	)
 	# print(cmd)
 	os.system(cmd)
-	return press_time
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
@@ -163,15 +168,15 @@ def main():
 		binary_screenshot = pull_screenshot()
 		im = Image.open(BytesIO(binary_screenshot))
 		w,h = im.size
-		if w>h: #添加图片方向判断
-			im = im.rotate(-90,expand=True)
+		if w>h: im = im.rotate(-90,expand=True) #添加图片方向判断
 		# print('image | w:%s | h:%s'%(w,h))
 
 		# 获取棋子和 board 的位置
 		piece_x, board_x = find_piece_and_board(im)
 		gameover = 0 if all((piece_x,board_x)) else 1
 		swipe_x1,swipe_y1 = set_button_position(im,gameover=gameover) #随机点击位置
-		# 标注并显示图片
+
+		# 标注截图并显示
 		# draw = ImageDraw.Draw(im)
 		# draw.line([piece_x,0,piece_x,h],fill='blue',width=1) #start
 		# draw.line([board_x,0,board_x,h],fill='red',width=1) #end
