@@ -23,20 +23,19 @@ import math
 import random
 from PIL import Image
 from six.moves import input
+
 try:
-    from common import debug, config, screenshot
+    from common import debug, config, screenshot, adb
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
-
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
-
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需
 # 设置，设置保存在 config 文件夹中
@@ -58,8 +57,8 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left-50, left+50))
-    top = int(random.uniform(top-10, top+10))    # 随机防 ban
+    left = int(random.uniform(left - 50, left + 50))
+    top = int(random.uniform(top - 10, top + 10))  # 随机防 ban
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -68,9 +67,9 @@ def jump(distance):
     跳跃一定的距离
     """
     press_time = distance * press_coefficient
-    press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
+    press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+    cmd = adb + 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
         y1=swipe_y1,
         x2=swipe_x2,
@@ -97,7 +96,7 @@ def find_piece_and_board(im):
     scan_start_y = 0  # 扫描的起始 y 坐标
     im_pixel = im.load()
     # 以 50px 步长，尝试探测 scan_start_y
-    for i in range(int(h / 3), int(h*2 / 3), 50):
+    for i in range(int(h / 3), int(h * 2 / 3), 50):
         last_pixel = im_pixel[0, i]
         for j in range(1, w):
             pixel = im_pixel[j, i]
@@ -129,7 +128,7 @@ def find_piece_and_board(im):
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     # 限制棋盘扫描的横坐标，避免音符 bug
-    if piece_x < w/2:
+    if piece_x < w / 2:
         board_x_start = piece_x
         board_x_end = w
     else:
@@ -162,19 +161,19 @@ def find_piece_and_board(im):
     # 从上顶点往下 +274 的位置开始向上找颜色与上顶点一样的点，为下顶点
     # 该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、
     # 药瓶和非菱形的碟机（好像是）会判断错误
-    for k in range(i+274, i, -1):  # 274 取开局时最大的方块的上下顶点距离
+    for k in range(i + 274, i, -1):  # 274 取开局时最大的方块的上下顶点距离
         pixel = im_pixel[board_x, k]
         if abs(pixel[0] - last_pixel[0]) \
                 + abs(pixel[1] - last_pixel[1]) \
                 + abs(pixel[2] - last_pixel[2]) < 10:
             break
-    board_y = int((i+k) / 2)
+    board_y = int((i + k) / 2)
 
     # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
     # 属性弥补上一段代码可能存在的判断错误
     # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有
     # 可能游戏失败，由于花纹面积通常比较大，失败概率较低
-    for j in range(i, i+200):
+    for j in range(i, i + 200):
         pixel = im_pixel[board_x, j]
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
             board_y = j + 10
@@ -191,7 +190,7 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     default_value = true_value if default else false_value
     prompt = '{} {}/{} [{}]: '.format(prompt, true_value,
-        false_value, default_value)
+                                      false_value, default_value)
     i = input(prompt)
     if not i:
         return default
