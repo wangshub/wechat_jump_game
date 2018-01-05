@@ -30,7 +30,6 @@ def jump(distance):
 
 fig = plt.figure()
 index = 0
-cor = [0, 0]
 pull_screenshot()
 img = np.array(Image.open('autojump.png'))
 
