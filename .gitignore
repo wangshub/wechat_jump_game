@@ -1,9 +1,15 @@
+readme_images/
+autojump.png
+.*
+
+=======
 # user-defined
 test/
 pic/
 screenshot_backups/
 autojump.png
 
+>>>>>>> origin/master
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -14,7 +20,11 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+<<<<<<< HEAD
+env/
+=======
 .idea
+>>>>>>> origin/master
 build/
 develop-eggs/
 dist/
@@ -26,11 +36,17 @@ lib64/
 parts/
 sdist/
 var/
+<<<<<<< HEAD
+*.egg-info/
+.installed.cfg
+*.egg
+=======
 wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
+>>>>>>> origin/master
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -50,7 +66,11 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+<<<<<<< HEAD
+*,cover
+=======
 *.cover
+>>>>>>> origin/master
 .hypothesis/
 
 # Translations
@@ -59,6 +79,12 @@ coverage.xml
 
 # Django stuff:
 *.log
+<<<<<<< HEAD
+local_settings.py
+
+# Flask instance folder
+instance/
+=======
 .static_storage/
 .media/
 local_settings.py
@@ -66,6 +92,7 @@ local_settings.py
 # Flask stuff:
 instance/
 .webassets-cache
+>>>>>>> origin/master
 
 # Scrapy stuff:
 .scrapy
@@ -76,7 +103,11 @@ docs/_build/
 # PyBuilder
 target/
 
+<<<<<<< HEAD
+# IPython Notebook
+=======
 # Jupyter Notebook
+>>>>>>> origin/master
 .ipynb_checkpoints
 
 # pyenv
@@ -85,6 +116,17 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
+<<<<<<< HEAD
+# dotenv
+.env
+
+# virtualenv
+venv/
+ENV/
+
+# Spyder project settings
+.spyderproject
+=======
 # SageMath parsed files
 *.sage.py
 
@@ -100,10 +142,63 @@ venv.bak/
 # Spyder project settings
 .spyderproject
 .spyproject
+>>>>>>> origin/master
 
 # Rope project settings
 .ropeproject
 
+<<<<<<< HEAD
+# =========================
+# Operating System Files
+# =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+# =========================
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Windows shortcuts
+*.lnk
+=======
 # mkdocs documentation
 /site
 
@@ -112,3 +207,4 @@ venv.bak/
 
 # for mac
 .DS_store
+>>>>>>> origin/master
