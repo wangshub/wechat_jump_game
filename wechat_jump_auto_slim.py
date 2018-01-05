@@ -134,6 +134,7 @@ def jump(piece_x, board_x,im):
 	jumpLength = distanceX/shortEdge
 	press_coefficient = 1700 #跳过整个宽度 需要按压的毫秒数
 	press_time = round(jumpLength*press_coefficient)
+	press_time = 0 if not press_time else max(press_time,200) #press_time大于0时限定最小值
 	print('%-12s %.2f%% (%s/%s) | Press: %sms'%('Distance:',jumpLength*100,distanceX,shortEdge,press_time))
 
 	cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
@@ -153,7 +154,6 @@ def main():
 	check_screenshot() #检查截图
 
 	count = 0
-	i, next_rest, next_rest_time = 0, 1, 1
 	while True:
 		count += 1
 		print('---\n%-12s %s (%s)'%('Times:',count,int(time.time())))
@@ -178,13 +178,10 @@ def main():
 		set_button_position(im) #随机点击位置
 		jump(piece_x, board_x,im)
 
-		i += 1
-		if i == next_rest:
-			print('---\nJumped {} time，wait {} s...'.format(i, next_rest_time))
-			time.sleep(next_rest_time)
-			print('Continue!')
-			i, next_rest, next_rest_time = 0, random.randrange(10, 20), random.randrange(5, 10)
-		time.sleep(random.uniform(1, 1.5)) #wait for jump finish
+		wait = (random.random())**5*9+1 #停1~9秒 指数越高平均间隔越短
+		print('---\nWait %.3f s...'%wait)
+		time.sleep(wait)
+		print('Continue!')
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
