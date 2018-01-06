@@ -1,6 +1,6 @@
 ## 更新日志
 
-- 2019-1-3 ：
+- 2018-1-3 ：
   - 发布 release 一键启动 app，详见 [STOP_jump](https://github.com/wangshub/wechat_jump_game/releases)
 
 - 2017-12-30 :
