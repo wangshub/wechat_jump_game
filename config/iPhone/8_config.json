@@ -1,0 +1,10 @@
+{
+    "under_game_score_y": 250,
+    "press_coefficient": 2,
+    "piece_base_height_1_2": 13,
+    "piece_body_width": 49,
+    "tap": {
+        "x": 380,
+        "y": 1096
+    }
+}

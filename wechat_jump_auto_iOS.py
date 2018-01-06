@@ -21,13 +21,14 @@ import time
 import math
 import random
 import json
+import cv2
+import numpy as np
 from PIL import Image, ImageDraw
 import wda
 
 
 with open('config.json', 'r') as f:
     config = json.load(f)
-
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置
 under_game_score_y = config['under_game_score_y']
@@ -38,15 +39,17 @@ piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
 time_coefficient = config['press_coefficient']
+# 二分之一的棋子宽度
+piece_body_width_half = (piece_body_width+1)/2
 
 # 模拟按压的起始点坐标，需要自动重复游戏请设置成“再来一局”的坐标
-swipe = config.get('swipe', {
-    "x1": 320,
-    "y1": 410,
-    "x2": 320,
-    "y2": 410
-    })
-
+if config.get('tap'):
+    tap= config['tap']
+else:
+    tap= {
+        "x": 380,
+        "y": 1096,
+    }
 c = wda.Client()
 s = c.session()
 
@@ -62,7 +65,7 @@ def pull_screenshot():
 def jump(distance):
     press_time = distance * time_coefficient / 1000
     print('press time: {}'.format(press_time))
-    s.tap_hold(200, 200, press_time)
+    s.tap_hold(random.uniform(200, 300), random.uniform(200, 300), press_time)
 
 
 def backup_screenshot(ts):
@@ -74,7 +77,7 @@ def backup_screenshot(ts):
     shutil.copy('1.png', '{}{}.png'.format(screenshot_backup_dir, ts))
 
 
-def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
+def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw = ImageDraw.Draw(im)
     # 对debug图片加上详细的注释
     draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
@@ -92,43 +95,30 @@ def save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y):
     im.save('{}{}_d.png'.format(screenshot_backup_dir, ts))
 
 
-def set_button_position(im):
-    """
-    将swipe设置为 `再来一局` 按钮的位置
-    """
-    global swipe_x1, swipe_y1, swipe_x2, swipe_y2
-    w, h = im.size
-    left = w / 2
-    top = 1003 * (h / 1280.0) + 10
-    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
-
-
 def find_piece_and_board(im):
-    w, h = im.size
 
-    print("size: {}, {}".format(w, h))
+    # find piece location
+    im2 = im
+    im = np.array(im2)
+    h, w, c = im.shape
 
     piece_x_sum = piece_x_c = piece_y_max = 0
     board_x = board_y = 0
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始 y 坐标
-    im_pixel = im.load()
-
+    im_pixel = im2.load()
     # 以 50px 步长，尝试探测 scan_start_y
-    for i in range(under_game_score_y, h, 50):
+    for i in range(int(h / 3), int(h*2 / 3), 50):
         last_pixel = im_pixel[0, i]
         for j in range(1, w):
             pixel = im_pixel[j, i]
-
-            # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
+            # 不是纯色的线，则记录 scan_start_y 的值，准备跳出循环
             if pixel != last_pixel:
                 scan_start_y = i - 50
                 break
-
         if scan_start_y:
             break
-
-    print("scan_start_y: ", scan_start_y)
+    print('scan_start_y: {}'.format(scan_start_y))
 
     # 从 scan_start_y 开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
@@ -146,39 +136,41 @@ def find_piece_and_board(im):
 
     if not all((piece_x_sum, piece_x_c)):
         return 0, 0, 0, 0
-    piece_x = piece_x_sum / piece_x_c
+    piece_x = int(piece_x_sum / piece_x_c)
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
-    for i in range(int(h / 3), int(h * 2 / 3)):
-        last_pixel = im_pixel[0, i]
-        if board_x or board_y:
+    if piece_x < w/2:
+        start_idx = piece_x+piece_body_width_half
+        end_idx = w
+        idx = -1
+    else:
+        start_idx = 0
+        end_idx = piece_x-piece_body_width_half
+        idx = 0
+
+    # find board location
+    im = im[under_game_score_y:h, start_idx:end_idx]
+    h, w, c = im.shape
+    im = cv2.bilateralFilter(im, 11, 17, 17)
+    edged = cv2.Canny(im, 30, 100)
+    for i in range(0, h):
+        if any(edged[i, :]):
+            indices = np.where(edged[i, :] != 0)[0]
+            board_x = int(round((indices[0]+indices[-1])/2)) + start_idx
             break
-        board_x_sum = 0
-        board_x_c = 0
 
-        for j in range(w):
-            pixel = im_pixel[j, i]
-            # 修掉脑袋比下一个小格子还高的情况的 bug
-            if abs(j - piece_x) < piece_body_width:
-                continue
-
-            # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
-            if abs(pixel[0] - last_pixel[0]) \
-                    + abs(pixel[1] - last_pixel[1]) \
-                    + abs(pixel[2] - last_pixel[2]) > 10:
-                board_x_sum += j
-                board_x_c += 1
-
-        if board_x_sum:
-            board_x = board_x_sum / board_x_c
-
-    # 按实际的角度来算，找到接近下一个 board 中心的坐标 这里的角度应该
-    # 是 30°,值应该是 tan 30°, math.sqrt(3) / 3
-    board_y = piece_y - abs(board_x - piece_x) * math.sqrt(3) / 3
-
-    if not all((board_x, board_y)):
-        return 0, 0, 0, 0
-
+    width = -1
+    for j in range(i+2, i+274, 5):
+        indices = np.where(edged[j, :] != 0)[0] + start_idx
+        if abs((indices[0] + indices[-1])/2 - board_x) <= 5: ##
+            if abs(indices[idx] - board_x) <= width: ##
+                board_y = j+under_game_score_y
+                break
+            else:
+                width = abs(indices[idx] - board_x)
+        else:
+            board_y = j+under_game_score_y
+            break
     return piece_x, piece_y, board_x, board_y
 
 
@@ -192,18 +184,18 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         if piece_x == 0:
-            return
+            time.sleep(2)
+            s.tap_hold(tap['x'], tap['y'], 1)
+            continue
 
-        set_button_position(im)
-        distance = math.sqrt(
-            (board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)
+        distance = math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)
         jump(distance)
 
-        save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
+        save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
-        # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
-        time.sleep(random.uniform(1, 1.1))
 
+        # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
+        time.sleep(random.uniform(1.5, 1.8))   # 为了保证截图的时候应落稳了，多延迟一会儿
 
 if __name__ == '__main__':
     main()
