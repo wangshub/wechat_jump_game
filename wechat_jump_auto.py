@@ -59,8 +59,7 @@ def pull_screenshot():
         f.write(binary_screenshot)
         f.close()
     elif screenshot_way == 0:
-        os.system('adb shell screencap -p /sdcard/autojump.png')
-        os.system('adb pull /sdcard/autojump.png .')
+        os.system('adb shell screencap -p /sdcard/autojump.png')        os.system('adb pull /sdcard/autojump.png .')
 
 
 def set_button_position(im):
@@ -97,7 +96,7 @@ def jump(distance):
 
 def find_piece_and_board(im):
     '''
-    寻找关键坐标
+i    寻找关键坐标
     '''
     w, h = im.size
 
@@ -122,7 +121,7 @@ def find_piece_and_board(im):
             break
     print('scan_start_y: {}'.format(scan_start_y))
 
-    # 从 scan_start_y 开始往上扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
+    # 从 scan_start_y 开始从图像2/3位置开始往1/3位置扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
             pixel = im_pixel[j, i]
