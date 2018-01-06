@@ -61,7 +61,6 @@ def pull_screenshot():
     elif screenshot_way == 0:
         os.system('adb shell screencap -p /sdcard/autojump.png')        os.system('adb pull /sdcard/autojump.png .')
 
-
 def set_button_position(im):
     '''
     将 swipe 设置为 `再来一局` 按钮的位置
@@ -96,7 +95,7 @@ def jump(distance):
 
 def find_piece_and_board(im):
     '''
-i    寻找关键坐标
+    寻找关键坐标
     '''
     w, h = im.size
 
