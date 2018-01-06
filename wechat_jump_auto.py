@@ -190,7 +190,7 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     default_value = true_value if default else false_value
     prompt = '{} {}/{} [{}]: '.format(prompt, true_value,
-                                      false_value, default_value)
+        false_value, default_value)
     i = input(prompt)
     if not i:
         return default
