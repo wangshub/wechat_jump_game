@@ -24,8 +24,9 @@
 Screen: Physical size: x
 Density: Physical density: x
 Override density: x
-DeviceType: x
-OS: x
+Device: x
+Phone OS: x
+Host OS: x
 Python: x
 **********
 
