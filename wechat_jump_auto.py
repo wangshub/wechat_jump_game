@@ -122,7 +122,7 @@ def find_piece_and_board(im):
             break
     print('scan_start_y: {}'.format(scan_start_y))
 
-    # 从 scan_start_y 开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
+    # 从 scan_start_y 开始往上扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
             pixel = im_pixel[j, i]
