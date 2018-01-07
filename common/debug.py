@@ -7,6 +7,8 @@ import sys
 import shutil
 from PIL import ImageDraw
 
+from . import adb
+
 screenshot_backup_dir = 'screenshot_backups/'
 
 
@@ -47,10 +49,10 @@ def dump_device_info():
     """
     显示设备信息
     """
-    size_str = os.popen('adb shell wm size').read()
-    device_str = os.popen('adb shell getprop ro.product.device').read()
-    phone_os_str = os.popen('adb shell getprop ro.build.version.release').read()
-    density_str = os.popen('adb shell wm density').read()
+    size_str = os.popen(adb + 'shell wm size').read()
+    device_str = os.popen(adb + 'shell getprop ro.product.device').read()
+    phone_os_str = os.popen(adb + 'shell getprop ro.build.version.release').read()
+    density_str = os.popen(adb + 'shell wm density').read()
     print("""**********
 Screen: {size}
 Density: {dpi}
