@@ -141,9 +141,20 @@ def find_piece_and_board(im):
     if piece_x < w/2:
         board_x_start = piece_x
         board_x_end = w
+        x1 = 336
+        y1 = 1360
+        x2 = 1014
+        y2 = 969
     else:
         board_x_start = 0
         board_x_end = piece_x
+        x1 = 839
+        y1 = 1374
+        x2 = 79
+        y2 = 939
+    
+    k = (y1 - y2) / (x1 - x2)
+    b = (y2 * x1 - y1 * x2) / (x1 - x2)
 
     for i in range(int(h / 3), int(h * 2 / 3)):
         last_pixel = im_pixel[0, i]
@@ -164,15 +175,9 @@ def find_piece_and_board(im):
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
-    last_pixel = im_pixel[board_x, i]
-
-    # 从上顶点往下 +274 的位置开始向上找颜色与上顶点一样的点，为下顶点
-    # 该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、药瓶和非菱形的碟机（好像是）会判断错误
-    for k in range(i+274, i, -1): # 274 取开局时最大的方块的上下顶点距离
-        pixel = im_pixel[board_x, k]
-        if abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2]) < 10:
-            break
-    board_y = int((i+k) / 2)
+    # 在找到下一个格子的x坐标board_x之后，其中的的y坐标只可能在这样两条线上：过棋子底座中点，且平行于格子顶面任意边的两条线。
+    # 而具体是哪一条，在上面限制棋盘扫描的横坐标时已经判断，并且求出了相应直线方程的斜率k和截距b。x1, y1, x2, y2 为手动测量值。
+    board_y = k * board_x + b
 
     # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个属性弥补上一段代码可能存在的判断错误
     # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有可能游戏失败，由于花纹面积通常比较大，失败概率较低
