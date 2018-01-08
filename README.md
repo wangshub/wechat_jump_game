@@ -34,8 +34,9 @@ adb shell input swipe x y x y time(ms)
 
 ## 版本说明
 
-- 稳定版本：master 分支版本，已通过测试，且在 release 中存有对应 app
-- nightly 分支：用于防 ban 的一些想法实验，属于开发实验版本，可自行尝试 [nightly分支](https://github.com/wangshub/wechat_jump_game/tree/dev-no-config-nightly)
+- master 分支：稳定版本，已通过测试，且在 release 中存有对应 app
+- dev 分支：开发版本，包含一些较稳定的新功能，累计多个功能并测试通过后合并至 master 分支
+- 其他分支：功能开发 (feature) 或问题修复 (bugfix)，属于最新尝鲜版本，可能处于开发中的状态，基本完成后合并至 dev 分支
 
 ## FAQ
 
