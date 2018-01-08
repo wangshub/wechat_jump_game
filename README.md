@@ -32,6 +32,11 @@ adb shell input swipe x y x y time(ms)
 
 - 方法 2：相关软件工具安装和使用步骤请参考 [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
 
+## 版本说明
+
+- 稳定版本：master分支版本，已通过测试，且在 release 中存有对应 app
+- nightly 分支：用于防 ban 的一些想法实验，属于开发实验版本，可自行尝试 [nightly分支](https://github.com/wangshub/wechat_jump_game/tree/dev-no-config-nightly)
+
 ## FAQ
 
 - 详见 [Wiki-FAQ](https://github.com/wangshub/wechat_jump_game/wiki/FAQ)
