@@ -1,4 +1,6 @@
 ## 更新日志
+- 2018-1-8
+  - 发布 release 一键启动 app V1.1.2 版本，针对腾讯 ban 方法进行反 ban 操作，详见 [STOP_jump](https://github.com/wangshub/wechat_jump_game/releases)
 
 - 2018-1-3 ：
   - 发布 release 一键启动 app，详见 [STOP_jump](https://github.com/wangshub/wechat_jump_game/releases)
