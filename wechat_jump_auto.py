@@ -81,6 +81,21 @@ def jump(distance):
     os.system(cmd)
     return press_time
 
+def jump_fake():
+    """
+    原地假跳一次，防止被ban
+    """
+    press_time = int(5)
+    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+        x1=swipe_x1,
+        y1=swipe_y1,
+        x2=swipe_x2,
+        y2=swipe_y2,
+        duration=press_time
+    )
+    print(cmd)
+    os.system(cmd)
+    return press_time
 
 def find_piece_and_board(im):
     """
@@ -227,7 +242,9 @@ def main():
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        jump_fake() # 原地假跳一次，防止被ban
+        time.sleep(random.random()*1) # 随机停止一段时间，防止被ban
+        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)*((random.random()-0.5)*0.05+1)) # 增加随机误差，防止多次跳到中心被ban
         if DEBUG_SWITCH:
             debug.save_debug_screenshot(ts, im, piece_x,
                                         piece_y, board_x, board_y)
