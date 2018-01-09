@@ -21,6 +21,9 @@ import sys
 import time
 import math
 import random
+import serial
+import time
+import array
 from PIL import Image
 from six.moves import input
 try:
@@ -31,8 +34,9 @@ except Exception as ex:
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
+COM = 3    #Arduino COM口
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
@@ -67,6 +71,7 @@ def jump(distance):
     """
     跳跃一定的距离
     """
+    global milsec
     press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
@@ -75,10 +80,11 @@ def jump(distance):
         y1=swipe_y1,
         x2=swipe_x2,
         y2=swipe_y2,
-        duration=press_time
+        duration=press_time-70
     )
     print(cmd)
-    os.system(cmd)
+    milsec = bytes(str(press_time - 50), encoding = "utf8");    #   这里的-50是经验值，可能会因舵机型号和质量不同略有差别（感谢wangshub大神的点拨^__^）
+    # os.system(cmd)
     return press_time
 
 
@@ -216,9 +222,22 @@ def main():
     print('程序版本号：{}'.format(VERSION))
     debug.dump_device_info()
     screenshot.check_screenshot()
+    #######################################
+    #                                     #
+    #            物理外挂部分             #
+    #                                     #
+    #######################################
+    ser = serial.Serial()
+    ser.baudrate = 9600  #波特率
+    ser.port = 'COM3'   #  Arduino连接的COM口，根据实际情况修改
+    ser.open()    #打开串口之前记得关闭Arduino IDE的串口工具和其他串口工具
+    if ser.is_open:
+        print("和Arduino握手成功！")
+
 
     i, next_rest, next_rest_time = (0, random.randrange(3, 10),
                                     random.randrange(5, 10))
+
     while True:
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
@@ -233,18 +252,21 @@ def main():
                                         piece_y, board_x, board_y)
             debug.backup_screenshot(ts)
         im.close()
-        i += 1
-        if i == next_rest:
-            print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
-            for j in range(next_rest_time):
-                sys.stdout.write('\r程序将在 {}s 后继续'.format(next_rest_time - j))
-                sys.stdout.flush()
-                time.sleep(1)
-            print('\n继续')
-            i, next_rest, next_rest_time = (0, random.randrange(30, 100),
-                                            random.randrange(10, 60))
+        ser.write(milsec)
+        time.sleep(3)
+        # i += 1
+        # if i == next_rest:
+        #     print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
+        #     for j in range(next_rest_time):
+        #         sys.stdout.write('\r程序将在 {}s 后继续'.format(next_rest_time - j))
+        #         sys.stdout.flush()
+        #         time.sleep(1)
+        #     print('\n继续')
+        #     i, next_rest, next_rest_time = (0, random.randrange(30, 100),
+        #                                     random.randrange(10, 60))
         # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
         time.sleep(random.uniform(0.9, 1.2))
+
 
 
 if __name__ == '__main__':
