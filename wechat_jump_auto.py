@@ -36,7 +36,7 @@ config = config.open_accordant_config()
 under_game_score_y = config['under_game_score_y']
 press_coefficient = config['press_coefficient']  # 长按的时间系数，请自己根据实际情况调节
 press_delay = config['press_delay']  # 附加的按键延迟时间，单位为ms
-press_random_range = config['press_random_range']  # 附加的按键延迟时间，单位为ms
+press_random_range = config['press_random_range']  # 随机附加时间，random范围为正负区间，单位为ms
 piece_base_height_1_2 = config['piece_base_height_1_2']  # 二分之一的棋子底座高度，可能要调节
 piece_body_width = config['piece_body_width']  # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
