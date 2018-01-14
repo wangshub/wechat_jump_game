@@ -68,13 +68,13 @@ def jump(distance):
     跳跃一定的距离
     """
     press_time = distance * press_coefficient
-    press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
+    press_time = max(press_time, 203)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe_x1,
-        y1=swipe_y1,
-        x2=swipe_x2,
-        y2=swipe_y2,
+        x1=swipe_x1*random.uniform(.8, 1.0),
+        y1=swipe_y1*random.uniform(.8, 1.0),
+        x2=swipe_x2*random.uniform(.8, 1.0),
+        y2=swipe_y2*random.uniform(.8, 1.0),
         duration=press_time
     )
     print(cmd)
@@ -82,7 +82,7 @@ def jump(distance):
     return press_time
 
 
-def find_piece_and_board(im):
+def find_piece_and_board(im,flag_cout):
     """
     寻找关键坐标
     """
@@ -142,7 +142,6 @@ def find_piece_and_board(im):
             break
         board_x_sum = 0
         board_x_c = 0
-
         for j in range(int(board_x_start), int(board_x_end)):
             pixel = im_pixel[j, i]
             # 修掉脑袋比下一个小格子还高的情况的 bug
@@ -168,20 +167,34 @@ def find_piece_and_board(im):
                 + abs(pixel[1] - last_pixel[1]) \
                 + abs(pixel[2] - last_pixel[2]) < 10:
             break
-    board_y = int((i+k) / 2)
+    board_length =k-i  ##棋盘长度
+    board_y = int((i+k) / 2)+board_length*random.uniform(0.2,0.37)
 
     # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
     # 属性弥补上一段代码可能存在的判断错误
     # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有
     # 可能游戏失败，由于花纹面积通常比较大，失败概率较低
+
     for j in range(i, i+200):
         pixel = im_pixel[board_x, j]
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
-            board_y = j + 10
+            flag_cout +=1
+            if flag_cout<=1:
+                board_y = (j + 10)+board_length*random.uniform(0.1,0.4)
+            if (flag_cout<=3 and flag_cout>1):
+                board_y =(j + 10)+board_length*random.uniform(0.2,0.45)
+            if flag_cout>3:
+                board_y = (j + 10)+board_length*random.uniform(0.3,0.48)
+            if board_length<75:
+                board_y = (j + 10)+board_length*random.uniform(0.1,0.25)
             break
+        flag_cout=0
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
+    print("坐标")
+    print(j)
+    print(board_length)
     return piece_x, piece_y, board_x, board_y
 
 
@@ -217,13 +230,15 @@ def main():
     debug.dump_device_info()
     screenshot.check_screenshot()
 
-    i, next_rest, next_rest_time = (0, random.randrange(3, 10),
-                                    random.randrange(5, 10))
+    i, next_rest, next_rest_time = (0, random.randrange(3, 20),
+                                    random.randrange(2, 10))
+
+    flag_cout=0 ##连跳计数
     while True:
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
+        piece_x, piece_y, board_x, board_y = find_piece_and_board(im,flag_cout)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
