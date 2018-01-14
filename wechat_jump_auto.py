@@ -25,6 +25,7 @@ from PIL import Image
 from six.moves import input
 try:
     from common import debug, config, screenshot
+    from common import config as configPy
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
@@ -32,7 +33,7 @@ except Exception as ex:
     exit(-1)
 
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
@@ -71,18 +72,25 @@ def jump(distance):
     press_time = max(press_time, 203)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
-        x1=swipe_x1*random.uniform(.8, 1.0),
-        y1=swipe_y1*random.uniform(.8, 1.0),
-        x2=swipe_x2*random.uniform(.8, 1.0),
-        y2=swipe_y2*random.uniform(.8, 1.0),
+        x1=swipe_x1*random.uniform(.96, 1.0),
+        y1=swipe_y1*random.uniform(.96, 1.0),
+        x2=swipe_x2*random.uniform(.96, 1.0),
+        y2=swipe_y2*random.uniform(.96, 1.0),
         duration=press_time
     )
     print(cmd)
     os.system(cmd)
     return press_time
 
+###############产生（0,1）正态随机数 模拟
+def blockedgauss(mu,sigma):
+    while True:
+        numb = random.gauss(mu,sigma)
+        if (numb > 0 and numb < 0.5):
+            break
+    return numb
 
-def find_piece_and_board(im,flag_cout):
+def find_piece_and_board(im,flag_cout,screen_size_board_y_coefficient):
     """
     寻找关键坐标
     """
@@ -135,7 +143,6 @@ def find_piece_and_board(im,flag_cout):
     else:
         board_x_start = 0
         board_x_end = piece_x
-
     for i in range(int(h / 3), int(h * 2 / 3)):
         last_pixel = im_pixel[0, i]
         if board_x or board_y:
@@ -167,8 +174,8 @@ def find_piece_and_board(im,flag_cout):
                 + abs(pixel[1] - last_pixel[1]) \
                 + abs(pixel[2] - last_pixel[2]) < 10:
             break
-    board_length =k-i  ##棋盘长度
-    board_y = int((i+k) / 2)+board_length*random.uniform(0.2,0.37)
+    board_length =(k-i)*screen_size_board_y_coefficient/1080  ##棋盘y长度
+    board_y = int((i+k) / 2)
 
     # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
     # 属性弥补上一段代码可能存在的判断错误
@@ -177,24 +184,46 @@ def find_piece_and_board(im,flag_cout):
 
     for j in range(i, i+200):
         pixel = im_pixel[board_x, j]
-        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
-            flag_cout +=1
-            if flag_cout<=1:
-                board_y = (j + 10)+board_length*random.uniform(0.1,0.4)
-            if (flag_cout<=3 and flag_cout>1):
-                board_y =(j + 10)+board_length*random.uniform(0.2,0.45)
-            if flag_cout>3:
-                board_y = (j + 10)+board_length*random.uniform(0.3,0.48)
-            if board_length<75:
-                board_y = (j + 10)+board_length*random.uniform(0.1,0.25)
+        ##有连击偏离增大
+        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) <=30:
+            flag_cout = flag_cout+1
+            if board_length<=205 and board_length>150:
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.25,2)
+            if board_length<=150 and board_length>115:
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.25,1)
+            if board_length<=115 and board_length>70:
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.2,1)
+            if board_length<=70:
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.1,1)
+            if board_length>205:
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.3,2)
+            if board_length<40:
+                board_y_Candidate = j+board_length/4
             break
         flag_cout=0
 
+    if flag_cout==0:
+        if board_length>205:
+            board_y_Candidate = board_y+board_length*blockedgauss(0.3,2)
+        if board_length<=205 and board_length>150:
+            board_y_Candidate = board_y+board_length*blockedgauss(0.25,2)
+        if board_length<=150 and board_length>115:
+                board_y_Candidate = board_y +board_length*blockedgauss(0.25,1)
+        if board_length<=115 and board_length>70:
+            board_y_Candidate = board_y+board_length*blockedgauss(0.2,1)
+        if board_length<=70:
+            board_y_Candidate = board_y+board_length*blockedgauss(0.1,1)
+        if board_length<40:
+            board_y_Candidate = board_y
+
+    board_y=board_y_Candidate
     if not all((board_x, board_y)):
         return 0, 0, 0, 0
     print("坐标")
-    print(j)
+    print(board_y_Candidate)
     print(board_length)
+    print("连击")
+    print(flag_cout)
     return piece_x, piece_y, board_x, board_y
 
 
@@ -216,6 +245,12 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         prompt = 'Please input {} or {}: '.format(true_value, false_value)
         i = input(prompt)
 
+###获取屏幕高
+def GetMiddleStr(content):
+    if content[-4]>'0' and content[-4]<='9':
+        return content[-4:]
+    else:
+        return content[-3:]
 
 def main():
     """
@@ -233,12 +268,15 @@ def main():
     i, next_rest, next_rest_time = (0, random.randrange(3, 20),
                                     random.randrange(2, 10))
 
-    flag_cout=0 ##连跳计数
+    flag_cout=1 ##连跳计数
+    screen_size =configPy._get_screen_size() ##获取屏幕大小
+    screen_size_board_y_coefficient=int(GetMiddleStr(screen_size))
     while True:
+        time.sleep(random.random()*5)  ##每次操作时间不同
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y = find_piece_and_board(im,flag_cout)
+        piece_x, piece_y, board_x, board_y = find_piece_and_board(im,flag_cout,screen_size_board_y_coefficient)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
