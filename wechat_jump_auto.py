@@ -86,7 +86,7 @@ def jump(distance):
 def blockedgauss(mu,sigma):
     while True:
         numb = random.gauss(mu,sigma)
-        if (numb > 0 and numb < 0.5):
+        if (numb > 0 and numb < 0.4):
             break
     return numb
 
@@ -188,15 +188,15 @@ def find_piece_and_board(im,flag_cout,screen_size_board_y_coefficient):
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) <=30:
             flag_cout = flag_cout+1
             if board_length<=205 and board_length>150:
-                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.25,2)
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.3,3)
             if board_length<=150 and board_length>115:
-                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.25,1)
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.3,1)
             if board_length<=115 and board_length>70:
-                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.2,1)
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.27,1)
             if board_length<=70:
                 board_y_Candidate = (j + 10)+board_length*blockedgauss(0.1,1)
             if board_length>205:
-                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.3,2)
+                board_y_Candidate = (j + 10)+board_length*blockedgauss(0.3,4)
             if board_length<40:
                 board_y_Candidate = j+board_length/4
             break
@@ -204,13 +204,13 @@ def find_piece_and_board(im,flag_cout,screen_size_board_y_coefficient):
 
     if flag_cout==0:
         if board_length>205:
-            board_y_Candidate = board_y+board_length*blockedgauss(0.3,2)
+            board_y_Candidate = board_y+board_length*blockedgauss(0.3,4)
         if board_length<=205 and board_length>150:
-            board_y_Candidate = board_y+board_length*blockedgauss(0.25,2)
+            board_y_Candidate = board_y+board_length*blockedgauss(0.3,3)
         if board_length<=150 and board_length>115:
-                board_y_Candidate = board_y +board_length*blockedgauss(0.25,1)
+                board_y_Candidate = board_y +board_length*blockedgauss(0.3,1)
         if board_length<=115 and board_length>70:
-            board_y_Candidate = board_y+board_length*blockedgauss(0.2,1)
+            board_y_Candidate = board_y+board_length*blockedgauss(0.27,1)
         if board_length<=70:
             board_y_Candidate = board_y+board_length*blockedgauss(0.1,1)
         if board_length<40:
