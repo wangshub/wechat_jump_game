@@ -174,7 +174,7 @@ def find_piece_and_board(im,flag_cout,screen_size_board_y_coefficient):
                 + abs(pixel[1] - last_pixel[1]) \
                 + abs(pixel[2] - last_pixel[2]) < 10:
             break
-    board_length =(k-i)*screen_size_board_y_coefficient/1080  ##棋盘y长度
+    board_length =(k-i)*1080/screen_size_board_y_coefficient  ##棋盘y长度
     board_y = int((i+k) / 2)
 
     # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
