@@ -202,7 +202,7 @@ def main():
         save_debug_creenshot(ts, im, piece_x, piece_y, board_x, board_y)
         backup_screenshot(ts)
         # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
-        time.sleep(random.uniform(1, 1.1))
+        time.sleep(random.uniform(1.5, 2.1))
 
 
 if __name__ == '__main__':
