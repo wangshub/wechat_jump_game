@@ -5,6 +5,5 @@
     "piece_body_width": 70,
     "target_score": 1024,
     "start_score": 100,
-    "score_coefficient": 2,
-    "Failure_interval": 110
+    "total_step": 30
 }
