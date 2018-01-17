@@ -261,6 +261,7 @@ def main():
         if start_score>each_score:
             next_start=i
     next_start+=1
+    #print(y_score)
     if start_score<y_score[0]:
         next_start=0
 
