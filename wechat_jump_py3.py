@@ -5,11 +5,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from PIL import Image
+import re
 
+
+android_fig_save_dir = '/sdcard/auto'  # Create 'auto' file in sdcard before start
 
 def pull_screenshot():
-    os.system('adb shell screencap -p /sdcard/autojump.png')
-    os.system('adb pull /sdcard/autojump.png .')
+    count = 0
+    flag = 0
+    while flag == 0 and count < 3:
+        count += 1
+        os.system('adb shell screencap -p %s/autojump.png' % android_fig_save_dir)
+        files = os.popen('adb shell ls %s/' % android_fig_save_dir).read().splitlines()
+        print files
+        re_autojump = re.compile('autojump\\S{0,}')
+
+        for file_ in files:
+            if re_autojump.match(file_):
+                print(file_)
+                os.system('adb pull %s/%s autojump.png' % (android_fig_save_dir, file_))
+                os.system('adb shell rm %s/%s' % (android_fig_save_dir, file_))
+                flag=1
+            else:
+                os.system('adb shell rm %s/%s' % (android_fig_save_dir, file_))
 
 
 def jump(distance):
@@ -21,6 +39,8 @@ def jump(distance):
 
 
 fig = plt.figure()
+
+
 pull_screenshot()
 img = np.array(Image.open('autojump.png'))
 im = plt.imshow(img, animated=True)
@@ -31,7 +51,10 @@ cor = []
 
 
 def update_data():
-    return np.array(Image.open('autojump.png'))
+    try:
+        return np.array(Image.open('autojump.png'))
+    except:
+        return None
 
 
 def updatefig(*args):
@@ -39,8 +62,12 @@ def updatefig(*args):
     if update:
         time.sleep(1.5)
         pull_screenshot()
-        im.set_array(update_data())
-        update = False
+        flag = update_data()
+        if flag is None:
+            pass
+        else:
+            im.set_array(flag)
+            update = False
     return im,
 
 
