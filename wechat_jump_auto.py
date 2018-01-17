@@ -23,8 +23,9 @@ import math
 import random
 from PIL import Image
 from six.moves import input
+import pytesser3
 try:
-    from common import debug, config, screenshot
+    from common import debug, config, screenshot,baiduocr
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
@@ -53,7 +54,11 @@ target_score=config['target_score']         ##不是精确值，估计
 Failure_interval=config['Failure_interval']      ##推荐100-200
 start_score=config['start_score']         ##设置第一次分数
 # 分数与步数换算系数，请自己根据实际情况调节
+app_id = config['app_id']
+app_key = config['app_key']
+app_secret = config['app_secret']
 score_coefficient = config['score_coefficient']
+
 
 def set_button_position(im):
     """
@@ -208,7 +213,15 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         prompt = 'Please input {} or {}: '.format(true_value, false_value)
         i = input(prompt)
 
-
+def pross_data(image):
+    pixels = list(image.getdata())  # 得到像素数据 灰度0-255
+    #print(len(pixels))
+    for i in range(len(pixels)):
+        if pixels[i]<100:
+            pixels[i]=0
+        else:
+            pixels[i]=255
+    return pixels
 def main():
     """
     主函数
@@ -228,6 +241,27 @@ def main():
     while True:
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
+        region=im.crop((0,0,460,320))
+        region=region.convert('L')
+        region1=region.crop((113,192,194,292))
+        region1.putdata(pross_data(region1))
+        region2=region.crop((195,192,276,292))
+        region2.putdata(pross_data(region2))
+        region3=region.crop((277,192,358,292))
+        region3.putdata(pross_data(region3))
+        region4=region.crop((360,192,441,292))
+        region4.putdata(pross_data(region4))
+        str1="./region"+str(j)+"1.png"
+        str2="./region"+str(j)+"2.png"
+        str3="./region"+str(j)+"3.png"
+        str4="./region"+str(j)+"4.png"
+        region.save("./region.png")
+        region1.save(str1)
+        region2.save(str2)
+        region3.save(str3)
+        region4.save(str4)
+        print (pytesser3.image_file_to_string("./region.png"))
+        ###mtext =baiduocr.get_text_from_image(image_data,app_id,app_key,app_secret)
         # 获取棋子和 board 的位置
         print(j)
         piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
@@ -239,7 +273,7 @@ def main():
             print("----------------")
             print(j)
             jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)*5)
-            start_score = j*score_coefficient
+            start_score = j*score_coefficient+Failure_interval
             time.sleep(5*random.random())
         if start_score >target_score:
             break
