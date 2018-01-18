@@ -32,7 +32,7 @@ except Exception as ex:
     exit(-1)
 
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
@@ -245,7 +245,7 @@ def main():
             i, next_rest, next_rest_time = (0, random.randrange(30, 100),
                                             random.randrange(10, 60))
         # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
-        time.sleep(random.uniform(0.9, 1.2))
+        time.sleep(random.uniform(1.4, 1.6))
 
 
 if __name__ == '__main__':
