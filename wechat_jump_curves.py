@@ -52,9 +52,9 @@ piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
 
-target_score=config['target_score']         ##目标分数
-total_step=config['total_step']      ##达到目标次数所需游戏次数
-start_score=config['start_score']         ##设置第一次分数(目前分数)
+target_score=1024         ##目标分数
+total_step=30    ##达到目标次数所需游戏次数
+start_score=100        ##设置第一次分数(目前分数)
 
 
 

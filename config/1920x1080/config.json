@@ -3,9 +3,6 @@
     "press_coefficient": 1.392,
     "piece_base_height_1_2": 20,
     "piece_body_width": 70,
-    "target_score": 1024,
-    "start_score": 100,
-    "total_step": 30,
     "swipe": {
         "x1": 500,
         "y1": 1600,
