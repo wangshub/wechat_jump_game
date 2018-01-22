@@ -149,10 +149,14 @@ def find_piece_and_board(im):
             if abs(j - piece_x) < piece_body_width:
                 continue
 
-            # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
+            # 检查Y轴下面5个像素， 和背景色相同， 那么是干扰
+            ver_pixel = im_pixel[j, i + 5]
             if abs(pixel[0] - last_pixel[0]) \
                     + abs(pixel[1] - last_pixel[1]) \
-                    + abs(pixel[2] - last_pixel[2]) > 10:
+                    + abs(pixel[2] - last_pixel[2]) > 10 \
+                    and abs(ver_pixel[0] - last_pixel[0]) \
+                    + abs(ver_pixel[1] - last_pixel[1]) \
+                    + abs(ver_pixel[2] - last_pixel[2]) > 10:
                 board_x_sum += j
                 board_x_c += 1
         if board_x_sum:
