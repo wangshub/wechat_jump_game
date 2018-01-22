@@ -67,7 +67,7 @@ def jump(distance):
     """
     跳跃一定的距离
     """
-    press_time = distance * press_coefficient
+    press_time = distance * (random.uniform(press_coefficient - 0.105, press_coefficient + 0.105))
     press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
