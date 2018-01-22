@@ -62,7 +62,10 @@ def pull_screenshot():
 def jump(distance):
     press_time = distance * time_coefficient / 1000
     print('press time: {}'.format(press_time))
-    s.tap_hold(200, 200, press_time)
+    #微信对按压点有做判断，随机数防ban
+    tap_x = random.uniform(100, 300)
+    tap_y = random.uniform(100, 300)
+    s.tap_hold(tap_x, tap_y, press_time)
 
 
 def backup_screenshot(ts):
