@@ -32,7 +32,7 @@ except Exception as ex:
     exit(-1)
 
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
