@@ -7,6 +7,7 @@ import os
 import sys
 from PIL import Image
 
+from . import adb
 
 # SCREENSHOT_WAY 是截图方法，经过 check_screenshot 后，会自动递减，不需手动修改
 SCREENSHOT_WAY = 3
@@ -20,7 +21,7 @@ def pull_screenshot():
     global SCREENSHOT_WAY
     if 1 <= SCREENSHOT_WAY <= 3:
         process = subprocess.Popen(
-            'adb shell screencap -p',
+            adb + 'shell screencap -p',
             shell=True, stdout=subprocess.PIPE)
         binary_screenshot = process.stdout.read()
         if SCREENSHOT_WAY == 2:
@@ -31,8 +32,8 @@ def pull_screenshot():
         f.write(binary_screenshot)
         f.close()
     elif SCREENSHOT_WAY == 0:
-        os.system('adb shell screencap -p /sdcard/autojump.png')
-        os.system('adb pull /sdcard/autojump.png .')
+        os.system(adb + 'shell screencap -p /sdcard/autojump.png')
+        os.system(adb + 'pull /sdcard/autojump.png .')
 
 
 def check_screenshot():
