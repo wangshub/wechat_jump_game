@@ -23,6 +23,9 @@ import math
 import random
 from PIL import Image
 from six.moves import input
+from skimage import io,transform
+import numpy as np
+import tensorflow as tf
 try:
     from common import debug, config, screenshot
 except Exception as ex:
@@ -32,7 +35,7 @@ except Exception as ex:
     exit(-1)
 
 
-VERSION = "1.1.1"
+VERSION = "1.1.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
@@ -48,6 +51,11 @@ press_coefficient = config['press_coefficient']
 piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
+
+target_score=1024         ##目标分数
+total_step=30    ##达到目标次数所需游戏次数
+start_score=100        ##设置第一次分数(目前分数)
+
 
 
 def set_button_position(im):
@@ -203,6 +211,28 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         prompt = 'Please input {} or {}: '.format(true_value, false_value)
         i = input(prompt)
 
+def pross_data(image):
+    pixels = list(image.getdata())  # 得到像素数据 灰度0-255
+    #print(len(pixels))
+    for i in range(len(pixels)):
+        if pixels[i]<100:
+            pixels[i]=0
+        else:
+            pixels[i]=255
+    return pixels
+def strint(score0):
+    if(score0<10):
+        return str(score0)
+    else:
+        return ""
+
+def read_one_image(path):
+    img = io.imread(path)
+    w=81
+    h=81
+    c=1
+    img = transform.resize(img,(w,h,c))
+    return np.asarray(img)
 
 def main():
     """
@@ -214,44 +244,111 @@ def main():
         print('bye')
         return
     print('程序版本号：{}'.format(VERSION))
-    print('激活窗口并按 CONTROL + C 组合键退出')
     debug.dump_device_info()
     screenshot.check_screenshot()
 
     i, next_rest, next_rest_time = (0, random.randrange(3, 10),
                                     random.randrange(5, 10))
-    while True:
-        screenshot.pull_screenshot()
-        im = Image.open('./autojump.png')
-        # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
-        ts = int(time.time())
-        print(ts, piece_x, piece_y, board_x, board_y)
-        set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
-        if DEBUG_SWITCH:
-            debug.save_debug_screenshot(ts, im, piece_x,
-                                        piece_y, board_x, board_y)
-            debug.backup_screenshot(ts)
-        im.close()
-        i += 1
-        if i == next_rest:
-            print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
-            for j in range(next_rest_time):
-                sys.stdout.write('\r程序将在 {}s 后继续'.format(next_rest_time - j))
-                sys.stdout.flush()
-                time.sleep(1)
-            print('\n继续')
-            i, next_rest, next_rest_time = (0, random.randrange(30, 100),
-                                            random.randrange(10, 60))
-        # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
-        time.sleep(random.uniform(0.9, 1.2))
+    j= 0
+    ################ 分数曲线公式
+
+    y_score=[]
+    next_start=0
+    global start_score
+    for i in range(total_step):
+        each_score=target_score*(1-np.exp(-0.15*(1024.0/target_score)*i))
+        y_score.append(each_score)
+        if start_score>each_score:
+            next_start=i
+    next_start+=1
+    #print(y_score)
+    if start_score<y_score[0]:
+        next_start=0
+
+    ###################
+    with tf.Session() as sess:
+        saver = tf.train.import_meta_graph('./model.ckpt.meta')
+        saver.restore(sess,tf.train.latest_checkpoint('./'))
+
+        graph = tf.get_default_graph()
+        x = graph.get_tensor_by_name("x:0")
+        logits = graph.get_tensor_by_name("logits_eval:0")
+    #####################识别分数
+        while True:
+            screenshot.pull_screenshot()
+            im = Image.open('./autojump.png')
+            region=im.crop((0,0,460,320))
+            region=region.convert('L')
+            region1=region.crop((113,192,194,292))
+            region1.putdata(pross_data(region1))
+            region2=region.crop((195,192,276,292))
+            region2.putdata(pross_data(region2))
+            region3=region.crop((277,192,358,292))
+            region3.putdata(pross_data(region3))
+            region4=region.crop((360,192,441,292))
+            region4.putdata(pross_data(region4))
+
+            str1="/region"+"1.png"
+            str2="./region"+"2.png"
+            str3="./region"+"3.png"
+            str4="./region"+"4.png"
+            #region.save("./region.png")
+            region1.save(str1)
+            region2.save(str2)
+            region3.save(str3)
+            region4.save(str4)
+            data = []
+            data1 = read_one_image(str1)
+            data2 = read_one_image(str2)
+            data3 = read_one_image(str3)
+            data4 = read_one_image(str4)
+            data.append(data1)
+            data.append(data2)
+            data.append(data3)
+            data.append(data4)
+            feed_dict = {x:data}
+            classification_result = sess.run(logits,feed_dict)
+
+            output = []
+            output = tf.argmax(classification_result,1).eval()
+            m_score=strint(output[0])+strint(output[1])+strint(output[2])+strint(output[3])
+            m_score=int(m_score)
+            print('score:{}'.format(m_score))
+            ####################################
+            # 获取棋子和 board 的位置
+            print(j)
+            piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
+            ts = int(time.time())
+            print(ts, piece_x, piece_y, board_x, board_y)
+            set_button_position(im)
+
+            if m_score > y_score[next_start]: ##自动结束这一次
+                print("----------------")
+                jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)*5)
+                next_start+=1
+                time.sleep(5*random.random())
+            if next_start >len(y_score):
+                break
+            jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+            if DEBUG_SWITCH:
+                debug.save_debug_screenshot(ts, im, piece_x,
+                                            piece_y, board_x, board_y)
+                debug.backup_screenshot(ts)
+            im.close()
+            i += 1
+            j += 1
+            if i == next_rest:
+                print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
+                for j in range(next_rest_time):
+                    sys.stdout.write('\r程序将在 {}s 后继续'.format(next_rest_time - j))
+                    sys.stdout.flush()
+                    time.sleep(1)
+                print('\n继续')
+                i, next_rest, next_rest_time = (0, random.randrange(30, 100),
+                                                random.randrange(10, 60))
+            # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
+            time.sleep(random.uniform(0.9, 1.2))
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        os.system('adb kill-server')
-        print('bye')
-        exit(0)
+    main()
