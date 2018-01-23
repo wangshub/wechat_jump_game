@@ -267,8 +267,8 @@ def main():
 
     ###################
     with tf.Session() as sess:
-        saver = tf.train.import_meta_graph('./model.ckpt.meta')
-        saver.restore(sess,tf.train.latest_checkpoint('./'))
+        saver = tf.train.import_meta_graph('./resource/model/model.ckpt.meta')
+        saver.restore(sess,tf.train.latest_checkpoint('./resource/model/'))
 
         graph = tf.get_default_graph()
         x = graph.get_tensor_by_name("x:0")
