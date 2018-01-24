@@ -2,6 +2,9 @@
 
 """
 ##基于python3.5(64位)
+###如果缺少scikit-image库，建议进下面网址下载whl直接安装
+##https://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image
+
 === 思路 ===
 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
     根据两个点的距离乘以一个时间系数获得长按的时间
@@ -278,21 +281,24 @@ def main():
         while True:
             screenshot.pull_screenshot()
             im = Image.open('./autojump.png')
-            region=im.crop((0,0,460,320))
+            ##比例系数
+            pix_w=im.size[0]*1.0/1080
+            pix_h=im.size[1]*1.0/1920
+            region=im.crop((0,0,460*pix_w,320*pix_h))
             region=region.convert('L')
-            region1=region.crop((113,192,194,292))
+            region1=region.crop((113*pix_w,192*pix_h,194*pix_w,292*pix_h))
             region1.putdata(pross_data(region1))
-            region2=region.crop((195,192,276,292))
+            region2=region.crop((195*pix_w,192*pix_h,276*pix_w,292*pix_h))
             region2.putdata(pross_data(region2))
-            region3=region.crop((277,192,358,292))
+            region3=region.crop((277*pix_w,192*pix_h,358*pix_w,292*pix_h))
             region3.putdata(pross_data(region3))
-            region4=region.crop((360,192,441,292))
+            region4=region.crop((360*pix_w,192*pix_h,441*pix_w,292*pix_h))
             region4.putdata(pross_data(region4))
 
-            str1="/region"+"1.png"
-            str2="./region"+"2.png"
-            str3="./region"+"3.png"
-            str4="./region"+"4.png"
+            str1="./.github/region"+"1.png"
+            str2="./.github/region"+"2.png"
+            str3="./.github/region"+"3.png"
+            str4="./.github/region"+"4.png"
             #region.save("./region.png")
             region1.save(str1)
             region2.save(str2)
