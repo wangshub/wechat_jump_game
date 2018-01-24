@@ -5,6 +5,7 @@
 ###如果缺少scikit-image库，建议进下面网址下载whl直接安装
 ##https://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image
 
+
 === 思路 ===
 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
     根据两个点的距离乘以一个时间系数获得长按的时间
