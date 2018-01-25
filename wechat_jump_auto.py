@@ -87,9 +87,7 @@ def find_piece_and_board(im):
     寻找关键坐标
     """
     w, h = im.size
-
-    piece_x_sum = 0
-    piece_x_c = 0
+    points = []                 # 所有满足色素的点集合
     piece_y_max = 0
     board_x = 0
     board_y = 0
@@ -119,13 +117,13 @@ def find_piece_and_board(im):
             if (50 < pixel[0] < 60) \
                     and (53 < pixel[1] < 63) \
                     and (95 < pixel[2] < 110):
-                piece_x_sum += j
-                piece_x_c += 1
+                points.append((j, i))
                 piece_y_max = max(i, piece_y_max)
 
-    if not all((piece_x_sum, piece_x_c)):
+    bottom_x = [x for x,y in points if y == piece_y_max]  # 所有最底层的点的横坐标
+    if not bottom_x:
         return 0, 0, 0, 0
-    piece_x = int(piece_x_sum / piece_x_c)
+    piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     # 限制棋盘扫描的横坐标，避免音符 bug
