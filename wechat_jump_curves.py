@@ -324,7 +324,7 @@ def main():
             for i in range(len(pixels_Widh)-1):
                 region1=region.crop((pixels_Widh[i],start_h,pixels_Widh[i+1],end_h))
                 region1.putdata(pross_data(region1))
-                str1="./.github/region"+str(i)+".png"
+                str1="./region"+str(i)+".png"
                 region1.save(str1)
                 data1 = read_one_image(str1)
                 data.append(data1)

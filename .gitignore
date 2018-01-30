@@ -3,6 +3,7 @@ test/
 pic/
 screenshot_backups/
 autojump.png
+region*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
