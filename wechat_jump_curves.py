@@ -2,6 +2,10 @@
 
 """
 ##基于python3.5(64位)
+###如果缺少scikit-image库，建议进下面网址下载whl直接安装
+##https://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-image
+
+
 === 思路 ===
 核心：每次落稳之后截图，根据截图算出棋子的坐标和下一个块顶面的中点坐标，
     根据两个点的距离乘以一个时间系数获得长按的时间
@@ -221,6 +225,36 @@ def pross_data(image):
         else:
             pixels[i]=255
     return pixels
+
+def pixel_division(img,w,h):
+    pixels = list(img.getdata())
+    row_pix=np.zeros([1,h])
+    col_pix=np.zeros([1,w])
+    for i in range(w):
+        for j in range(h):
+            if pixels[j*w+i]<100:
+                row_pix[0,j]+=1
+                col_pix[0,i]+=1
+    start_h=0
+    end_h=0
+    flag=0
+    for j in range(h):
+        if row_pix[0,j]>=1 and flag==0:
+            start_h=j
+            flag=1
+        if row_pix[0,j]>=1:
+            end_h=j
+
+    pixels_Widh=[]
+    end_w=0
+    for i in range(1,w):
+        if col_pix[0,i-1]<=0 and col_pix[0,i]>=1:
+            pixels_Widh.append(i-1)
+        if col_pix[0,i]>=1:
+            end_w=i
+    pixels_Widh.append(end_w+1)
+    return start_h,end_h,pixels_Widh
+
 def strint(score0):
     if(score0<10):
         return str(score0)
@@ -278,41 +312,29 @@ def main():
         while True:
             screenshot.pull_screenshot()
             im = Image.open('./autojump.png')
-            region=im.crop((0,0,460,320))
+            ##比例系数
+            pix_w=im.size[0]*1.0/1080
+            pix_h=im.size[1]
+            region=im.crop((0,pix_h*0.1,460*pix_w,pix_h*0.2))
             region=region.convert('L')
-            region1=region.crop((113,192,194,292))
-            region1.putdata(pross_data(region1))
-            region2=region.crop((195,192,276,292))
-            region2.putdata(pross_data(region2))
-            region3=region.crop((277,192,358,292))
-            region3.putdata(pross_data(region3))
-            region4=region.crop((360,192,441,292))
-            region4.putdata(pross_data(region4))
-
-            str1="/region"+"1.png"
-            str2="./region"+"2.png"
-            str3="./region"+"3.png"
-            str4="./region"+"4.png"
-            #region.save("./region.png")
-            region1.save(str1)
-            region2.save(str2)
-            region3.save(str3)
-            region4.save(str4)
+            start_h,end_h,pixels_Widh=pixel_division(region,int(460*pix_w),int(pix_h*0.1))
+            if start_h==end_h:
+                continue
             data = []
-            data1 = read_one_image(str1)
-            data2 = read_one_image(str2)
-            data3 = read_one_image(str3)
-            data4 = read_one_image(str4)
-            data.append(data1)
-            data.append(data2)
-            data.append(data3)
-            data.append(data4)
+            for i in range(len(pixels_Widh)-1):
+                region1=region.crop((pixels_Widh[i],start_h,pixels_Widh[i+1],end_h))
+                region1.putdata(pross_data(region1))
+                str1="./region"+str(i)+".png"
+                region1.save(str1)
+                data1 = read_one_image(str1)
+                data.append(data1)
             feed_dict = {x:data}
             classification_result = sess.run(logits,feed_dict)
-
             output = []
             output = tf.argmax(classification_result,1).eval()
-            m_score=strint(output[0])+strint(output[1])+strint(output[2])+strint(output[3])
+            m_score=""
+            for i in range(len(output)):
+                m_score+=strint(output[i])
             if m_score=="":
                 continue
             m_score=int(m_score)
