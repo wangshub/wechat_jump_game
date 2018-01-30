@@ -214,6 +214,7 @@ def main():
         print('bye')
         return
     print('程序版本号：{}'.format(VERSION))
+    print('激活窗口并按 CONTROL + C 组合键退出')
     debug.dump_device_info()
     screenshot.check_screenshot()
 
@@ -248,4 +249,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        os.system('adb kill-server')
+        print('bye')
+        exit(0)
