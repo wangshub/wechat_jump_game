@@ -17,10 +17,11 @@ def open_accordant_config():
         path=sys.path[0],
         screen_size=screen_size
     )
+    
     # 优先获取执行文件目录的配置文件
     here = sys.path[0]
     for file in os.listdir(here):
-        if re.match('(.+)\.json', file):
+        if re.match(r'(.+)\.json', file):
             file_name = os.path.join(here, file)
             with open(file_name, 'r') as f:
                 print("Load config file from {}".format(file_name))
