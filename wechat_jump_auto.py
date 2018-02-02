@@ -16,13 +16,15 @@
 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 """
 from __future__ import print_function, division
+
+import math
 import os
+import random
 import sys
 import time
-import math
-import random
 from PIL import Image
 from six.moves import input
+
 try:
     from common import debug, config, screenshot
 except Exception as ex:
@@ -31,12 +33,10 @@ except Exception as ex:
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
-
-VERSION = "1.1.1"
+VERSION = "1.2.1"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
-
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需
 # 设置，设置保存在 config 文件夹中
@@ -48,6 +48,8 @@ press_coefficient = config['press_coefficient']
 piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
+# 图形中圆球的直径，可以利用系统自带画图工具，用直线测量像素，如果可以实现自动识别圆球直径，那么此处将可实现全自动。
+head_diameter = config.get('head_diameter', 60)
 
 
 def set_button_position(im):
@@ -58,8 +60,8 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left-50, left+50))
-    top = int(random.uniform(top-10, top+10))    # 随机防 ban
+    left = int(random.uniform(left - 50, left + 50))
+    top = int(random.uniform(top - 10, top + 10))  # 随机防 ban
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -67,16 +69,13 @@ def jump(distance, delta_piece_y):
     """
     跳跃一定的距离
     """
-    press_time = distance * press_coefficient
-    press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
+    # 计算程序长度与截图测得的距离的比例
+    scale = 0.945 * 2 / head_diameter
+    actual_distance = distance * scale * (math.sqrt(6) / 2)
+    press_time = (-945 + math.sqrt(945 ** 2 + 4 * 105 * 36 * actual_distance)) / (2 * 105) * 1000
+    press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
 
-    #发现跳跃的距离和按压的时间成非线性增加，为了每次可以跳到中心，更快的刷分，根据初始计算
-    #的时间做了微调。
-    if press_time > 350:
-        press_time += round((600 - press_time)/ 10)
-    else:
-        press_time += 20
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
         y1=swipe_y1,
@@ -94,9 +93,7 @@ def find_piece_and_board(im):
     寻找关键坐标
     """
     w, h = im.size
-
-    piece_x_sum = 0
-    piece_x_c = 0
+    points = []                 # 所有满足色素的点集合
     piece_y_max = 0
     board_x = 0
     board_y = 0
@@ -104,7 +101,7 @@ def find_piece_and_board(im):
     scan_start_y = 0  # 扫描的起始 y 坐标
     im_pixel = im.load()
     # 以 50px 步长，尝试探测 scan_start_y
-    for i in range(int(h / 3), int(h*2 / 3), 50):
+    for i in range(int(h / 3), int(h * 2 / 3), 50):
         last_pixel = im_pixel[0, i]
         for j in range(1, w):
             pixel = im_pixel[j, i]
@@ -126,17 +123,17 @@ def find_piece_and_board(im):
             if (50 < pixel[0] < 60) \
                     and (53 < pixel[1] < 63) \
                     and (95 < pixel[2] < 110):
-                piece_x_sum += j
-                piece_x_c += 1
+                points.append((j, i))
                 piece_y_max = max(i, piece_y_max)
 
-    if not all((piece_x_sum, piece_x_c)):
+    bottom_x = [x for x,y in points if y == piece_y_max]  # 所有最底层的点的横坐标
+    if not bottom_x:
         return 0, 0, 0, 0, 0
-    piece_x = int(piece_x_sum / piece_x_c)
+    piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     # 限制棋盘扫描的横坐标，避免音符 bug
-    if piece_x < w/2:
+    if piece_x < w / 2:
         board_x_start = piece_x
         board_x_end = w
     else:
@@ -156,10 +153,14 @@ def find_piece_and_board(im):
             if abs(j - piece_x) < piece_body_width:
                 continue
 
-            # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
+            # 检查Y轴下面5个像素， 和背景色相同， 那么是干扰
+            ver_pixel = im_pixel[j, i + 5]
             if abs(pixel[0] - last_pixel[0]) \
                     + abs(pixel[1] - last_pixel[1]) \
-                    + abs(pixel[2] - last_pixel[2]) > 10:
+                    + abs(pixel[2] - last_pixel[2]) > 10 \
+                    and abs(ver_pixel[0] - last_pixel[0]) \
+                    + abs(ver_pixel[1] - last_pixel[1]) \
+                    + abs(ver_pixel[2] - last_pixel[2]) > 10:
                 board_x_sum += j
                 board_x_c += 1
         if board_x_sum:
@@ -167,20 +168,21 @@ def find_piece_and_board(im):
     last_pixel = im_pixel[board_x, i]
 
     #首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
-    #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高实测距离偏大，偏低相反）
-    #最后通过delta_piece_y来对跳跃时间进行微调
-    center_x = w/2 + (24/1080)*w
-    center_y = h/2 + (17/1920)*h
+    #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
+    #偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
+    center_x = w/ 2 + (24/ 1080) * w
+    center_y = h/ 2 + (17/ 1920) * h
     if piece_x > center_x:
-        board_y = round((25.5/43.5)*(board_x - center_x) + center_y)
-        delta_piece_y = piece_y - round((25.5/43.5)*(piece_x - center_x) + center_y)
+        board_y = round((25.5/ 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round((25.5/ 43.5) * (piece_x - center_x) + center_y)
     else:
-        board_y = round(-(25.5/43.5)*(board_x - center_x) + center_y)
-        delta_piece_y = piece_y - round(-(25.5/43.5)*(piece_x - center_x) + center_y)
+        board_y = round(-(25.5/ 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round(-(25.5/ 43.5) * (piece_x - center_x) + center_y)
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0, 0
     return piece_x, piece_y, board_x, board_y, delta_piece_y
+
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0, 0
@@ -193,7 +195,7 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     default_value = true_value if default else false_value
     prompt = '{} {}/{} [{}]: '.format(prompt, true_value,
-        false_value, default_value)
+                                      false_value, default_value)
     i = input(prompt)
     if not i:
         return default
