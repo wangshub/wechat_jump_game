@@ -9,13 +9,13 @@ adb_path = ''
 def get_path():
     global adb_path
     try:
-        adb_path = 'adb '
-        subprocess.Popen([adb_path[:-1]], stdout=subprocess.PIPE,
+        adb_path = 'adb'
+        subprocess.Popen([adb_path], stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
         return adb_path
     except FileNotFoundError:
         if os.name == 'nt':
-            adb_path = os.path.join('Tools', "adb", 'adb.exe ')
+            adb_path = os.path.join('Tools', "adb", 'adb.exe')
             try:
                 subprocess.Popen(
                     [adb_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -30,7 +30,7 @@ def run(command):
     global adb_path
     if adb_path == '':
         adb_path = get_path()
-    command = '{}{}'.format(adb_path, command)
+    command = '{} {}'.format(adb_path, command)
     readObj = os.popen(command)
     output = readObj.read()
     readObj.close()

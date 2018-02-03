@@ -21,7 +21,7 @@ def pull_screenshot():
     global SCREENSHOT_WAY
     if 1 <= SCREENSHOT_WAY <= 3:
         process = subprocess.Popen(
-            adb.adb_path + 'shell screencap -p',
+            adb.adb_path + ' shell screencap -p',
             shell=True, stdout=subprocess.PIPE)
         binary_screenshot = process.stdout.read()
         if SCREENSHOT_WAY == 2:
