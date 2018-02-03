@@ -26,7 +26,7 @@ from PIL import Image
 from six.moves import input
 
 try:
-    from common import debug, config, screenshot
+    from common import adb, debug, config, screenshot, UnicodeStreamFilter
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
@@ -83,8 +83,8 @@ def jump(distance, delta_piece_y):
         y2=swipe_y2,
         duration=press_time + delta_piece_y
     )
-    print(cmd)
-    os.system(cmd)
+    print(adb.adb_path + cmd)
+    adb.run(cmd)
     return press_time
 
 
@@ -128,7 +128,9 @@ def find_piece_and_board(im):
 
     bottom_x = [x for x,y in points if y == piece_y_max]  # 所有最底层的点的横坐标
     if not bottom_x:
+
         return 0, 0, 0, 0, 0
+      
     piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
@@ -167,6 +169,7 @@ def find_piece_and_board(im):
             board_x = board_x_sum / board_x_c
     last_pixel = im_pixel[board_x, i]
 
+
     #首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
     #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
     #偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
@@ -182,13 +185,8 @@ def find_piece_and_board(im):
     if not all((board_x, board_y)):
         return 0, 0, 0, 0, 0
     return piece_x, piece_y, board_x, board_y, delta_piece_y
-
-
-    if not all((board_x, board_y)):
-        return 0, 0, 0, 0, 0
-    return piece_x, piece_y, board_x, board_y
-
-
+      
+      
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     检查是否已经为启动程序做好了准备
@@ -256,6 +254,6 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        os.system('adb kill-server')
+        adb.run('kill-server')
         print('bye')
         exit(0)
