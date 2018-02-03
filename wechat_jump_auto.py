@@ -19,6 +19,7 @@ from __future__ import print_function, division
 
 import math
 import os
+import re
 import random
 import sys
 import time
@@ -33,7 +34,7 @@ except Exception as ex:
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
@@ -49,7 +50,12 @@ piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
 # 图形中圆球的直径，可以利用系统自带画图工具，用直线测量像素，如果可以实现自动识别圆球直径，那么此处将可实现全自动。
-head_diameter = config.get('head_diameter', 60)
+head_diameter = config.get('head_diameter')
+if head_diameter == None:
+    density_str = adb.run('shell wm density')
+    matches = re.search(r'\d+', density_str)
+    density_val = int(matches.group(0))
+    head_diameter = density_val / 8
 
 
 def set_button_position(im):
@@ -72,7 +78,8 @@ def jump(distance):
     # 计算程序长度与截图测得的距离的比例
     scale = 0.945 * 2 / head_diameter
     actual_distance = distance * scale * (math.sqrt(6) / 2)
-    press_time = (-945 + math.sqrt(945 ** 2 + 4 * 105 * 36 * actual_distance)) / (2 * 105) * 1000
+    press_time = (-945 + math.sqrt(945 ** 2 + 4 * 105 *
+                                   36 * actual_distance)) / (2 * 105) * 1000
     press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
     cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
@@ -125,7 +132,7 @@ def find_piece_and_board(im):
                 points.append((j, i))
                 piece_y_max = max(i, piece_y_max)
 
-    bottom_x = [x for x,y in points if y == piece_y_max]  # 所有最底层的点的横坐标
+    bottom_x = [x for x, y in points if y == piece_y_max]  # 所有最底层的点的横坐标
     if not bottom_x:
         return 0, 0, 0, 0
     piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
