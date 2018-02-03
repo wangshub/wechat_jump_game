@@ -49,7 +49,10 @@ piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
 # 图形中圆球的直径，可以利用系统自带画图工具，用直线测量像素，如果可以实现自动识别圆球直径，那么此处将可实现全自动。
-head_diameter = config.get('head_diameter', 60)
+# head_diameter = config.get('head_diameter', 60)
+
+#用于平均测得的head_diameter
+head_diameter_lst = []
 
 
 def set_button_position(im):
@@ -130,7 +133,7 @@ def find_piece_and_board(im):
     if not bottom_x:
 
         return 0, 0, 0, 0, 0
-      
+
     piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
@@ -173,8 +176,8 @@ def find_piece_and_board(im):
     #首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
     #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
     #偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
-    center_x = w/ 2 + (24/ 1080) * w
-    center_y = h/ 2 + (17/ 1920) * h
+    center_x = w/ 2 + 24
+    center_y = h/ 2 + 17
     if piece_x > center_x:
         board_y = round((25.5/ 43.5) * (board_x - center_x) + center_y)
         delta_piece_y = piece_y - round((25.5/ 43.5) * (piece_x - center_x) + center_y)
@@ -185,8 +188,67 @@ def find_piece_and_board(im):
     if not all((board_x, board_y)):
         return 0, 0, 0, 0, 0
     return piece_x, piece_y, board_x, board_y, delta_piece_y
-      
-      
+
+
+def find_head_diameter(im):
+    #找出棋子头部直径，用于调整按压时间
+    top = None
+    bottom = None
+    last = None
+    w, h = im.size
+    scan_x_border = int(w / 8)
+    im_pixel = im.load()
+    meet_head = False
+    for j in range(int(h / 3), int(h * 2 / 3)):
+        is_head = False
+        for i in range(scan_x_border, w - scan_x_border):
+                pixel = im_pixel[i, j]
+                if (50 < pixel[0] < 65) \
+                        and (50 < pixel[1] < 70) \
+                        and (60 < pixel[2] < 90):
+                    if not meet_head:
+                        top = (i, j)
+                        meet_head = True
+                        is_head = True
+                        break
+                    else:
+                        last = (i, j)
+                        is_head = True
+                        break
+
+        if meet_head and not is_head:
+            bottom = (i, j)
+            if abs(last[0] - top[0]) > 10: #检查横坐标是否相差太大
+                return 0
+            else:
+                head_diameter_finded = bottom[1] - top[1]
+                break
+    if not meet_head or not bottom:
+        return 0
+    else:
+        return(head_diameter_finded)
+
+def check_head_diameter(im):
+    #设置和检查head_diameter
+    global head_diameter
+    global head_diameter_lst
+    head_diameter_temp = 60;
+
+    if len(head_diameter_lst) > 3: #如果已经有三个了，就直接pass
+        pass
+    else:
+        head_diameter_init = find_head_diameter(im)
+
+        if abs(head_diameter_init - 60) > 30: #防止有bug
+            head_diameter = head_diameter_temp
+        else:
+            head_diameter_lst.append(head_diameter_init)
+
+            #取平均数
+            head_diameter = round(sum(head_diameter_lst)/ len(head_diameter_lst))
+        print("head_diameter : ", head_diameter)
+
+
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     检查是否已经为启动程序做好了准备
@@ -225,6 +287,10 @@ def main():
     while True:
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
+
+        #检查和获取 head_diameter
+        check_head_diameter(im)
+
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y , delta_piece_y = find_piece_and_board(im)
         ts = int(time.time())
