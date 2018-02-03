@@ -65,7 +65,7 @@ def set_button_position(im):
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
-def jump(distance):
+def jump(distance, delta_piece_y):
     """
     跳跃一定的距离
     """
@@ -75,12 +75,13 @@ def jump(distance):
     press_time = (-945 + math.sqrt(945 ** 2 + 4 * 105 * 36 * actual_distance)) / (2 * 105) * 1000
     press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
+
     cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
         y1=swipe_y1,
         x2=swipe_x2,
         y2=swipe_y2,
-        duration=press_time
+        duration=press_time + delta_piece_y
     )
     print(adb.adb_path + cmd)
     adb.run(cmd)
@@ -127,7 +128,9 @@ def find_piece_and_board(im):
 
     bottom_x = [x for x,y in points if y == piece_y_max]  # 所有最底层的点的横坐标
     if not bottom_x:
-        return 0, 0, 0, 0
+
+        return 0, 0, 0, 0, 0
+      
     piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
@@ -166,32 +169,24 @@ def find_piece_and_board(im):
             board_x = board_x_sum / board_x_c
     last_pixel = im_pixel[board_x, i]
 
-    # 从上顶点往下 +274 的位置开始向上找颜色与上顶点一样的点，为下顶点
-    # 该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、
-    # 药瓶和非菱形的碟机（好像是）会判断错误
-    for k in range(i + 274, i, -1):  # 274 取开局时最大的方块的上下顶点距离
-        pixel = im_pixel[board_x, k]
-        if abs(pixel[0] - last_pixel[0]) \
-                + abs(pixel[1] - last_pixel[1]) \
-                + abs(pixel[2] - last_pixel[2]) < 10:
-            break
-    board_y = int((i + k) / 2)
 
-    # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
-    # 属性弥补上一段代码可能存在的判断错误
-    # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有
-    # 可能游戏失败，由于花纹面积通常比较大，失败概率较低
-    for j in range(i, i + 200):
-        pixel = im_pixel[board_x, j]
-        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
-            board_y = j + 10
-            break
+    #首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
+    #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
+    #偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
+    center_x = w/ 2 + (24/ 1080) * w
+    center_y = h/ 2 + (17/ 1920) * h
+    if piece_x > center_x:
+        board_y = round((25.5/ 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round((25.5/ 43.5) * (piece_x - center_x) + center_y)
+    else:
+        board_y = round(-(25.5/ 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round(-(25.5/ 43.5) * (piece_x - center_x) + center_y)
 
     if not all((board_x, board_y)):
-        return 0, 0, 0, 0
-    return piece_x, piece_y, board_x, board_y
-
-
+        return 0, 0, 0, 0, 0
+    return piece_x, piece_y, board_x, board_y, delta_piece_y
+      
+      
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     检查是否已经为启动程序做好了准备
@@ -231,11 +226,11 @@ def main():
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
+        piece_x, piece_y, board_x, board_y , delta_piece_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2), delta_piece_y)
         if DEBUG_SWITCH:
             debug.save_debug_screenshot(ts, im, piece_x,
                                         piece_y, board_x, board_y)
@@ -252,7 +247,7 @@ def main():
             i, next_rest, next_rest_time = (0, random.randrange(30, 100),
                                             random.randrange(10, 60))
         # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
-        time.sleep(random.uniform(0.9, 1.2))
+        time.sleep(random.uniform(1.2, 1.4))
 
 
 if __name__ == '__main__':
