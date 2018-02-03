@@ -7,6 +7,8 @@ import sys
 import json
 import re
 
+from common import adb
+
 
 def open_accordant_config():
     """
@@ -42,10 +44,7 @@ def _get_screen_size():
     """
     获取手机屏幕大小
     """
-    size_str = os.popen('adb shell wm size').read()
-    if not size_str:
-        print('请安装 ADB 及驱动并配置环境变量')
-        sys.exit()
+    size_str = adb.run('shell wm size')
     m = re.search(r'(\d+)x(\d+)', size_str)
     if m:
         return "{height}x{width}".format(height=m.group(2), width=m.group(1))

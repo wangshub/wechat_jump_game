@@ -9,6 +9,8 @@ import math
 from PIL import ImageDraw
 from common import ai
 
+from common import adb
+
 screenshot_backup_dir = 'screenshot_backups/'
 
 
@@ -63,10 +65,10 @@ def dump_device_info():
     """
     显示设备信息
     """
-    size_str = os.popen('adb shell wm size').read()
-    device_str = os.popen('adb shell getprop ro.product.device').read()
-    phone_os_str = os.popen('adb shell getprop ro.build.version.release').read()
-    density_str = os.popen('adb shell wm density').read()
+    size_str = adb.run('shell wm size')
+    device_str = adb.run('shell getprop ro.product.device')
+    phone_os_str = adb.run('shell getprop ro.build.version.release')
+    density_str = adb.run('shell wm density')
     print("""**********
 Screen: {size}
 Density: {dpi}

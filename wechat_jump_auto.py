@@ -26,7 +26,7 @@ from PIL import Image
 from six.moves import input
 
 try:
-    from common import debug, config, screenshot, UnicodeStreamFilter
+    from common import adb, debug, config, screenshot, UnicodeStreamFilter
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
@@ -75,15 +75,15 @@ def jump(distance):
     press_time = (-945 + math.sqrt(945 ** 2 + 4 * 105 * 36 * actual_distance)) / (2 * 105) * 1000
     press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+    cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
         y1=swipe_y1,
         x2=swipe_x2,
         y2=swipe_y2,
         duration=press_time
     )
-    print(cmd)
-    os.system(cmd)
+    print(adb.adb_path + cmd)
+    adb.run(cmd)
     return press_time
 
 
@@ -259,6 +259,6 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        os.system('adb kill-server')
+        adb.run('kill-server')
         print('bye')
         exit(0)
