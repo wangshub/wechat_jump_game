@@ -22,12 +22,14 @@ import pandas
 from PIL import Image
 import random
 from six.moves import input
-# try:
-from common import debug, config, ai
 
-# except ImportError:
-#    print('请在项目根目录中运行脚本')
-#   exit(-1)
+try:
+    from common import ai, debug, config, UnicodeStreamFilter
+except Exception as ex:
+    print(ex)
+    print('请将脚本放在项目根目录中运行')
+    print('请检查项目根目录中的 common 文件夹是否存在')
+    exit(-1)
 
 
 VERSION = "1.1.1"

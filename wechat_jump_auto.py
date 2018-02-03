@@ -26,7 +26,7 @@ from PIL import Image
 from six.moves import input
 
 try:
-    from common import debug, config, screenshot
+    from common import debug, config, screenshot, UnicodeStreamFilter
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
