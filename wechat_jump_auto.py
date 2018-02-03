@@ -83,7 +83,7 @@ def jump(distance, delta_piece_y):
         y2=swipe_y2,
         duration=press_time + delta_piece_y
     )
-    print(adb.adb_path + cmd)
+    print('{} {}'.format(adb.adb_path, cmd))
     adb.run(cmd)
     return press_time
 
