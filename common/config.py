@@ -44,7 +44,7 @@ def _get_screen_size():
     """
     获取手机屏幕大小
     """
-    size_str = adb.run('shell wm size').read()
+    size_str = adb.run('shell wm size')
     m = re.search(r'(\d+)x(\d+)', size_str)
     if m:
         return "{height}x{width}".format(height=m.group(2), width=m.group(1))

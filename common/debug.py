@@ -65,10 +65,10 @@ def dump_device_info():
     """
     显示设备信息
     """
-    size_str = adb.run('shell wm size').read()
-    device_str = adb.run('shell getprop ro.product.device').read()
-    phone_os_str = adb.run('shell getprop ro.build.version.release').read()
-    density_str = adb.run('shell wm density').read()
+    size_str = adb.run('shell wm size')
+    device_str = adb.run('shell getprop ro.product.device')
+    phone_os_str = adb.run('shell getprop ro.build.version.release')
+    density_str = adb.run('shell wm density')
     print("""**********
 Screen: {size}
 Density: {dpi}
