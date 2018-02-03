@@ -10,7 +10,7 @@ def get_path():
     global adb_path
     try:
         adb_path = 'adb '
-        subprocess.Popen([adb_path], stdout=subprocess.PIPE,
+        subprocess.Popen([adb_path[:-1]], stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
         return adb_path
     except FileNotFoundError:
