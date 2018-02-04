@@ -33,7 +33,7 @@ import numpy as np
 import tensorflow as tf
 
 try:
-    from common import debug, config, screenshot, UnicodeStreamFilter
+    from common import adb, debug, config, screenshot, UnicodeStreamFilter
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
@@ -84,15 +84,16 @@ def jump(distance):
     press_time = distance * press_coefficient
     press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+
+    cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
         y1=swipe_y1,
         x2=swipe_x2,
         y2=swipe_y2,
         duration=press_time
     )
-    print(cmd)
-    os.system(cmd)
+    print('{} {}'.format(adb.adb_path, cmd))
+    adb.run(cmd)
     return press_time
 
 
@@ -377,4 +378,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        adb.run('kill-server')
+        print('bye')
+        exit(0)
