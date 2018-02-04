@@ -412,4 +412,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        os.system('adb kill-server')
+        print('bye')
+        exit(0)
