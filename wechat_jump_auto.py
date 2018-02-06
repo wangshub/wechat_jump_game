@@ -233,7 +233,6 @@ def main():
             debug.save_debug_screenshot(ts, im, piece_x,
                                         piece_y, board_x, board_y)
             debug.backup_screenshot(ts)
-            n
         im.close()
         i += 1
         if i == next_rest:
