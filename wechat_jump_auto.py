@@ -16,27 +16,28 @@
 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 """
 from __future__ import print_function, division
+
+import math
 import os
+import re
+import random
 import sys
 import time
-import math
-import random
 from PIL import Image
 from six.moves import input
+
 try:
-    from common import debug, config, screenshot
+    from common import adb, debug, config, screenshot, UnicodeStreamFilter
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
-
-VERSION = "1.1.2"
+VERSION = "1.3.0"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
-
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需
 # 设置，设置保存在 config 文件夹中
@@ -48,6 +49,13 @@ press_coefficient = config['press_coefficient']
 piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
+# 图形中圆球的直径，可以利用系统自带画图工具，用直线测量像素，如果可以实现自动识别圆球直径，那么此处将可实现全自动。
+head_diameter = config.get('head_diameter')
+if head_diameter == None:
+    density_str = adb.run('shell wm density')
+    matches = re.search(r'\d+', density_str)
+    density_val = int(matches.group(0))
+    head_diameter = density_val / 8
 
 
 def set_button_position(im):
@@ -58,27 +66,32 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left-50, left+50))
-    top = int(random.uniform(top-10, top+10))    # 随机防 ban
+    left = int(random.uniform(left - 50, left + 50))
+    top = int(random.uniform(top - 10, top + 10))  # 随机防 ban
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
-def jump(distance):
+def jump(distance, delta_piece_y):
     """
     跳跃一定的距离
     """
-    press_time = distance * press_coefficient
-    press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
+    # 计算程序长度与截图测得的距离的比例
+    scale = 0.945 * 2 / head_diameter
+    actual_distance = distance * scale * (math.sqrt(6) / 2)
+    press_time = (-945 + math.sqrt(945 ** 2 + 4 * 105 *
+                                   36 * actual_distance)) / (2 * 105) * 1000
+    press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+
+    cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
         y1=swipe_y1,
         x2=swipe_x2,
         y2=swipe_y2,
-        duration=press_time
+        duration=press_time + delta_piece_y
     )
-    print(cmd)
-    os.system(cmd)
+    print('{} {}'.format(adb.adb_path, cmd))
+    adb.run(cmd)
     return press_time
 
 
@@ -87,9 +100,7 @@ def find_piece_and_board(im):
     寻找关键坐标
     """
     w, h = im.size
-
-    piece_x_sum = 0
-    piece_x_c = 0
+    points = []                 # 所有满足色素的点集合
     piece_y_max = 0
     board_x = 0
     board_y = 0
@@ -97,7 +108,7 @@ def find_piece_and_board(im):
     scan_start_y = 0  # 扫描的起始 y 坐标
     im_pixel = im.load()
     # 以 50px 步长，尝试探测 scan_start_y
-    for i in range(int(h / 3), int(h*2 / 3), 50):
+    for i in range(int(h / 3), int(h * 2 / 3), 50):
         last_pixel = im_pixel[0, i]
         for j in range(1, w):
             pixel = im_pixel[j, i]
@@ -119,17 +130,19 @@ def find_piece_and_board(im):
             if (50 < pixel[0] < 60) \
                     and (53 < pixel[1] < 63) \
                     and (95 < pixel[2] < 110):
-                piece_x_sum += j
-                piece_x_c += 1
+                points.append((j, i))
                 piece_y_max = max(i, piece_y_max)
 
-    if not all((piece_x_sum, piece_x_c)):
-        return 0, 0, 0, 0
-    piece_x = int(piece_x_sum / piece_x_c)
+    bottom_x = [x for x, y in points if y == piece_y_max]  # 所有最底层的点的横坐标
+    if not bottom_x:
+
+        return 0, 0, 0, 0, 0
+      
+    piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     # 限制棋盘扫描的横坐标，避免音符 bug
-    if piece_x < w/2:
+    if piece_x < w / 2:
         board_x_start = piece_x
         board_x_end = w
     else:
@@ -149,49 +162,45 @@ def find_piece_and_board(im):
             if abs(j - piece_x) < piece_body_width:
                 continue
 
-            # 修掉圆顶的时候一条线导致的小 bug，这个颜色判断应该 OK，暂时不提出来
+            # 检查Y轴下面5个像素， 和背景色相同， 那么是干扰
+            ver_pixel = im_pixel[j, i + 5]
             if abs(pixel[0] - last_pixel[0]) \
                     + abs(pixel[1] - last_pixel[1]) \
-                    + abs(pixel[2] - last_pixel[2]) > 10:
+                    + abs(pixel[2] - last_pixel[2]) > 10 \
+                    and abs(ver_pixel[0] - last_pixel[0]) \
+                    + abs(ver_pixel[1] - last_pixel[1]) \
+                    + abs(ver_pixel[2] - last_pixel[2]) > 10:
                 board_x_sum += j
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
     last_pixel = im_pixel[board_x, i]
 
-    # 从上顶点往下 +274 的位置开始向上找颜色与上顶点一样的点，为下顶点
-    # 该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、
-    # 药瓶和非菱形的碟机（好像是）会判断错误
-    for k in range(i+274, i, -1):  # 274 取开局时最大的方块的上下顶点距离
-        pixel = im_pixel[board_x, k]
-        if abs(pixel[0] - last_pixel[0]) \
-                + abs(pixel[1] - last_pixel[1]) \
-                + abs(pixel[2] - last_pixel[2]) < 10:
-            break
-    board_y = int((i+k) / 2)
 
-    # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
-    # 属性弥补上一段代码可能存在的判断错误
-    # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有
-    # 可能游戏失败，由于花纹面积通常比较大，失败概率较低
-    for j in range(i, i+200):
-        pixel = im_pixel[board_x, j]
-        if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
-            board_y = j + 10
-            break
+    #首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
+    #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
+    #偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
+    center_x = w/ 2 + (24/ 1080) * w
+    center_y = h/ 2 + (17/ 1920) * h
+    if piece_x > center_x:
+        board_y = round((25.5/ 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round((25.5/ 43.5) * (piece_x - center_x) + center_y)
+    else:
+        board_y = round(-(25.5/ 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round(-(25.5/ 43.5) * (piece_x - center_x) + center_y)
 
     if not all((board_x, board_y)):
-        return 0, 0, 0, 0
-    return piece_x, piece_y, board_x, board_y
-
-
+        return 0, 0, 0, 0, 0
+    return piece_x, piece_y, board_x, board_y, delta_piece_y
+      
+      
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     检查是否已经为启动程序做好了准备
     """
     default_value = true_value if default else false_value
     prompt = '{} {}/{} [{}]: '.format(prompt, true_value,
-        false_value, default_value)
+                                      false_value, default_value)
     i = input(prompt)
     if not i:
         return default
@@ -214,6 +223,7 @@ def main():
         print('bye')
         return
     print('程序版本号：{}'.format(VERSION))
+    print('激活窗口并按 CONTROL + C 组合键退出')
     debug.dump_device_info()
     screenshot.check_screenshot()
 
@@ -223,11 +233,11 @@ def main():
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y = find_piece_and_board(im)
+        piece_x, piece_y, board_x, board_y , delta_piece_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
-        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
+        jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2), delta_piece_y)
         if DEBUG_SWITCH:
             debug.save_debug_screenshot(ts, im, piece_x,
                                         piece_y, board_x, board_y)
@@ -244,8 +254,13 @@ def main():
             i, next_rest, next_rest_time = (0, random.randrange(30, 100),
                                             random.randrange(10, 60))
         # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
-        time.sleep(random.uniform(0.9, 1.2))
+        time.sleep(random.uniform(1.2, 1.4))
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        adb.run('kill-server')
+        print('bye')
+        exit(0)

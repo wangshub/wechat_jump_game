@@ -9,7 +9,7 @@ import cv2
 
 scale = 0.25
 
-template = cv2.imread('character.png')
+template = cv2.imread('./resource/image/character.png')
 template = cv2.resize(template, (0, 0), fx=scale, fy=scale)
 template_size = template.shape[:2]
 
@@ -31,7 +31,7 @@ def pull_screenshot():
     filename = datetime.datetime.now().strftime("%H%M%S") + '.png'
     os.system('mv autojump.png {}'.format(filename))
     os.system('adb shell screencap -p /sdcard/autojump.png')
-    os.system('adb pull /sdcard/autojump.png .')
+    os.system('adb pull /sdcard/autojump.png ./autojump.png')
 
 
 def jump(distance):
@@ -45,13 +45,14 @@ def jump(distance):
 def update_data():
     global src_x, src_y
 
-    img = cv2.imread('autojump.png')
+    img = cv2.imread('./autojump.png')
     img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
     img, src_x, src_y = search(img)
     return img
 
 
 fig = plt.figure()
+pull_screenshot()
 img = update_data()
 im = plt.imshow(img, animated=True)
 
