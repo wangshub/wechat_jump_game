@@ -8,7 +8,7 @@ import sys
 from PIL import Image
 
 try:
-    from common.auto_adb import auto_adb
+    from common.auto_adb import auto_adb as adb
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')

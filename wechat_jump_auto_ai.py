@@ -24,7 +24,7 @@ from six.moves import input
 
 try:
     from common import ai, debug, config, UnicodeStreamFilter
-    from common.auto_adb import auto_adb
+    from common.auto_adb import auto_adb as adb
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
