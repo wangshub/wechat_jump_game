@@ -9,7 +9,7 @@ import math
 from PIL import ImageDraw
 from common import ai
 
-from common import adb
+from common.auto_adb import auto_adb as adb
 
 screenshot_backup_dir = 'screenshot_backups/'
 
