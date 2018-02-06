@@ -17,11 +17,11 @@ import sys
 import subprocess
 import time
 import math
-
 import pandas
 from PIL import Image
 import random
 from six.moves import input
+from common import adb
 
 try:
     from common import ai, debug, config, UnicodeStreamFilter
