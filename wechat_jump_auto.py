@@ -25,14 +25,14 @@ import time
 from PIL import Image
 from six.moves import input
 try:
-    from common import adb, debug, config, screenshot, UnicodeStreamFilter
+    from common import auto_adb, debug, config, screenshot, UnicodeStreamFilter
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
-    exit(-1)
-adb = adb.auto_adb()
-VERSION = "1.3.0"
+    exit(1)
+adb = auto_adb.auto_adb()
+VERSION = "1.1.3"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False

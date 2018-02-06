@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import subprocess
+import platform
 
 
 class auto_adb():
@@ -11,12 +12,18 @@ class auto_adb():
                              stderr=subprocess.PIPE)
             self.adb_path = adb_path
         except OSError:
-            if os.name == 'nt':
+            if platform.system() == 'Windows':
                 adb_path = os.path.join('Tools', "adb", 'adb.exe')
                 try:
                     subprocess.Popen(
                         [adb_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     self.adb_path = adb_path
+                except OSError:
+                    pass
+            else:
+                try:
+                    subprocess.Popen(
+                        [adb_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 except OSError:
                     pass
             print('请安装 ADB 及驱动并配置环境变量')

@@ -22,27 +22,24 @@ from PIL import Image
 import random
 from six.moves import input
 
-
 try:
-    from common import ai, debug, config, UnicodeStreamFilter, adb
+    from common import ai, debug, config, UnicodeStreamFilter, auto_adb
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(1)
-adb = adb.auto_adb()
+adb = auto_adb.auto_adb()
 VERSION = "1.1.3"
 
-
-debug_switch = True    # debug 开关，需要调试的时候请改为：True
+debug_switch = True  # debug 开关，需要调试的时候请改为：True
 config = config.open_accordant_config()
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需设置，设置保存在 config 文件夹中
 under_game_score_y = config['under_game_score_y']
-press_coefficient = config['press_coefficient']       # 长按的时间系数，请自己根据实际情况调节
-piece_base_height_1_2 = config['piece_base_height_1_2']   # 二分之一的棋子底座高度，可能要调节
-piece_body_width = config['piece_body_width']             # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
-
+press_coefficient = config['press_coefficient']  # 长按的时间系数，请自己根据实际情况调节
+piece_base_height_1_2 = config['piece_base_height_1_2']  # 二分之一的棋子底座高度，可能要调节
+piece_body_width = config['piece_body_width']  # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 
 screenshot_way = 2
 
@@ -56,6 +53,7 @@ def pull_screenshot():
     f.write(screenshot)
     f.close()
 
+
 def pull_screenshot_temp():
     process = subprocess.Popen('adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
     screenshot = process.stdout.read()
@@ -64,6 +62,7 @@ def pull_screenshot_temp():
     f = open('autojump_temp.png', 'wb')
     f.write(screenshot)
     f.close()
+
 
 def set_button_position(im):
     """
@@ -80,7 +79,6 @@ def set_button_position(im):
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, after_left, after_top
 
 
-
 def jump(distance):
     '''
     跳跃一定的距离
@@ -92,7 +90,7 @@ def jump(distance):
 
     else:
         press_time = distance * press_coefficient
-        press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
+        press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
 
     press_time = int(press_time)
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
@@ -102,7 +100,7 @@ def jump(distance):
         y2=swipe_y2,
         duration=press_time
     )
-    print('{} {}'.format(adb.adb_path, cmd))
+    print('{}'.format(cmd))
     adb.run(cmd)
     return press_time
 
@@ -120,36 +118,43 @@ def hsv2rgb(h, s, v):
     q = v * (1 - f * s)
     t = v * (1 - (1 - f) * s)
     r, g, b = 0, 0, 0
-    if hi == 0: r, g, b = v, t, p
-    elif hi == 1: r, g, b = q, v, p
-    elif hi == 2: r, g, b = p, v, t
-    elif hi == 3: r, g, b = p, q, v
-    elif hi == 4: r, g, b = t, p, v
-    elif hi == 5: r, g, b = v, p, q
+    if hi == 0:
+        r, g, b = v, t, p
+    elif hi == 1:
+        r, g, b = q, v, p
+    elif hi == 2:
+        r, g, b = p, v, t
+    elif hi == 3:
+        r, g, b = p, q, v
+    elif hi == 4:
+        r, g, b = t, p, v
+    elif hi == 5:
+        r, g, b = v, p, q
     r, g, b = int(r * 255), int(g * 255), int(b * 255)
     return r, g, b
 
 
 # 转换色彩模式rgb2hsv
 def rgb2hsv(r, g, b):
-    r, g, b = r/255.0, g/255.0, b/255.0
+    r, g, b = r / 255.0, g / 255.0, b / 255.0
     mx = max(r, g, b)
     mn = min(r, g, b)
-    df = mx-mn
+    df = mx - mn
     if mx == mn:
         h = 0
     elif mx == r:
-        h = (60 * ((g-b)/df) + 360) % 360
+        h = (60 * ((g - b) / df) + 360) % 360
     elif mx == g:
-        h = (60 * ((b-r)/df) + 120) % 360
+        h = (60 * ((b - r) / df) + 120) % 360
     elif mx == b:
-        h = (60 * ((r-g)/df) + 240) % 360
+        h = (60 * ((r - g) / df) + 240) % 360
     if mx == 0:
         s = 0
     else:
-        s = df/mx
+        s = df / mx
     v = mx
     return h, s, v
+
 
 def find_piece(im):
     '''
@@ -193,7 +198,8 @@ def find_piece(im):
     piece_x = int(piece_x_sum / piece_x_c)
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
-    return piece_x,piece_y
+    return piece_x, piece_y
+
 
 def find_piece_and_board(im):
     w, h = im.size
@@ -213,12 +219,12 @@ def find_piece_and_board(im):
 
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始y坐标
-    im_pixel=im.load()
+    im_pixel = im.load()
     # 以50px步长，尝试探测scan_start_y
-    for i in range(int(h / 3), int( h*2 /3 ), 50):
-        last_pixel = im_pixel[0,i]
+    for i in range(int(h / 3), int(h * 2 / 3), 50):
+        last_pixel = im_pixel[0, i]
         for j in range(1, w):
-            pixel=im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 不是纯色的线，则记录scan_start_y的值，准备跳出循环
             if pixel[0] != last_pixel[0] or pixel[1] != last_pixel[1] or pixel[2] != last_pixel[2]:
                 scan_start_y = i - 50
@@ -230,7 +236,7 @@ def find_piece_and_board(im):
     # 从scan_start_y开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
         for j in range(scan_x_border, w - scan_x_border):  # 横坐标方面也减少了一部分扫描开销
-            pixel = im_pixel[j,i]
+            pixel = im_pixel[j, i]
             # 根据棋子的最低行的颜色判断，找最后一行那些点的平均值，这个颜色这样应该 OK，暂时不提出来
             if (50 < pixel[0] < 60) and (53 < pixel[1] < 63) and (95 < pixel[2] < 110):
                 piece_x_sum += j
@@ -257,7 +263,7 @@ def find_piece_and_board(im):
             board_x_c = 0
 
             for j in range(w):
-                pixel = im_pixel[j,i]
+                pixel = im_pixel[j, i]
                 # 修掉脑袋比下一个小格子还高的情况的 bug
                 if abs(j - piece_x) < piece_body_width:
                     continue
@@ -280,9 +286,9 @@ def find_piece_and_board(im):
                 if abs(j - piece_x) < piece_body_width:
                     continue
                 if (abs(pixel[0] - last_pixel[0]) + abs(pixel[1] - last_pixel[1]) + abs(pixel[2] - last_pixel[2])
-                        > 10) and (abs(pixel[0] - r) + abs(pixel[1] - g) + abs(pixel[2] - b) > 10):
+                    > 10) and (abs(pixel[0] - r) + abs(pixel[1] - g) + abs(pixel[2] - b) > 10):
                     if left_value == j:
-                        left_count = left_count+1
+                        left_count = left_count + 1
                     else:
                         left_value = j
                         left_count = 1
@@ -363,6 +369,7 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         prompt = 'Please input %s or %s: ' % (true_value, false_value)
         i = input(prompt)
 
+
 def main():
     '''
     主函数
@@ -373,7 +380,6 @@ def main():
     #    return
     # 初始化AI
     ai.init()
-
 
     print('程序版本号：{}'.format(VERSION))
     debug.dump_device_info()
@@ -410,7 +416,7 @@ def main():
                 time.sleep(1)
             print('\n继续')
             i, next_rest, next_rest_time = 0, random.randrange(30, 100), random.randrange(10, 60)
-        time.sleep(random.uniform(0.5, 0.6))   # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
+        time.sleep(random.uniform(0.5, 0.6))  # 为了保证截图的时候应落稳了，多延迟一会儿，随机值防 ban
 
 
 if __name__ == '__main__':
