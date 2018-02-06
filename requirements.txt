@@ -9,3 +9,7 @@ pyparsing==2.2.0
 python-dateutil==2.6.1
 pytz==2017.3
 six==1.11.0
+tensorflow==1.4.0
+pandas==0.22.0
+scipy==1.0.0
+scikit_learn==0.19.1
