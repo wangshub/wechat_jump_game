@@ -66,9 +66,11 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left - 50, left + 50))
-    top = int(random.uniform(top - 10, top + 10))  # 随机防 ban
-    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
+    left = int(random.uniform(left - 100, left + 100))
+    top = int(random.uniform(top - 100, top + 100))  # 随机防 ban
+    after_top = int(random.uniform(top - 100, top + 100))
+    after_left = int(random.uniform(left - 100, left + 100))
+    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, after_left, after_top
 
 
 def jump(distance, delta_piece_y):

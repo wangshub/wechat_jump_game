@@ -29,10 +29,9 @@ except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
-    exit(-1)
+    exit(1)
 
-
-VERSION = "1.1.1"
+VERSION = "1.1.3"
 
 
 debug_switch = True    # debug 开关，需要调试的时候请改为：True
@@ -67,16 +66,19 @@ def pull_screenshot_temp():
     f.close()
 
 def set_button_position(im):
-    '''
+    """
     将 swipe 设置为 `再来一局` 按钮的位置
-    '''
+    """
     global swipe_x1, swipe_y1, swipe_x2, swipe_y2
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left-50, left+50))
-    top = int(random.uniform(top-10, top+10))    # 随机防 ban
-    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
+    left = int(random.uniform(left - 100, left + 100))
+    top = int(random.uniform(top - 100, top + 100))  # 随机防 ban
+    after_top = int(random.uniform(top - 100, top + 100))
+    after_left = int(random.uniform(left - 100, left + 100))
+    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, after_left, after_top
+
 
 
 def jump(distance):
@@ -100,8 +102,8 @@ def jump(distance):
         y2=swipe_y2,
         duration=press_time
     )
-    # print(cmd)
-    os.system(cmd)
+    print('{} {}'.format(adb.adb_path, cmd))
+    adb.run(cmd)
     return press_time
 
 
