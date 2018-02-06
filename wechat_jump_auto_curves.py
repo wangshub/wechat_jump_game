@@ -33,13 +33,13 @@ import tensorflow as tf
 
 try:
     from common import debug, config, screenshot, UnicodeStreamFilter
-    from common.auto_adb import auto_adb as adb
+    from common.auto_adb import auto_adb
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(1)
-
+adb = auto_adb()
 VERSION = "1.1.3"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False

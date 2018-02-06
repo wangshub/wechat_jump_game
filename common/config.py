@@ -7,8 +7,9 @@ import sys
 import json
 import re
 
-from common.auto_adb import auto_adb as adb
+from common.auto_adb import auto_adb
 
+adb = auto_adb()
 
 def open_accordant_config():
     """
