@@ -18,14 +18,12 @@
 from __future__ import print_function, division
 
 import math
-import os
 import re
 import random
 import sys
 import time
 from PIL import Image
 from six.moves import input
-
 try:
     from common import adb, debug, config, screenshot, UnicodeStreamFilter
 except Exception as ex:
@@ -33,7 +31,7 @@ except Exception as ex:
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
-
+adb = adb.auto_adb()
 VERSION = "1.3.0"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False

@@ -21,16 +21,16 @@ import pandas
 from PIL import Image
 import random
 from six.moves import input
-from common import adb
+
 
 try:
-    from common import ai, debug, config, UnicodeStreamFilter
+    from common import ai, debug, config, UnicodeStreamFilter, adb
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(1)
-
+adb = adb.auto_adb()
 VERSION = "1.1.3"
 
 
@@ -417,6 +417,6 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        os.system('adb kill-server')
+        adb.run('kill-server')
         print('bye')
         exit(0)
