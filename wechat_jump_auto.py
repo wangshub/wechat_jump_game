@@ -15,7 +15,6 @@
     固定的角度来推出中点的 Y 坐标
 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 """
-from __future__ import print_function, division
 
 import math
 import re
@@ -24,6 +23,10 @@ import sys
 import time
 from PIL import Image
 from six.moves import input
+
+if sys.version_info.major != 3:
+    print('请使用Python3')
+    exit(1)
 try:
     from common import debug, config, screenshot, UnicodeStreamFilter
     from common.auto_adb import auto_adb
@@ -32,12 +35,12 @@ except Exception as ex:
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(1)
-asb = auto_adb()
-VERSION = "1.1.3"
+adb = auto_adb()
+VERSION = "1.1.4"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
-DEBUG_SWITCH = False
-
+DEBUG_SWITCH = True
+adb.test_device()
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需
 # 设置，设置保存在 config 文件夹中
 config = config.open_accordant_config()
@@ -51,7 +54,7 @@ piece_body_width = config['piece_body_width']
 # 图形中圆球的直径，可以利用系统自带画图工具，用直线测量像素，如果可以实现自动识别圆球直径，那么此处将可实现全自动。
 head_diameter = config.get('head_diameter')
 if head_diameter == None:
-    density_str = adb.run('shell wm density')
+    density_str = adb.test_density()
     matches = re.search(r'\d+', density_str)
     density_val = int(matches.group(0))
     head_diameter = density_val / 8
@@ -65,10 +68,10 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left - 100, left + 100))
-    top = int(random.uniform(top - 100, top + 100))  # 随机防 ban
-    after_top = int(random.uniform(top - 100, top + 100))
-    after_left = int(random.uniform(left - 100, left + 100))
+    left = int(random.uniform(left - 200, left + 200))
+    top = int(random.uniform(top - 200, top + 200))  # 随机防 ban
+    after_top = int(random.uniform(top - 200, top + 200))
+    after_left = int(random.uniform(left - 200, left + 200))
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, after_left, after_top
 
 
@@ -91,7 +94,7 @@ def jump(distance, delta_piece_y):
         y2=swipe_y2,
         duration=press_time + delta_piece_y
     )
-    print('{} {}'.format(adb.adb_path, cmd))
+    print(cmd)
     adb.run(cmd)
     return press_time
 
@@ -101,7 +104,7 @@ def find_piece_and_board(im):
     寻找关键坐标
     """
     w, h = im.size
-    points = []                 # 所有满足色素的点集合
+    points = []  # 所有满足色素的点集合
     piece_y_max = 0
     board_x = 0
     board_y = 0
@@ -119,7 +122,7 @@ def find_piece_and_board(im):
                 break
         if scan_start_y:
             break
-    print('scan_start_y: {}'.format(scan_start_y))
+    print('start scan Y axis: {}'.format(scan_start_y))
 
     # 从 scan_start_y 开始往下扫描，棋子应位于屏幕上半部分，这里暂定不超过 2/3
     for i in range(scan_start_y, int(h * 2 / 3)):
@@ -136,9 +139,8 @@ def find_piece_and_board(im):
 
     bottom_x = [x for x, y in points if y == piece_y_max]  # 所有最底层的点的横坐标
     if not bottom_x:
-
         return 0, 0, 0, 0, 0
-      
+
     piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
@@ -177,52 +179,43 @@ def find_piece_and_board(im):
             board_x = board_x_sum / board_x_c
     last_pixel = im_pixel[board_x, i]
 
-
-    #首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
-    #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
-    #偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
-    center_x = w/ 2 + (24/ 1080) * w
-    center_y = h/ 2 + (17/ 1920) * h
+    # 首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
+    # 有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
+    # 偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
+    center_x = w / 2 + (24 / 1080) * w
+    center_y = h / 2 + (17 / 1920) * h
     if piece_x > center_x:
-        board_y = round((25.5/ 43.5) * (board_x - center_x) + center_y)
-        delta_piece_y = piece_y - round((25.5/ 43.5) * (piece_x - center_x) + center_y)
+        board_y = round((25.5 / 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round((25.5 / 43.5) * (piece_x - center_x) + center_y)
     else:
-        board_y = round(-(25.5/ 43.5) * (board_x - center_x) + center_y)
-        delta_piece_y = piece_y - round(-(25.5/ 43.5) * (piece_x - center_x) + center_y)
+        board_y = round(-(25.5 / 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round(-(25.5 / 43.5) * (piece_x - center_x) + center_y)
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0, 0
     return piece_x, piece_y, board_x, board_y, delta_piece_y
-      
-      
-def yes_or_no(prompt, true_value='y', false_value='n', default=True):
+
+
+def yes_or_no():
     """
     检查是否已经为启动程序做好了准备
     """
-    default_value = true_value if default else false_value
-    prompt = '{} {}/{} [{}]: '.format(prompt, true_value,
-                                      false_value, default_value)
-    i = input(prompt)
-    if not i:
-        return default
     while True:
-        if i == true_value:
-            return True
-        elif i == false_value:
-            return False
-        prompt = 'Please input {} or {}: '.format(true_value, false_value)
-        i = input(prompt)
+        yes_or_no = str(input('请确保手机打开了 ADB 并连接了电脑，'
+                              '然后打开跳一跳并【开始游戏】后再用本程序，确定开始？[y/n]:'))
+        if yes_or_no == 'y':
+            break
+        elif yes_or_no == 'n':
+            print('谢谢使用', end='')
+            exit(0)
+        else:
+            print('请重新输入')
 
 
 def main():
     """
     主函数
     """
-    op = yes_or_no('请确保手机打开了 ADB 并连接了电脑，'
-                   '然后打开跳一跳并【开始游戏】后再用本程序，确定开始？')
-    if not op:
-        print('bye')
-        return
     print('程序版本号：{}'.format(VERSION))
     print('激活窗口并按 CONTROL + C 组合键退出')
     debug.dump_device_info()
@@ -234,7 +227,7 @@ def main():
         screenshot.pull_screenshot()
         im = Image.open('./autojump.png')
         # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y , delta_piece_y = find_piece_and_board(im)
+        piece_x, piece_y, board_x, board_y, delta_piece_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
@@ -246,9 +239,9 @@ def main():
         im.close()
         i += 1
         if i == next_rest:
-            print('已经连续打了 {} 下，休息 {}s'.format(i, next_rest_time))
+            print('已经连续打了 {} 下，休息 {}秒'.format(i, next_rest_time))
             for j in range(next_rest_time):
-                sys.stdout.write('\r程序将在 {}s 后继续'.format(next_rest_time - j))
+                sys.stdout.write('\r程序将在 {}秒 后继续'.format(next_rest_time - j))
                 sys.stdout.flush()
                 time.sleep(1)
             print('\n继续')
@@ -260,8 +253,9 @@ def main():
 
 if __name__ == '__main__':
     try:
+        yes_or_no()
         main()
     except KeyboardInterrupt:
         adb.run('kill-server')
-        print('bye')
+        print('\n谢谢使用', end='')
         exit(0)

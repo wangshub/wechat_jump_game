@@ -7,11 +7,18 @@ import sys
 import shutil
 import math
 from PIL import ImageDraw
-from common import ai
+import time
 
-from common.auto_adb import auto_adb as adb
-
+# from common import ai
+try:
+    from common.auto_adb import auto_adb
+except ImportError as ex:
+    print(ex)
+    print('请将脚本放在项目根目录中运行')
+    print('请检查项目根目录中的 common 文件夹是否存在')
+    exit(1)
 screenshot_backup_dir = 'screenshot_backups/'
+adb = auto_adb()
 
 
 def make_debug_dir(screenshot_backup_dir):
@@ -27,10 +34,11 @@ def backup_screenshot(ts):
     为了方便失败的时候 debug
     """
     make_debug_dir(screenshot_backup_dir)
-    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
+    shutil.copy('autojump.png',
+                '{} {} {}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts))
 
 
-def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype = 'auto'):
+def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype='auto'):
     """
     对 debug 图片加上详细的注释
     
@@ -45,13 +53,17 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype 
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save('{}{}_{}.png'.format(screenshot_backup_dir, ts, debugtype))
+    im.save('{} {} {}_{}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts,
+                                     debugtype))
 
-def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x, temp_piece_y):
+
+def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x,
+                    temp_piece_y):
     '''
     计算跳跃实际误差
     '''
-    target_distance = math.sqrt((target_board_x - last_piece_x) ** 2 + (target_board_y - last_piece_y) ** 2)  # 上一轮目标跳跃距离
+    target_distance = math.sqrt(
+        (target_board_x - last_piece_x) ** 2 + (target_board_y - last_piece_y) ** 2)  # 上一轮目标跳跃距离
     actual_distance = math.sqrt((temp_piece_x - last_piece_x) ** 2 + (temp_piece_y - last_piece_y) ** 2)  # 上一轮实际跳跃距离
     jump_error_value = math.sqrt((target_board_x - temp_piece_x) ** 2 + (target_board_y - temp_piece_y) ** 2)  # 跳跃误差
 
@@ -61,14 +73,15 @@ def computing_error(last_press_time, target_board_x, target_board_y, last_piece_
         ai.add_data(round(actual_distance, 2), round(last_press_time))
         # print(round(actual_distance), round(last_press_time))
 
+
 def dump_device_info():
     """
     显示设备信息
     """
-    size_str = adb.run('shell wm size')
-    device_str = adb.run('shell getprop ro.product.device')
-    phone_os_str = adb.run('shell getprop ro.build.version.release')
-    density_str = adb.run('shell wm density')
+    size_str = adb.get_screen()
+    device_str = adb.test_device_detail()
+    phone_os_str = adb.test_device_os()
+    density_str = adb.test_density()
     print("""**********
 Screen: {size}
 Density: {dpi}
@@ -77,10 +90,10 @@ Phone OS: {phone_os}
 Host OS: {host_os}
 Python: {python}
 **********""".format(
-        size=size_str.strip(),
-        dpi=density_str.strip(),
-        device=device_str.strip(),
-        phone_os=phone_os_str.strip(),
+        size=size_str.replace('\n', ''),
+        dpi=density_str.replace('\n', ''),
+        device=device_str.replace('\n', ''),
+        phone_os=phone_os_str.replace('\n', ''),
         host_os=sys.platform,
         python=sys.version
     ))
