@@ -11,31 +11,31 @@ from common import ai
 
 from common import adb
 
-screenshot_backup_dir = 'screenshot_backups/'
+screen_shot_backup_dir = 'screen_shot_backups/'
 
 
-def make_debug_dir(screenshot_backup_dir):
+def make_debug_dir(in_screen_shot_backup_dir):
     """
     创建备份文件夹
     """
-    if not os.path.isdir(screenshot_backup_dir):
-        os.mkdir(screenshot_backup_dir)
+    if not os.path.isdir(in_screen_shot_backup_dir):
+        os.mkdir(in_screen_shot_backup_dir)
 
 
-def backup_screenshot(ts):
+def backup_screen_shot(ts):
     """
     为了方便失败的时候 debug
     """
-    make_debug_dir(screenshot_backup_dir)
-    shutil.copy('autojump.png', '{}{}.png'.format(screenshot_backup_dir, ts))
+    make_debug_dir(screen_shot_backup_dir)
+    shutil.copy('auto_jump.png', '{}{}.png'.format(screen_shot_backup_dir, ts))
 
 
-def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype = 'auto'):
+def save_debug_screen_shot(ts, im, piece_x, piece_y, board_x, board_y, debug_type='auto'):
     """
     对 debug 图片加上详细的注释
     
     """
-    make_debug_dir(screenshot_backup_dir)
+    make_debug_dir(screen_shot_backup_dir)
     draw = ImageDraw.Draw(im)
     draw.line((piece_x, piece_y) + (board_x, board_y), fill=2, width=3)
     draw.line((piece_x, 0, piece_x, im.size[1]), fill=(255, 0, 0))
@@ -45,13 +45,16 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype 
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save('{}{}_{}.png'.format(screenshot_backup_dir, ts, debugtype))
+    im.save('{}{}_{}.png'.format(screen_shot_backup_dir, ts, debug_type))
 
-def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x, temp_piece_y):
-    '''
+
+def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x,
+                    temp_piece_y):
+    """
     计算跳跃实际误差
-    '''
-    target_distance = math.sqrt((target_board_x - last_piece_x) ** 2 + (target_board_y - last_piece_y) ** 2)  # 上一轮目标跳跃距离
+    """
+    target_distance = math.sqrt(
+        (target_board_x - last_piece_x) ** 2 + (target_board_y - last_piece_y) ** 2)  # 上一轮目标跳跃距离
     actual_distance = math.sqrt((temp_piece_x - last_piece_x) ** 2 + (temp_piece_y - last_piece_y) ** 2)  # 上一轮实际跳跃距离
     jump_error_value = math.sqrt((target_board_x - temp_piece_x) ** 2 + (target_board_y - temp_piece_y) ** 2)  # 跳跃误差
 
@@ -60,6 +63,7 @@ def computing_error(last_press_time, target_board_x, target_board_y, last_piece_
     if last_piece_x > 0 and last_press_time > 0:
         ai.add_data(round(actual_distance, 2), round(last_press_time))
         # print(round(actual_distance), round(last_press_time))
+
 
 def dump_device_info():
     """
