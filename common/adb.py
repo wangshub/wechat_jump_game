@@ -31,7 +31,7 @@ def run(command):
     if adb_path == '':
         adb_path = get_path()
     command = '{} {}'.format(adb_path, command)
-    readObj = os.popen(command)
-    output = readObj.read()
-    readObj.close()
+    read_obj = os.popen(command)
+    output = read_obj.read()
+    read_obj.close()
     return output

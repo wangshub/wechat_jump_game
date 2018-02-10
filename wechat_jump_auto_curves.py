@@ -21,14 +21,14 @@
 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 """
 from __future__ import print_function, division
-import os
+# import os
 import sys
 import time
 import math
 import random
 from PIL import Image
 from six.moves import input
-from skimage import io,transform
+from skimage import io, transform
 import numpy as np
 import tensorflow as tf
 
@@ -40,12 +40,10 @@ except Exception as ex:
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(-1)
 
-
 VERSION = "1.1.2"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
-
 
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需
 # 设置，设置保存在 config 文件夹中
@@ -58,10 +56,9 @@ piece_base_height_1_2 = config['piece_base_height_1_2']
 # 棋子的宽度，比截图中量到的稍微大一点比较安全，可能要调节
 piece_body_width = config['piece_body_width']
 
-target_score=1024         ##目标分数
-total_step=30    ##达到目标次数所需游戏次数
-start_score=100        ##设置第一次分数(目前分数)
-
+target_score = 1024  # 目标分数
+total_step = 30  # 达到目标次数所需游戏次数
+start_score = 100  # 设置第一次分数(目前分数)
 
 
 def set_button_position(im):
@@ -72,8 +69,8 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left-50, left+50))
-    top = int(random.uniform(top-10, top+10))    # 随机防 ban
+    left = int(random.uniform(left - 50, left + 50))
+    top = int(random.uniform(top - 10, top + 10))  # 随机防 ban
     swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
 
 
@@ -82,7 +79,7 @@ def jump(distance):
     跳跃一定的距离
     """
     press_time = distance * press_coefficient
-    press_time = max(press_time, 200)   # 设置 200ms 是最小的按压时间
+    press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
 
     cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
@@ -112,7 +109,7 @@ def find_piece_and_board(im):
     scan_start_y = 0  # 扫描的起始 y 坐标
     im_pixel = im.load()
     # 以 50px 步长，尝试探测 scan_start_y
-    for i in range(int(h / 3), int(h*2 / 3), 50):
+    for i in range(int(h / 3), int(h * 2 / 3), 50):
         last_pixel = im_pixel[0, i]
         for j in range(1, w):
             pixel = im_pixel[j, i]
@@ -144,13 +141,13 @@ def find_piece_and_board(im):
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
     # 限制棋盘扫描的横坐标，避免音符 bug
-    if piece_x < w/2:
+    if piece_x < w / 2:
         board_x_start = piece_x
         board_x_end = w
     else:
         board_x_start = 0
         board_x_end = piece_x
-
+    i = None
     for i in range(int(h / 3), int(h * 2 / 3)):
         last_pixel = im_pixel[0, i]
         if board_x or board_y:
@@ -177,19 +174,20 @@ def find_piece_and_board(im):
     # 从上顶点往下 +274 的位置开始向上找颜色与上顶点一样的点，为下顶点
     # 该方法对所有纯色平面和部分非纯色平面有效，对高尔夫草坪面、木纹桌面、
     # 药瓶和非菱形的碟机（好像是）会判断错误
-    for k in range(i+274, i, -1):  # 274 取开局时最大的方块的上下顶点距离
+    k = None
+    for k in range(i + 274, i, -1):  # 274 取开局时最大的方块的上下顶点距离
         pixel = im_pixel[board_x, k]
         if abs(pixel[0] - last_pixel[0]) \
                 + abs(pixel[1] - last_pixel[1]) \
                 + abs(pixel[2] - last_pixel[2]) < 10:
             break
-    board_y = int((i+k) / 2)
+    board_y = int((i + k) / 2)
 
     # 如果上一跳命中中间，则下个目标中心会出现 r245 g245 b245 的点，利用这个
     # 属性弥补上一段代码可能存在的判断错误
     # 若上一跳由于某种原因没有跳到正中间，而下一跳恰好有无法正确识别花纹，则有
     # 可能游戏失败，由于花纹面积通常比较大，失败概率较低
-    for j in range(i, i+200):
+    for j in range(i, i + 200):
         pixel = im_pixel[board_x, j]
         if abs(pixel[0] - 245) + abs(pixel[1] - 245) + abs(pixel[2] - 245) == 0:
             board_y = j + 10
@@ -206,7 +204,7 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     default_value = true_value if default else false_value
     prompt = '{} {}/{} [{}]: '.format(prompt, true_value,
-        false_value, default_value)
+                                      false_value, default_value)
     i = input(prompt)
     if not i:
         return default
@@ -218,58 +216,63 @@ def yes_or_no(prompt, true_value='y', false_value='n', default=True):
         prompt = 'Please input {} or {}: '.format(true_value, false_value)
         i = input(prompt)
 
-def pross_data(image):
+
+def pixels_data(image):
     pixels = list(image.getdata())  # 得到像素数据 灰度0-255
-    #print(len(pixels))
+    # print(len(pixels))
     for i in range(len(pixels)):
-        if pixels[i]<100:
-            pixels[i]=0
+        if pixels[i] < 100:
+            pixels[i] = 0
         else:
-            pixels[i]=255
+            pixels[i] = 255
     return pixels
 
-def pixel_division(img,w,h):
+
+def pixel_division(img, w, h):
     pixels = list(img.getdata())
-    row_pix=np.zeros([1,h])
-    col_pix=np.zeros([1,w])
+    row_pix = np.zeros([1, h])
+    col_pix = np.zeros([1, w])
     for i in range(w):
         for j in range(h):
-            if pixels[j*w+i]<100:
-                row_pix[0,j]+=1
-                col_pix[0,i]+=1
-    start_h=0
-    end_h=0
-    flag=0
+            if pixels[j * w + i] < 100:
+                row_pix[0, j] += 1
+                col_pix[0, i] += 1
+    start_h = 0
+    end_h = 0
+    flag = 0
     for j in range(h):
-        if row_pix[0,j]>=1 and flag==0:
-            start_h=j
-            flag=1
-        if row_pix[0,j]>=1:
-            end_h=j
+        if row_pix[0, j] >= 1 and flag == 0:
+            start_h = j
+            flag = 1
+        if row_pix[0, j] >= 1:
+            end_h = j
 
-    pixels_Widh=[]
-    end_w=0
-    for i in range(1,w):
-        if col_pix[0,i-1]<=0 and col_pix[0,i]>=1:
-            pixels_Widh.append(i-1)
-        if col_pix[0,i]>=1:
-            end_w=i
-    pixels_Widh.append(end_w+1)
-    return start_h,end_h,pixels_Widh
+    pixels_width = []
+    end_w = 0
+    for i in range(1, w):
+        if col_pix[0, i - 1] <= 0 and col_pix[0, i] >= 1:
+            pixels_width.append(i - 1)
+        if col_pix[0, i] >= 1:
+            end_w = i
+    pixels_width.append(end_w + 1)
+    return start_h, end_h, pixels_width
 
-def strint(score0):
-    if(score0<10):
+
+def str2int(score0):
+    if score0 < 10:
         return str(score0)
     else:
         return ""
 
+
 def read_one_image(path):
     img = io.imread(path)
-    w=81
-    h=81
-    c=1
-    img = transform.resize(img,(w,h,c))
+    w = 81
+    h = 81
+    c = 1
+    img = transform.resize(img, (w, h, c))
     return np.asarray(img)
+
 
 def main():
     """
@@ -282,64 +285,63 @@ def main():
         return
     print('程序版本号：{}'.format(VERSION))
     debug.dump_device_info()
-    screenshot.check_screenshot()
+    screenshot.check_screen_shot()
 
     i, next_rest, next_rest_time = (0, random.randrange(3, 10),
                                     random.randrange(5, 10))
-    j= 0
-    ################ 分数曲线公式
+    j = 0
+    # 分数曲线公式
 
-    y_score=[]
-    next_start=0
+    y_score = []
+    next_start = 0
     global start_score
     for i in range(total_step):
-        each_score=target_score*(1-np.exp(-0.15*(1024.0/target_score)*i))
+        each_score = target_score * (1 - np.exp(-0.15 * (1024.0 / target_score) * i))
         y_score.append(each_score)
-        if start_score>each_score:
-            next_start=i
-    next_start+=1
-    #print(y_score)
-    if start_score<y_score[0]:
-        next_start=0
+        if start_score > each_score:
+            next_start = i
+    next_start += 1
+    # print(y_score)
+    if start_score < y_score[0]:
+        next_start = 0
 
     ###################
     with tf.Session() as sess:
         saver = tf.train.import_meta_graph('./resource/model/model.ckpt.meta')
-        saver.restore(sess,tf.train.latest_checkpoint('./resource/model/'))
+        saver.restore(sess, tf.train.latest_checkpoint('./resource/model/'))
 
         graph = tf.get_default_graph()
         x = graph.get_tensor_by_name("x:0")
         logits = graph.get_tensor_by_name("logits_eval:0")
-    #####################识别分数
+        # 识别分数
         while True:
-            screenshot.pull_screenshot()
-            im = Image.open('./autojump.png')
-            ##比例系数
-            pix_w=im.size[0]*1.0/1080
-            pix_h=im.size[1]
-            region=im.crop((0,pix_h*0.1,460*pix_w,pix_h*0.2))
-            region=region.convert('L')
-            start_h,end_h,pixels_Widh=pixel_division(region,int(460*pix_w),int(pix_h*0.1))
-            if start_h==end_h:
+            screenshot.pull_screen_shot()
+            im = Image.open('./auto_jump.png')
+            # 比例系数
+            pix_w = im.size[0] * 1.0 / 1080
+            pix_h = im.size[1]
+            region = im.crop((0, pix_h * 0.1, 460 * pix_w, pix_h * 0.2))
+            region = region.convert('L')
+            start_h, end_h, pixels_width = pixel_division(region, int(460 * pix_w), int(pix_h * 0.1))
+            if start_h == end_h:
                 continue
             data = []
-            for i in range(len(pixels_Widh)-1):
-                region1=region.crop((pixels_Widh[i],start_h,pixels_Widh[i+1],end_h))
-                region1.putdata(pross_data(region1))
-                str1="./region"+str(i)+".png"
+            for i in range(len(pixels_width) - 1):
+                region1 = region.crop((pixels_width[i], start_h, pixels_width[i + 1], end_h))
+                region1.putdata(pixels_data(region1))
+                str1 = "./region" + str(i) + ".png"
                 region1.save(str1)
                 data1 = read_one_image(str1)
                 data.append(data1)
-            feed_dict = {x:data}
-            classification_result = sess.run(logits,feed_dict)
-            output = []
-            output = tf.argmax(classification_result,1).eval()
-            m_score=""
+            feed_dict = {x: data}
+            classification_result = sess.run(logits, feed_dict)
+            output = tf.argmax(classification_result, 1).eval()
+            m_score = ""
             for i in range(len(output)):
-                m_score+=strint(output[i])
-            if m_score=="":
+                m_score += str2int(output[i])
+            if m_score == "":
                 continue
-            m_score=int(m_score)
+            m_score = int(m_score)
             print('score:{}'.format(m_score))
             ####################################
             # 获取棋子和 board 的位置
@@ -349,18 +351,18 @@ def main():
             print(ts, piece_x, piece_y, board_x, board_y)
             set_button_position(im)
 
-            if m_score > y_score[next_start]: ##自动结束这一次
+            if m_score > y_score[next_start]:  # 自动结束这一次
                 print("----------------")
-                jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2)*5)
-                next_start+=1
-                time.sleep(5*random.random())
-            if next_start >len(y_score):
+                jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2) * 5)
+                next_start += 1
+                time.sleep(5 * random.random())
+            if next_start > len(y_score):
                 break
             jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2))
             if DEBUG_SWITCH:
-                debug.save_debug_screenshot(ts, im, piece_x,
-                                            piece_y, board_x, board_y)
-                debug.backup_screenshot(ts)
+                debug.save_debug_screen_shot(ts, im, piece_x,
+                                             piece_y, board_x, board_y)
+                debug.backup_screen_shot(ts)
             im.close()
             i += 1
             j += 1

@@ -9,46 +9,48 @@ __author__ = 'Erimus'
 '''
 
 import os
-import sys
-import subprocess
-import time
 import random
-from PIL import Image, ImageDraw
+import subprocess
+import sys
+import time
 from io import BytesIO
+
+from PIL import Image
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
-screenshot_way = 2
+screen_shot_way = 2
 
 
-def check_screenshot():  # 检查获取截图的方式
-    global screenshot_way
-    if (screenshot_way < 0):
+def check_screen_shot():  # 检查获取截图的方式
+    global screen_shot_way
+    if screen_shot_way < 0:
         print('暂不支持当前设备')
         sys.exit()
-    binary_screenshot = pull_screenshot()
+    binary_screen_shot = pull_screen_shot()
     try:
-        Image.open(BytesIO(binary_screenshot)).load()  # 直接使用内存IO
-        print('Capture Method: {}'.format(screenshot_way))
-    except Exception:
-        screenshot_way -= 1
-        check_screenshot()
+        Image.open(BytesIO(binary_screen_shot)).load()  # 直接使用内存IO
+        print('Capture Method: {}'.format(screen_shot_way))
+    except Exception as e:
+        print('check_screen_shot Exception {}'.format(e))
+        screen_shot_way -= 1
+        check_screen_shot()
 
 
-def pull_screenshot():  # 获取截图
-    global screenshot_way
-    if screenshot_way in [1, 2]:
+def pull_screen_shot():  # 获取截图
+    global screen_shot_way
+    if screen_shot_way in [1, 2]:
         process = subprocess.Popen(
             'adb shell screencap -p', shell=True, stdout=subprocess.PIPE)
-        screenshot = process.stdout.read()
-        if screenshot_way == 2:
-            binary_screenshot = screenshot.replace(b'\r\n', b'\n')
+        screen_shot = process.stdout.read()
+        if screen_shot_way == 2:
+            binary_screen_shot = screen_shot.replace(b'\r\n', b'\n')
         else:
-            binary_screenshot = screenshot.replace(b'\r\r\n', b'\n')
-        return binary_screenshot
-    elif screenshot_way == 0:
-        os.system('adb shell screencap -p /sdcard/autojump.png')
-        os.system('adb pull /sdcard/autojump.png .')
+            binary_screen_shot = screen_shot.replace(b'\r\r\n', b'\n')
+        return binary_screen_shot
+    elif screen_shot_way == 0:
+        os.system('adb shell screencap -p /sdcard/auto_jump.png')
+        os.system('adb pull /sdcard/auto_jump.png .')
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
@@ -57,10 +59,10 @@ def find_piece_and_board(im):  # 寻找起点和终点坐标
     w, h = im.size  # 图片宽高
     im_pixel = im.load()
 
-    def find_piece(pixel):  # 棋子取色精确范围
-        return ((40 < pixel[0] < 65) and
-                (40 < pixel[1] < 65) and
-                (80 < pixel[2] < 105))
+    def find_piece(in_pixel):  # 棋子取色精确范围
+        return ((40 < in_pixel[0] < 65) and
+                (40 < in_pixel[1] < 65) and
+                (80 < in_pixel[2] < 105))
 
     # 寻找棋子 ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
@@ -154,15 +156,15 @@ def set_button_position(im, gameover=0):  # 重设点击位置 再来一局位�
 
 
 def jump(piece_x, board_x, im, swipe_x1, swipe_y1):
-    distanceX = abs(board_x - piece_x)  # 起点到目标的水平距离
-    shortEdge = min(im.size)  # 屏幕宽度
-    jumpPercent = distanceX / shortEdge  # 跳跃百分比
-    jumpFullWidth = 1700  # 跳过整个宽度 需要按压的毫秒数
-    press_time = round(jumpFullWidth * jumpPercent)  # 按压时长
+    distance_x = abs(board_x - piece_x)  # 起点到目标的水平距离
+    short_edge = min(im.size)  # 屏幕宽度
+    jump_percent = distance_x / short_edge  # 跳跃百分比
+    jump_full_width = 1700  # 跳过整个宽度 需要按压的毫秒数
+    press_time = round(jump_full_width * jump_percent)  # 按压时长
     press_time = 0 if not press_time else max(
         press_time, 200)  # press_time大于0时限定最小值
     print('%-12s %.2f%% (%s/%s) | Press: %sms' %
-          ('Distance:', jumpPercent * 100, distanceX, shortEdge, press_time))
+          ('Distance:', jump_percent * 100, distance_x, short_edge, press_time))
 
     cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
@@ -177,7 +179,7 @@ def jump(piece_x, board_x, im, swipe_x1, swipe_y1):
 
 
 def main():
-    check_screenshot()  # 检查截图
+    check_screen_shot()  # 检查截图
 
     count = 0
     while True:
@@ -185,7 +187,7 @@ def main():
         print('---\n%-12s %s (%s)' % ('Times:', count, int(time.time())))
 
         # 获取截图
-        binary_screenshot = pull_screenshot()
+        binary_screenshot = pull_screen_shot()
         im = Image.open(BytesIO(binary_screenshot))
         w, h = im.size
         if w > h:

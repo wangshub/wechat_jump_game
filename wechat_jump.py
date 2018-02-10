@@ -14,24 +14,24 @@ template = cv2.resize(template, (0, 0), fx=scale, fy=scale)
 template_size = template.shape[:2]
 
 
-def search(img):
-    result = cv2.matchTemplate(img, template, cv2.TM_SQDIFF)
+def search(in_img):
+    result = cv2.matchTemplate(in_img, template, cv2.TM_SQDIFF)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
     cv2.rectangle(
-        img,
+        in_img,
         (min_loc[0], min_loc[1]),
         (min_loc[0] + template_size[1], min_loc[1] + template_size[0]),
         (255, 0, 0),
         4)
-    return img, min_loc[0] + template_size[1] / 2, min_loc[1] +  template_size[0]
+    return in_img, min_loc[0] + template_size[1] / 2, min_loc[1] + template_size[0]
 
 
-def pull_screenshot():
-    filename = datetime.datetime.now().strftime("%H%M%S") + '.png'
-    os.system('mv autojump.png {}'.format(filename))
-    os.system('adb shell screencap -p /sdcard/autojump.png')
-    os.system('adb pull /sdcard/autojump.png ./autojump.png')
+def pull_screen_shot():
+    # filename = datetime.datetime.now().strftime("%H%M%S") + '.png'
+    # os.system('adb mv auto_jump.png {}'.format(filename))
+    os.system('adb shell screencap -p /sdcard/auto_jump.png')
+    os.system('adb pull /sdcard/auto_jump.png ./auto_jump.png')
 
 
 def jump(distance):
@@ -45,38 +45,38 @@ def jump(distance):
 def update_data():
     global src_x, src_y
 
-    img = cv2.imread('./autojump.png')
-    img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
-    img, src_x, src_y = search(img)
-    return img
+    out_img = cv2.imread('./auto_jump.png')
+    out_img = cv2.resize(out_img, (0, 0), fx=scale, fy=scale)
+    out_img, src_x, src_y = search(out_img)
+    return out_img
 
 
 fig = plt.figure()
-pull_screenshot()
+pull_screen_shot()
 img = update_data()
 im = plt.imshow(img, animated=True)
 
 update = True
 
 
-def updatefig(*args):
+def update_fig(*args):
     global update
 
     if update:
         time.sleep(1)
-        pull_screenshot()
+        pull_screen_shot()
         im.set_array(update_data())
         update = False
     return im,
 
 
 def on_click(event):
-    global update    
+    global update
     global src_x, src_y
-    
+
     dst_x, dst_y = event.xdata, event.ydata
 
-    distance = (dst_x - src_x)**2 + (dst_y - src_y)**2 
+    distance = (dst_x - src_x)**2 + (dst_y - src_y)**2
     distance = (distance ** 0.5) / scale
     print('distance = ', distance)
     jump(distance)
@@ -84,5 +84,5 @@ def on_click(event):
 
 
 fig.canvas.mpl_connect('button_press_event', on_click)
-ani = animation.FuncAnimation(fig, updatefig, interval=5, blit=True)
+ani = animation.FuncAnimation(fig, update_fig, interval=5, blit=True)
 plt.show()

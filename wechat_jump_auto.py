@@ -18,7 +18,7 @@
 from __future__ import print_function, division
 
 import math
-import os
+# import os
 import re
 import random
 import sys
@@ -51,7 +51,7 @@ piece_base_height_1_2 = config['piece_base_height_1_2']
 piece_body_width = config['piece_body_width']
 # 图形中圆球的直径，可以利用系统自带画图工具，用直线测量像素，如果可以实现自动识别圆球直径，那么此处将可实现全自动。
 head_diameter = config.get('head_diameter')
-if head_diameter == None:
+if head_diameter is None:
     density_str = adb.run('shell wm density')
     matches = re.search(r'\d+', density_str)
     density_val = int(matches.group(0))
@@ -100,7 +100,7 @@ def find_piece_and_board(im):
     寻找关键坐标
     """
     w, h = im.size
-    points = []                 # 所有满足色素的点集合
+    points = []  # 所有满足色素的点集合
     piece_y_max = 0
     board_x = 0
     board_y = 0
@@ -135,9 +135,8 @@ def find_piece_and_board(im):
 
     bottom_x = [x for x, y in points if y == piece_y_max]  # 所有最底层的点的横坐标
     if not bottom_x:
-
         return 0, 0, 0, 0, 0
-      
+
     piece_x = int(sum(bottom_x) / len(bottom_x))  # 中间值
     piece_y = piece_y_max - piece_base_height_1_2  # 上移棋子底盘高度的一半
 
@@ -174,26 +173,25 @@ def find_piece_and_board(im):
                 board_x_c += 1
         if board_x_sum:
             board_x = board_x_sum / board_x_c
-    last_pixel = im_pixel[board_x, i]
+    # last_pixel = im_pixel[board_x, i]
 
-
-    #首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
-    #有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
-    #偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
-    center_x = w/ 2 + (24/ 1080) * w
-    center_y = h/ 2 + (17/ 1920) * h
+    # 首先找到游戏的对称中心，由对称中心做辅助线与x=board_x直线的交点即为棋盘的中心位置
+    # 有了对称中心，可以知道棋子在棋盘上面的相对位置（偏高或偏低，偏高的话测量值比实际值大，
+    # 偏低相反。最后通过delta_piece_y来对跳跃时间进行微调
+    center_x = w / 2 + (24 / 1080) * w
+    center_y = h / 2 + (17 / 1920) * h
     if piece_x > center_x:
-        board_y = round((25.5/ 43.5) * (board_x - center_x) + center_y)
-        delta_piece_y = piece_y - round((25.5/ 43.5) * (piece_x - center_x) + center_y)
+        board_y = round((25.5 / 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round((25.5 / 43.5) * (piece_x - center_x) + center_y)
     else:
-        board_y = round(-(25.5/ 43.5) * (board_x - center_x) + center_y)
-        delta_piece_y = piece_y - round(-(25.5/ 43.5) * (piece_x - center_x) + center_y)
+        board_y = round(-(25.5 / 43.5) * (board_x - center_x) + center_y)
+        delta_piece_y = piece_y - round(-(25.5 / 43.5) * (piece_x - center_x) + center_y)
 
     if not all((board_x, board_y)):
         return 0, 0, 0, 0, 0
     return piece_x, piece_y, board_x, board_y, delta_piece_y
-      
-      
+
+
 def yes_or_no(prompt, true_value='y', false_value='n', default=True):
     """
     检查是否已经为启动程序做好了准备
@@ -225,23 +223,23 @@ def main():
     print('程序版本号：{}'.format(VERSION))
     print('激活窗口并按 CONTROL + C 组合键退出')
     debug.dump_device_info()
-    screenshot.check_screenshot()
+    screenshot.check_screen_shot()
 
     i, next_rest, next_rest_time = (0, random.randrange(3, 10),
                                     random.randrange(5, 10))
     while True:
-        screenshot.pull_screenshot()
-        im = Image.open('./autojump.png')
+        screenshot.pull_screen_shot()
+        im = Image.open('./auto_jump.png')
         # 获取棋子和 board 的位置
-        piece_x, piece_y, board_x, board_y , delta_piece_y = find_piece_and_board(im)
+        piece_x, piece_y, board_x, board_y, delta_piece_y = find_piece_and_board(im)
         ts = int(time.time())
         print(ts, piece_x, piece_y, board_x, board_y)
         set_button_position(im)
         jump(math.sqrt((board_x - piece_x) ** 2 + (board_y - piece_y) ** 2), delta_piece_y)
         if DEBUG_SWITCH:
-            debug.save_debug_screenshot(ts, im, piece_x,
-                                        piece_y, board_x, board_y)
-            debug.backup_screenshot(ts)
+            debug.save_debug_screen_shot(ts, im, piece_x,
+                                         piece_y, board_x, board_y)
+            debug.backup_screen_shot(ts)
         im.close()
         i += 1
         if i == next_rest:

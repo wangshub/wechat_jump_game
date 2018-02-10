@@ -7,9 +7,9 @@ import matplotlib.animation as animation
 from PIL import Image
 
 
-def pull_screenshot():
-    os.system('adb shell screencap -p /sdcard/autojump.png')
-    os.system('adb pull /sdcard/autojump.png .')
+def pull_screen_shot():
+    os.system('adb shell screencap -p /sdcard/auto_jump.png')
+    os.system('adb pull /sdcard/auto_jump.png .')
 
 
 def jump(distance):
@@ -21,8 +21,8 @@ def jump(distance):
 
 
 fig = plt.figure()
-pull_screenshot()
-img = np.array(Image.open('autojump.png'))
+pull_screen_shot()
+img = np.array(Image.open('auto_jump.png'))
 im = plt.imshow(img, animated=True)
 
 update = True
@@ -31,14 +31,14 @@ cor = []
 
 
 def update_data():
-    return np.array(Image.open('autojump.png'))
+    return np.array(Image.open('auto_jump.png'))
 
 
-def updatefig(*args):
+def update_fig(*args):
     global update
     if update:
         time.sleep(1.5)
-        pull_screenshot()
+        pull_screen_shot()
         im.set_array(update_data())
         update = False
     return im,
@@ -51,9 +51,9 @@ def on_click(event):
     global cor
 
     ix, iy = event.xdata, event.ydata
-    coords = [(ix, iy)]
-    print('now = ', coords)
-    cor.append(coords)
+    cords = [(ix, iy)]
+    print('now = ', cords)
+    cor.append(cords)
 
     click_count += 1
     if click_count > 1:
@@ -69,5 +69,5 @@ def on_click(event):
 
 
 fig.canvas.mpl_connect('button_press_event', on_click)
-ani = animation.FuncAnimation(fig, updatefig, interval=50, blit=True)
+ani = animation.FuncAnimation(fig, update_fig, interval=50, blit=True)
 plt.show()
