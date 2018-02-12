@@ -230,8 +230,7 @@ def main():
     i, next_rest, next_rest_time = (0, random.randrange(3, 10),
                                     random.randrange(5, 10))
     while True:
-        screenshot.pull_screenshot()
-        im = Image.open('./autojump.png')
+        im = screenshot.pull_screenshot()
         # 获取棋子和 board 的位置
         piece_x, piece_y, board_x, board_y , delta_piece_y = find_piece_and_board(im)
         ts = int(time.time())

@@ -6,6 +6,7 @@ import subprocess
 import os
 import sys
 from PIL import Image
+from io import StringIO
 
 from common import adb
 
@@ -28,12 +29,11 @@ def pull_screenshot():
             binary_screenshot = binary_screenshot.replace(b'\r\n', b'\n')
         elif SCREENSHOT_WAY == 1:
             binary_screenshot = binary_screenshot.replace(b'\r\r\n', b'\n')
-        f = open('autojump.png', 'wb')
-        f.write(binary_screenshot)
-        f.close()
+        return Image.open(StringIO(binary_screenshot))
     elif SCREENSHOT_WAY == 0:
         adb.run('shell screencap -p /sdcard/autojump.png')
         adb.run('pull /sdcard/autojump.png .')
+        return Image.open('./autojump.png')
 
 
 def check_screenshot():
@@ -49,9 +49,10 @@ def check_screenshot():
     if SCREENSHOT_WAY < 0:
         print('暂不支持当前设备')
         sys.exit()
-    pull_screenshot()
     try:
-        Image.open('./autojump.png').load()
+        im = pull_screenshot()
+        im.load()
+        im.close()
         print('采用方式 {} 获取截图'.format(SCREENSHOT_WAY))
     except Exception:
         SCREENSHOT_WAY -= 1
