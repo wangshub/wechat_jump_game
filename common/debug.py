@@ -8,6 +8,7 @@ import shutil
 import math
 from PIL import ImageDraw
 import time
+import platform
 
 # from common import ai
 try:
@@ -53,9 +54,10 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype=
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save('{} {} {}_{}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts,
-                                     debugtype))
-
+	if platform.system=='Windows':
+        im.save('{}\{} {}_{}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts,debugtype))
+    else:
+	    im.save('{}/{} {}_{}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts,debugtype))
 
 def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x,
                     temp_piece_y):
