@@ -56,3 +56,12 @@ adb shell input swipe x y x y time(ms)
 - 176740763 (500人 已满)
 - 89213434 (2000人 已满)
 - 64389940 (2000人)
+
+## 重庆测试（上述都完成后）操作(机型分辨率和requirements.txt已完成)
+每次数据线和手机连接后
+* 终端输入 adb devices ，显示如下表明设备已连接
+```
+List of devices attached
+6934dc33    device
+```
+* 进入项目目录，运行 python wechat_jump_auto.py ，如果手机弹出界面显示 USB 授权，请点击确认
