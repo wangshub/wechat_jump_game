@@ -8,8 +8,8 @@ import shutil
 import math
 from PIL import ImageDraw
 import time
-import platform
 
+os.chdir(os.getcwd().replace('/common', ''))
 # from common import ai
 try:
     from common.auto_adb import auto_adb
@@ -18,7 +18,7 @@ except ImportError as ex:
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(1)
-screenshot_backup_dir = 'screenshot_backups/'
+screenshot_backup_dir = 'screenshot_backups'
 adb = auto_adb()
 
 
@@ -35,11 +35,12 @@ def backup_screenshot(ts):
     为了方便失败的时候 debug
     """
     make_debug_dir(screenshot_backup_dir)
-    shutil.copy('autojump.png',
-                '{} {} {}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts))
+    shutil.copy('{}/autojump.png'.format(os.getcwd()), '{}/{}/{} #{}.png'.format(os.getcwd(), screenshot_backup_dir,
+                                                                                 time.strftime('%Y-%m-%d %H:%M:%S',
+                                                                                               time.localtime()), ts))
 
 
-def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype='auto'):
+def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     """
     对 debug 图片加上详细的注释
     
@@ -54,26 +55,25 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, debugtype=
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-	if platform.system()=='Windows':
-        im.save('{}\{} {}_{}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts,debugtype))
-    else:
-	    im.save('{}/{} {}_{}.png'.format(screenshot_backup_dir, time.strftime('%y-%m-%d %H:%M:%S', time.localtime()), ts,debugtype))
+    im.save('{}/{}/{} #{}.png'.format(os.getcwd(), screenshot_backup_dir,
+                                      time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), ts))
+
 
 def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x,
                     temp_piece_y):
-    '''
+    """
     计算跳跃实际误差
-    '''
+    """
     target_distance = math.sqrt(
         (target_board_x - last_piece_x) ** 2 + (target_board_y - last_piece_y) ** 2)  # 上一轮目标跳跃距离
     actual_distance = math.sqrt((temp_piece_x - last_piece_x) ** 2 + (temp_piece_y - last_piece_y) ** 2)  # 上一轮实际跳跃距离
     jump_error_value = math.sqrt((target_board_x - temp_piece_x) ** 2 + (target_board_y - temp_piece_y) ** 2)  # 跳跃误差
 
     print(round(target_distance), round(jump_error_value), round(actual_distance), round(last_press_time))
-    # 将结果采集进学习字典
+    ''''# 将结果采集进学习字典
     if last_piece_x > 0 and last_press_time > 0:
         ai.add_data(round(actual_distance, 2), round(last_press_time))
-        # print(round(actual_distance), round(last_press_time))
+        # print(round(actual_distance), round(last_press_time))'''
 
 
 def dump_device_info():
@@ -99,3 +99,6 @@ Python: {python}
         host_os=sys.platform,
         python=sys.version
     ))
+
+
+backup_screenshot(1)
