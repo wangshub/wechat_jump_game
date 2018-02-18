@@ -27,15 +27,22 @@ adb pull /sdcard/autojump.png .
 adb shell input swipe x y x y time(ms)
 ```
 
+
+
 ## 使用教程
 
 相关软件工具安装和使用步骤请参考 [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
 
-```
-git clone https://github.com/wangshub/wechat_jump_game.git
-```
+#### 获取源码
 
+```
+- git clone https://github.com/wangshub/wechat_jump_game.git
+
+```
 ##### 非常推荐使用Python3，避免编码及import问题
+## PR 要求
+##### 请选择 merge进dev分支，并且标题写上简短描述，例子 
+[优化] 使用PEP8优化代码
 
 ## 版本说明
 
