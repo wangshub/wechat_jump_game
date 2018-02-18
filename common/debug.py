@@ -8,7 +8,12 @@ import shutil
 import math
 from PIL import ImageDraw
 import time
+import platform
 
+if platform.system() == 'Windows':
+    path_split = '\\'
+else:
+    path_split = '/'
 os.chdir(os.getcwd().replace('/common', ''))
 # from common import ai
 try:
@@ -35,9 +40,8 @@ def backup_screenshot(ts):
     为了方便失败的时候 debug
     """
     make_debug_dir(screenshot_backup_dir)
-    shutil.copy('{}\\autojump.png'.format(os.getcwd()), '{}\{}\{} #{}.png'.format(os.getcwd(), screenshot_backup_dir,
-                                                                                  time.strftime('%Y-%m-%d %H:%M:%S',
-                                                                                               time.localtime()), ts))
+    shutil.copy('{}{}autojump.png'.format(os.getcwd(), path_split),
+                os.path.join(os.getcwd(), screenshot_backup_dir, str(ts)))
 
 
 def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
@@ -55,7 +59,7 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save('{}\\{}\\{} #{}.png'.format(os.getcwd(), screenshot_backup_dir,
+    im.save('{}{}{}{}{} #{}.png'.format(os.getcwd(), path_split, screenshot_backup_dir, path_split,
                                         time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), ts))
 
 
