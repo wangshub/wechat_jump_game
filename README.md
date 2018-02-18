@@ -29,13 +29,11 @@ adb shell input swipe x y x y time(ms)
 
 ## 使用教程
 
-- 方法 1：使用 app 进行一键操作。目前已适配 Win10 64位/macOS 平台 Android 一键操作，下载请移步 [STOP_jump](https://github.com/wangshub/wechat_jump_game/releases)
-
-- 方法 2：相关软件工具安装和使用步骤请参考 [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
+相关软件工具安装和使用步骤请参考 [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
 
 ## 版本说明
 
-- master 分支：稳定版本，已通过测试，且在 release 中存有对应 app
+- master 分支：稳定版本，已通过测试
 - dev 分支：开发版本，包含一些较稳定的新功能，累计多个功能并测试通过后合并至 master 分支
 - 其他分支：功能开发 (feature) 或问题修复 (bugfix)，属于最新尝鲜版本，可能处于开发中的状态，基本完成后合并至 dev 分支
 
