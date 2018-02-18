@@ -94,7 +94,7 @@ def jump(distance):
         press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
 
     press_time = int(press_time)
-    cmd = 'adb shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
+    cmd = 'shell input swipe {x1} {y1} {x2} {y2} {duration}'.format(
         x1=swipe_x1,
         y1=swipe_y1,
         x2=swipe_x2,
@@ -166,8 +166,6 @@ def find_piece(im):
     piece_x_sum = 0
     piece_x_c = 0
     piece_y_max = 0
-    board_x = 0
-    board_y = 0
     scan_x_border = int(w / 8)  # 扫描棋子时的左右边界
     scan_start_y = 0  # 扫描的起始 y 坐标
     im_pixel = im.load()
@@ -405,8 +403,8 @@ def main():
         debug.computing_error(press_time, board_x, board_y, piece_x, piece_y, temp_piece_x, temp_piece_y)
 
         if debug_switch:
-            debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y, "d")
-            debug.save_debug_screenshot(ts, im_temp, temp_piece_x, temp_piece_y, board_x, board_y, "t")
+            debug.save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y)
+            debug.save_debug_screenshot(ts, im_temp, temp_piece_x, temp_piece_y, board_x, board_y)
             # debug.backup_screenshot(ts)
         i = 0
         if i == next_rest:
