@@ -21,7 +21,6 @@
 最后：根据两点的坐标算距离乘以系数来获取长按时间（似乎可以直接用 X 轴距离）
 """
 from __future__ import print_function, division
-import os
 import sys
 import time
 import math
@@ -33,15 +32,15 @@ import numpy as np
 import tensorflow as tf
 
 try:
-    from common import adb, debug, config, screenshot, UnicodeStreamFilter
+    from common import debug, config, screenshot, UnicodeStreamFilter
+    from common.auto_adb import auto_adb
 except Exception as ex:
     print(ex)
     print('请将脚本放在项目根目录中运行')
     print('请检查项目根目录中的 common 文件夹是否存在')
-    exit(-1)
-
-
-VERSION = "1.1.2"
+    exit(1)
+adb = auto_adb()
+VERSION = "1.1.3"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
 DEBUG_SWITCH = False
@@ -72,9 +71,12 @@ def set_button_position(im):
     w, h = im.size
     left = int(w / 2)
     top = int(1584 * (h / 1920.0))
-    left = int(random.uniform(left-50, left+50))
-    top = int(random.uniform(top-10, top+10))    # 随机防 ban
-    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, left, top
+    left = int(random.uniform(left - 100, left + 100))
+    top = int(random.uniform(top - 100, top + 100))  # 随机防 ban
+    after_top = int(random.uniform(top - 100, top + 100))
+    after_left = int(random.uniform(left - 100, left + 100))
+    swipe_x1, swipe_y1, swipe_x2, swipe_y2 = left, top, after_left, after_top
+
 
 
 def jump(distance):

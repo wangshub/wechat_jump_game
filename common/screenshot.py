@@ -8,8 +8,14 @@ import sys
 from PIL import Image
 from io import StringIO
 
-from common import adb
-
+try:
+    from common.auto_adb import auto_adb
+except Exception as ex:
+    print(ex)
+    print('请将脚本放在项目根目录中运行')
+    print('请检查项目根目录中的 common 文件夹是否存在')
+    exit(1)
+adb = auto_adb()
 # SCREENSHOT_WAY 是截图方法，经过 check_screenshot 后，会自动递减，不需手动修改
 SCREENSHOT_WAY = 3
 
