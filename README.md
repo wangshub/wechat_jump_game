@@ -31,6 +31,11 @@ adb shell input swipe x y x y time(ms)
 
 相关软件工具安装和使用步骤请参考 [Android 和 iOS 操作步骤](https://github.com/wangshub/wechat_jump_game/wiki/Android-%E5%92%8C-iOS-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4)
 
+```
+git clone https://github.com/wangshub/wechat_jump_game.git
+```
+
+
 ## 版本说明
 
 - master 分支：稳定版本，已通过测试
