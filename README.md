@@ -35,6 +35,7 @@ adb shell input swipe x y x y time(ms)
 git clone https://github.com/wangshub/wechat_jump_game.git
 ```
 
+##### 非常推荐使用Python3，避免编码及import问题
 
 ## 版本说明
 
