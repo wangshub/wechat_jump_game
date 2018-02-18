@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-这儿是debug的代码，当DEBUG_SWITCH开关开启的时候，会将各种信息存在本地，方便检查故障
+这是debug的代码，当DEBUG_SWITCH开关开启的时候，会将各种信息存在本地，方便检查故障
 """
 import os
 import sys
 import shutil
 import math
 from PIL import ImageDraw
-import time
 import platform
-
 if platform.system() == 'Windows':
-    path_split = '\\'
+    os.chdir(os.getcwd().replace('\\common', ''))
+    path_split = "\\"
 else:
+    os.chdir(os.getcwd().replace('/common', ''))
     path_split = '/'
-os.chdir(os.getcwd().replace('/common', ''))
 # from common import ai
 try:
     from common.auto_adb import auto_adb
@@ -41,7 +40,8 @@ def backup_screenshot(ts):
     """
     make_debug_dir(screenshot_backup_dir)
     shutil.copy('{}{}autojump.png'.format(os.getcwd(), path_split),
-                os.path.join(os.getcwd(), screenshot_backup_dir, str(ts)))
+                os.path.join(os.getcwd(), screenshot_backup_dir,
+                             str(ts) + '.png'))
 
 
 def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
@@ -59,8 +59,8 @@ def save_debug_screenshot(ts, im, piece_x, piece_y, board_x, board_y):
     draw.ellipse((piece_x - 10, piece_y - 10, piece_x + 10, piece_y + 10), fill=(255, 0, 0))
     draw.ellipse((board_x - 10, board_y - 10, board_x + 10, board_y + 10), fill=(0, 0, 255))
     del draw
-    im.save('{}{}{}{}{} #{}.png'.format(os.getcwd(), path_split, screenshot_backup_dir, path_split,
-                                        time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), ts))
+    im.save(os.path.join(os.getcwd(), screenshot_backup_dir,
+                         '#' + str(ts) + '.png'))
 
 
 def computing_error(last_press_time, target_board_x, target_board_y, last_piece_x, last_piece_y, temp_piece_x,
@@ -103,6 +103,3 @@ Python: {python}
         host_os=sys.platform,
         python=sys.version
     ))
-
-
-backup_screenshot(1)
