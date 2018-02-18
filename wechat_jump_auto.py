@@ -39,7 +39,7 @@ adb = auto_adb()
 VERSION = "1.1.4"
 
 # DEBUG 开关，需要调试的时候请改为 True，不需要调试的时候为 False
-DEBUG_SWITCH = True
+DEBUG_SWITCH = False
 adb.test_device()
 # Magic Number，不设置可能无法正常执行，请根据具体截图从上到下按需
 # 设置，设置保存在 config 文件夹中
