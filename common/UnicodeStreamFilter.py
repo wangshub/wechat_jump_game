@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
 
-
-class UnicodeStreamFilter:
+if sys.version_info.major != 3:
+    class UnicodeStreamFilter:
     def __init__(self, target):
         self.target = target
         self.encoding = 'utf-8'
@@ -16,5 +16,7 @@ class UnicodeStreamFilter:
         self.target.write(s)
 
 
-if sys.stdout.encoding == 'cp936':
+    if sys.stdout.encoding == 'cp936':
     sys.stdout = UnicodeStreamFilter(sys.stdout)
+else:
+    pass
