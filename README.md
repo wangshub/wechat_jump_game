@@ -65,3 +65,11 @@ List of devices attached
 6934dc33    device
 ```
 * 进入项目目录，运行 python wechat_jump_auto.py ，如果手机弹出界面显示 USB 授权，请点击确认
+
+注意：一定要打开USB调试，要不然会报错adb devices找不到设备
+```
+
+```
+![报的错](http://upload-images.jianshu.io/upload_images/4340772-0616c7be9ce8a46f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![USB调试](http://upload-images.jianshu.io/upload_images/4340772-d38ea049d1676cab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1080/q/50)
