@@ -69,3 +69,5 @@ adb shell input swipe x y x y time(ms)
 - 89213434 (2000 人)
 - 64389940 (2000 人)
 - 169273380 (2000 人)
+
+[![Throughput Graph](https://graphs.waffle.io/wangshub/wechat_jump_game/throughput.svg)](https://waffle.io/wangshub/wechat_jump_game/metrics/throughput) 
