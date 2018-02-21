@@ -70,6 +70,6 @@ List of devices attached
 ```
 
 ```
-![报的错](http://upload-images.jianshu.io/upload_images/4340772-0616c7be9ce8a46f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![报的错adb devices找不到设备](http://upload-images.jianshu.io/upload_images/4340772-0616c7be9ce8a46f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 ![USB调试](http://upload-images.jianshu.io/upload_images/4340772-d38ea049d1676cab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1080/q/50)
