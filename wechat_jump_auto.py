@@ -84,6 +84,7 @@ def jump(distance, delta_piece_y):
     actual_distance = distance * scale * (math.sqrt(6) / 2)
     press_time = (-945 + math.sqrt(945 ** 2 + 4 * 105 *
                                    36 * actual_distance)) / (2 * 105) * 1000
+    press_time *= press_coefficient
     press_time = max(press_time, 200)  # 设置 200ms 是最小的按压时间
     press_time = int(press_time)
 

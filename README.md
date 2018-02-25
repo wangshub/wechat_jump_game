@@ -1,5 +1,8 @@
 # 教你用 Python 来玩微信跳一跳
 [![GitHub stars](https://img.shields.io/github/stars/wangshub/wechat_jump_game.svg)](https://github.com/wangshub/wechat_jump_game/stargazers) [![GitHub forks](https://img.shields.io/github/forks/wangshub/wechat_jump_game.svg)](https://github.com/wangshub/wechat_jump_game/network) [![GitHub license](https://img.shields.io/github/license/wangshub/wechat_jump_game.svg)](https://github.com/wangshub/wechat_jump_game/blob/master/LICENSE)
+
+[![Throughput Graph](https://graphs.waffle.io/wangshub/wechat_jump_game/throughput.svg)](https://waffle.io/wangshub/wechat_jump_game/metrics/throughput) 
+
 ## 游戏模式
 
 > 2017 年 12 月 28 日下午，微信发布了 6.6.1 版本，加入了「小游戏」功能，并提供了官方 DEMO「跳一跳」。这是一个 2.5D 插画风格的益智游戏，玩家可以通过按压屏幕时间的长短来控制这个「小人」跳跃的距离。分数越高，那么在好友排行榜更加靠前。通过 Python 脚本自动运行，让你轻松霸榜。
@@ -41,14 +44,14 @@ adb shell input swipe x y x y time(ms)
 ```
 ##### 非常推荐使用Python3，避免编码及import问题
 ## PR 要求
-##### 请选择 merge进dev分支，并且标题写上简短描述，例子 
+##### 请选择 merge 进 master 分支，并且标题写上简短描述，例子 
 [优化] 使用PEP8优化代码
 
 ## 版本说明
 
-- master 分支：稳定版本，已通过测试
-- dev 分支：开发版本，包含一些较稳定的新功能，累计多个功能并测试通过后合并至 master 分支
-- 其他分支：功能开发 (feature) 或问题修复 (bugfix)，属于最新尝鲜版本，可能处于开发中的状态，基本完成后合并至 dev 分支
+- prod 分支：稳定版本，已通过测试
+- master 分支：开发版本，包含一些较稳定的新功能，累计多个功能并测试通过后合并至 prod 分支
+- 其他分支：功能开发 (feature) 或问题修复 (bugfix)，属于最新尝鲜版本，可能处于开发中的状态，基本完成后合并至 master 分支
 
 ## FAQ
 
