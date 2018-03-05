@@ -17,7 +17,7 @@ from PIL import Image, ImageDraw
 from io import BytesIO
 
 # ◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
-
+VERSION = "1.1.4"
 screenshot_way = 2
 
 
