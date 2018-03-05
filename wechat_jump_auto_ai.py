@@ -31,7 +31,7 @@ except Exception as ex:
     print('请检查项目根目录中的 common 文件夹是否存在')
     exit(1)
 adb = auto_adb()
-VERSION = "1.1.3"
+VERSION = "1.1.4"
 
 debug_switch = True  # debug 开关，需要调试的时候请改为：True
 config = config.open_accordant_config()

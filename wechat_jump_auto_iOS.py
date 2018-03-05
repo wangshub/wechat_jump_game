@@ -46,7 +46,7 @@ swipe = config.get('swipe', {
     "x2": 320,
     "y2": 410
     })
-
+VERSION = "1.1.4"
 c = wda.Client()
 s = c.session()
 

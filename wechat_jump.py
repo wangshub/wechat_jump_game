@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import cv2
 
+VERSION = "1.1.4"
 scale = 0.25
 
 template = cv2.imread('./resource/image/character.png')

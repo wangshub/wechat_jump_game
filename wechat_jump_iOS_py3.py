@@ -12,7 +12,7 @@ from PIL import Image
 #    iphone6: 0.00196
 #    iphone6s plus: 0.00120
 time_coefficient = 0.00120
-
+VERSION = "1.1.4"
 
 c = wda.Client()
 s = c.session()
