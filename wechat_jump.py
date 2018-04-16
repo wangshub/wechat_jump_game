@@ -1,13 +1,11 @@
-from __future__ import print_function
-
-import numpy as np
+# -*- coding: utf-8 -*-
+from __future__ import print_function, division
+import os
+import time
+import datetime
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import math
-import time
-import os
 import cv2
-import datetime
 
 scale = 0.25
 
@@ -20,15 +18,21 @@ def search(img):
     result = cv2.matchTemplate(img, template, cv2.TM_SQDIFF)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
 
-    cv2.rectangle(img, (min_loc[0], min_loc[1]), (min_loc[0] + template_size[1], min_loc[1] + template_size[0]), (255, 0, 0), 4)
-
+    cv2.rectangle(
+        img,
+        (min_loc[0], min_loc[1]),
+        (min_loc[0] + template_size[1], min_loc[1] + template_size[0]),
+        (255, 0, 0),
+        4)
     return img, min_loc[0] + template_size[1] / 2, min_loc[1] +  template_size[0]
+
 
 def pull_screenshot():
     filename = datetime.datetime.now().strftime("%H%M%S") + '.png'
     os.system('mv autojump.png {}'.format(filename))
     os.system('adb shell screencap -p /sdcard/autojump.png')
     os.system('adb pull /sdcard/autojump.png .')
+
 
 def jump(distance):
     press_time = distance * 1.35
@@ -37,27 +41,24 @@ def jump(distance):
     print(cmd)
     os.system(cmd)
 
+
 def update_data():
     global src_x, src_y
 
     img = cv2.imread('autojump.png')
     img = cv2.resize(img, (0, 0), fx=scale, fy=scale)
-
     img, src_x, src_y = search(img)
     return img
 
 
 fig = plt.figure()
-index = 0
-
-# pull_screenshot()
 img = update_data()
-
-update = True 
 im = plt.imshow(img, animated=True)
 
+update = True
 
-def updatefig(*args):
+
+def updatefig():
     global update
 
     if update:
@@ -67,7 +68,8 @@ def updatefig(*args):
         update = False
     return im,
 
-def onClick(event):      
+
+def on_click(event):
     global update    
     global src_x, src_y
     
@@ -80,6 +82,6 @@ def onClick(event):
     update = True
 
 
-fig.canvas.mpl_connect('button_press_event', onClick)
+fig.canvas.mpl_connect('button_press_event', on_click)
 ani = animation.FuncAnimation(fig, updatefig, interval=5, blit=True)
 plt.show()
