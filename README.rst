@@ -6,8 +6,8 @@ Wechat Jump Bot (iOS)
 Features
 ==============================================================================
 
-- Auto Mode: playing the game automatically;
-- Manual Mode: playing the game by manual.
+- Auto Mode: play the game automatically;
+- Manual Mode: play the game manually.
 
 Wechat Jump Game
 
@@ -20,7 +20,7 @@ Wechat Jump Game
 How it runs
 ==============================================================================
 
-Prequsites
+Prerequisites
 
 - WebDriverAgent
 - libimobiledevice
