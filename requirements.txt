@@ -1,7 +1,7 @@
 backports.functools-lru-cache==1.4
 cycler==0.10.0
 matplotlib==2.1.1
-numpy==1.13.3
+numpy==1.22.0
 olefile==0.44
 opencv-python==3.4.0.12
 Pillow==4.3.0
