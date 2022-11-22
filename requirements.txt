@@ -4,7 +4,7 @@ matplotlib==2.1.1
 numpy==1.13.3
 olefile==0.44
 opencv-python==3.4.0.12
-Pillow==4.3.0
+Pillow==9.3.0
 pyparsing==2.2.0
 python-dateutil==2.6.1
 pytz==2017.3
